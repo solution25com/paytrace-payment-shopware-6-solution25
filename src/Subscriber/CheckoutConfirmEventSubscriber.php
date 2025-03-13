@@ -4,6 +4,7 @@
 namespace PayTrace\Subscriber;
 
 use PayTrace\Gateways\CreditCard;
+use PayTrace\Service\PayTraceApiService;
 use PayTrace\Storefront\Struct\CheckoutTemplateCustomData;
 use Shopware\Core\Checkout\Payment\PaymentMethodEntity;
 use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
@@ -16,10 +17,12 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
 {
   private EntityRepository $customerRepository;
+  private PayTraceApiService $payTraceApiService;
 
-  public function __construct(EntityRepository $customerRepository)
+  public function __construct(EntityRepository $customerRepository, PayTraceApiService $payTraceApiService)
   {
     $this->customerRepository = $customerRepository;
+    $this->payTraceApiService = $payTraceApiService;
   }
 
   /**
@@ -34,6 +37,8 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
 
   public function addPaymentMethodSpecificFormFields(CheckoutConfirmPageLoadedEvent $event): void
   {
+
+    $clientKey = $this->payTraceApiService->generatePaymentToken();
     $context = $event->getContext();
     $pageObject = $event->getPage();
     $amount = $pageObject->getCart()->getPrice()->getTotalPrice();
@@ -50,7 +55,9 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
         'isGuest' => $isGuest,
         'gateway' => 'creditCard',
         'amount' => $amount,
+        'clientKey' => $clientKey
       ]);
+
 
       $pageObject->addExtension(
         CheckoutTemplateCustomData::EXTENSION_NAME,

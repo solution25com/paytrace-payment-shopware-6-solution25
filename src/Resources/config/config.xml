@@ -25,23 +25,23 @@
         </input-field>
 
         <input-field type="text">
-            <name>privateKeyApiLive</name>
-            <label>Api private key Live</label>
+            <name>clientIdProd</name>
+            <label>clientIdProd</label>
         </input-field>
 
         <input-field type="password">
-            <name>publicKeyApiLive</name>
-            <label>Api public Live</label>
-        </input-field>
-
-        <input-field type="password">
-            <name>privateKeyApi</name>
-            <label>Api private key sandbox</label>
+            <name>clientSecretProd</name>
+            <label>clientSecretProd</label>
         </input-field>
 
         <input-field type="text">
-            <name>publicKeyApi</name>
-            <label>Api public key sandbox</label>
+            <name>clientIdSandbox</name>
+            <label>clientIdSandbox</label>
+        </input-field>
+
+        <input-field type="password">
+            <name>clientSecretSandbox</name>
+            <label>clientSecretSandbox</label>
         </input-field>
     </card>
 

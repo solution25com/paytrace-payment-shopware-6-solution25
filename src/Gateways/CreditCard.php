@@ -26,7 +26,7 @@ class CreditCard implements SynchronousPaymentHandlerInterface
     $context = $salesChannelContext->getContext();
     $orderId = $transaction->getOrder()->getId();
     $paymentMethodName = $salesChannelContext->getPaymentMethod()->getTranslated()['name'];
-    $nmiTransactionId = $dataBag->get('payTrace_transaction_id') ?? null;
+    $payTraceTransactionId = $dataBag->get('payTrace_transaction_id') ?? null;
 
 
       $this->transactionStateHandler->paid($transaction->getOrderTransaction()->getId(), $context);
