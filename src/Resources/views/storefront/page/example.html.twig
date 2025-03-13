@@ -1,0 +1,83 @@
+{% sw_extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_content %}
+
+{#    <label>Credit Card Number</label>#}
+{#    <div id="ccnumber"></div>#}
+{#    <label>CC EXP</label>#}
+{#    <div id="ccexp"></div>#}
+{#    <label>CVV</label>#}
+{#    <div id="cvv"></div>#}
+{#    <button id="payButton">Pay Now</button>#}
+
+{#    <div id="threeDSMountPoint"></div>#}
+{#    <script src="https://secure.networkmerchants.com/js/v1/Gateway.js"></script>#}
+{#    <script#}
+{#            src="https://secure.networkmerchants.com/token/Collect.js"#}
+{#            data-tokenization-key="5D53a2-FfsrTq-ca6D2u-ekF3nU"#}
+{#    ></script>#}
+
+{#    <script>#}
+{#      const gateway = Gateway.create('checkout_public_6cjaR7X8HYn2VpW48MvD2Rg97g936853');#}
+{#      const threeDS = gateway.get3DSecure();z#}
+
+{#      window.addEventListener('DOMContentLoaded', () => {#}
+{#        CollectJS.configure({#}
+{#          variant: 'inline',#}
+{#          callback: (e) => {#}
+{#            const options = {#}
+{#              paymentToken: e.token,#}
+{#              currency: 'USD',#}
+{#              amount: '1000',#}
+{#              email: 'none@example.com',#}
+{#              phone: '8008675309',#}
+{#              city: 'New York',#}
+{#              state: 'NY',#}
+{#              address1: '123 Fist St.',#}
+{#              country: 'US',#}
+{#              firstName: 'John',#}
+{#              lastName: 'Doe',#}
+{#              postalCode: '60001'#}
+
+{#            };#}
+{#            console.log(options)#}
+{#            const threeDSecureInterface = threeDS.createUI(options);#}
+{#            threeDSecureInterface.start('#threeDSMountPoint');#}
+
+{#            threeDSecureInterface.on('challenge', function(e) {#}
+{#              console.log('Challenged');#}
+{#            });#}
+
+{#            threeDSecureInterface.on('complete', function(e) {#}
+{#              console.log(e);#}
+{#              fetch('/nmi-payment-credit-card', {#}
+{#                method: 'POST',#}
+{#                body: JSON.stringify({#}
+{#                  ...options,#}
+{#                  cavv: e.cavv,#}
+{#                  xid: e.xid,#}
+{#                  eci: e.eci,#}
+{#                  cardHolderAuth: e.cardHolderAuth,#}
+{#                  threeDsVersion: e.threeDsVersion,#}
+{#                  directoryServerId: e.directoryServerId,#}
+{#                  cardHolderInfo: e.cardHolderInfo,#}
+{#                })#}
+{#              })#}
+{#            });#}
+{#            console.log('faaackjjjj');#}
+
+{#            threeDSecureInterface.on('failure', function(e) {#}
+{#              console.log('failure');#}
+{#              console.log(e);#}
+{#            });#}
+{#          }#}
+{#        })#}
+
+{#        gateway.on('error', function (e) {#}
+{#          console.error(e);#}
+{#        })#}
+{#      })#}
+{#    </script>#}
+
+
+{% endblock %}

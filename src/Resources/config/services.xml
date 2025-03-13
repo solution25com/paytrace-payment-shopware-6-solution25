@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Gateway  -->
+
+        <service id="PayTrace\Gateways\CreditCard">
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+<!--            <argument type="service" id="PayTracePayment.logger"/>-->
+            <tag name="shopware.payment.method.sync"/>
+        </service>
+
+        <!-- Gateway END  -->
+
+
+        <!-- Entity Definitions -->
+
+        <service id="PayTrace\Core\Content\Transaction\PayTraceTransactionDefinition">
+            <tag name="shopware.entity.definition" entity="payTrace_transaction"/>
+        </service>
+
+        <!-- Entity Definitions END -->
+
+
+
+
+        <service id="PayTrace\Command\ExampleCommand">
+            <tag name="console.command"/>
+        </service>
+
+        <service id="PayTrace\Subscriber\CheckoutConfirmEventSubscriber">
+            <argument type="service" id="customer.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="PayTrace\Storefront\Controller\ExampleController" public="true">
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+
+
+        <!-- Logger  -->
+
+        <service id="PayTracePayment.logger" class="Monolog\Logger">
+            <argument type="string">PayTrace</argument>
+            <argument type="collection">
+                <argument type="service" id="PayTracePayment.rotatingHandler"/>
+            </argument>
+        </service>
+
+        <service id="PayTracePayment.rotatingHandler" class="Monolog\Handler\RotatingFileHandler">
+            <argument type="string">%kernel.logs_dir%/PayTracePayment-%kernel.environment%.log</argument>
+        </service>
+
+    </services>
+</container>
