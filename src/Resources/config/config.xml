@@ -43,6 +43,26 @@
             <name>clientSecretSandbox</name>
             <label>clientSecretSandbox</label>
         </input-field>
+
+        <input-field type="text">
+            <name>integratorProd</name>
+            <label>integratorProd</label>
+        </input-field>
+
+        <input-field type="text">
+            <name>integratorSandbox</name>
+            <label>integratorSandbox</label>
+        </input-field>
+
+        <input-field type="text">
+            <name>merchantIdProd</name>
+            <label>merchantIdProd</label>
+        </input-field>
+
+        <input-field type="text">
+            <name>merchantIdSandbox</name>
+            <label>merchantIdSandbox</label>
+        </input-field>
     </card>
 
     <card>

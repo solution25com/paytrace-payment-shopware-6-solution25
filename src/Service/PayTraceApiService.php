@@ -102,7 +102,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => '9999Shopware',
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integrator'),
         'Content-Type' => 'application/json',
       ],
     ];
@@ -134,8 +134,8 @@ class PayTraceApiService extends Endpoints
   {
     return [
       'grant_type' => 'client_credentials',
-      'client_id' => 'edmond@solution25.com',
-      'client_secret' => 's0lPTrace'
+      'client_id' => $this->payTraceConfigService->getConfig('clientId'),
+      'client_secret' => $this->payTraceConfigService->getConfig('clientSecret')
     ];
   }
 
@@ -146,7 +146,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => '9999Shopware',
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integrator'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -154,7 +154,7 @@ class PayTraceApiService extends Endpoints
         'hpf_token' => $data['hpf_token'],
         'enc_key' => $data['enc_key'],
         'amount' => $amount,
-        'merchant_id' => '85774'
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId')
       ])
     ];
 
