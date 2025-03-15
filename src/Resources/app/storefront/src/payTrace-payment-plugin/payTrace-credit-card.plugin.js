@@ -115,6 +115,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             .then((result) => {
                 console.log('Token received:', result);
                 if (result.message) {
+                    console.log(result)
                     this._submitPayment(result.message);
                 } else {
                     console.error('Failed to receive a token:', result);
@@ -144,7 +145,17 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('confirmOrderForm').submit();
+                    console.log('all data here', data)
+                    const transactionId = data.transactionId;
+
+                    if (typeof transactionId === 'string' || typeof transactionId === 'number') {
+                        console.log('Transaction ID:', transactionId);
+                        document.getElementById('payTrace-transaction-id').value = data.transactionId;
+
+                        document.getElementById('confirmOrderForm').submit();
+                    } else {
+                        console.error('Invalid transaction ID:', transactionId);
+                    }
                 } else {
                     console.error('Payment failed:', data.message || 'Unknown error');
                 }
@@ -156,4 +167,5 @@ export default class PayTraceCreditCardPlugin extends Plugin {
                 this.paymentLoader.style.display = 'none';
             });
     }
+
 }

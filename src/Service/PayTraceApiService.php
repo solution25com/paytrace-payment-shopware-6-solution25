@@ -2,6 +2,7 @@
 
 namespace PayTrace\Service;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
@@ -60,7 +61,7 @@ class PayTraceApiService extends Endpoints
           return "Error: " . $decodedBody['message'] ?? 'Unknown error';
         }
 
-        return $decodedBody['data']['access_token'] ; // Adjust based on your actual API response structure
+        return $decodedBody['data']['access_token'] ;
       }
 
       return "Error: Invalid response received";
@@ -96,7 +97,6 @@ class PayTraceApiService extends Endpoints
 
   public function generatePaymentToken(): string|array
   {
-
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::PAYMENT_FIELD_TOKENS);
 
     $options = [
@@ -128,6 +128,40 @@ class PayTraceApiService extends Endpoints
         'message' => $e->getMessage(),
       ];
     }
+  }
+
+  public function captureRefund(array $body): string|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::REFUND);
+
+    try {
+      $options = [
+        'json' => $body,
+        'headers' => [
+          'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+          'X-Integrator-Id' => '9999Shopware',
+        ],
+      ];
+
+      $response = $this->request($fullEndpointUrl, $options);
+
+      if ($response instanceof Response) {
+        $responseBody = $response->getBody()->getContents();
+        $dec = json_decode($responseBody, true);
+
+        if (isset($dec['data'])) {
+          return $dec['data'];
+        } else {
+          throw new Exception('No data returned from API');
+        }
+      }
+    } catch (GuzzleException $e) {
+      return ['error' => 'Network or request error occurred'];
+    } catch (Exception $e) {
+      return ['error' => $e->getMessage()];
+    }
+
+    return ['error' => 'Unexpected error occurred'];
   }
 
   private function buildRequestBody(): array
@@ -179,7 +213,6 @@ class PayTraceApiService extends Endpoints
         'message' => $e->getMessage(),
       ];
     }
-
 
   }
 }

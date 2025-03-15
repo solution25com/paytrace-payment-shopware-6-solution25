@@ -9,6 +9,7 @@ abstract class Endpoints
   protected const PAYMENT_FIELD_TOKENS = 'PAYMENT_FIELD_TOKENS';
   protected const TRANSACTION = 'TRANSACTION';
   protected const AUTH_TOKEN = 'AUTH_TOKEN';
+  protected const REFUND = 'REFUND';
 
   private static array $endpoints = [
     self::PAYMENT_FIELD_TOKENS => [
@@ -22,6 +23,10 @@ abstract class Endpoints
     self::AUTH_TOKEN => [
       'method' => 'POST',
       'url' => '/v3/token'
+    ],
+    self::REFUND => [
+      'method' => 'POST',
+      'url' => '/v3/card/batch/refund'
     ],
   ];
 
