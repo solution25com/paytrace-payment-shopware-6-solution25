@@ -70,13 +70,10 @@ class RefundOrderEventSubscriber implements EventSubscriberInterface
           // The transaction should be settled to be refunded.
           $response = $this->payTraceApiService->captureRefund($postData);
 
-          if (isset($response[0]['status']) && $response[0]['status'] == 'success') {
-            return;
-
-          } else {
-            // todo :need to stop or reverse transition (Keep PAID or reverse to PAID)
+          if($response[0]['status'] !== 'success'){
             throw new StateMachineException(400, 400, json_encode($response));
           }
+
         }
       } catch (\Exception $exception) {
         error_log('Error in onStateMachineTransition: ' . $exception->getMessage());
@@ -84,6 +81,7 @@ class RefundOrderEventSubscriber implements EventSubscriberInterface
       }
     }
   }
+
   private function getOrderTotalAmount(string $orderId, $context): float
   {
     $criteria = new Criteria([$orderId]);

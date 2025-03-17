@@ -3,8 +3,7 @@ import Plugin from 'src/plugin-system/plugin.class';
 export default class PayTraceCreditCardPlugin extends Plugin {
     static options = {
         confirmFormId: 'confirmOrderForm',
-        parentCreditCardWrapperId: 'payTrace_payment',
-        loaderId: 'paymentLoader'
+        parentCreditCardWrapperId: 'payTrace_payment'
     };
 
     _registerElements() {
@@ -12,7 +11,6 @@ export default class PayTraceCreditCardPlugin extends Plugin {
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
         this.clientKey = this.parentCreditCardWrapper.getAttribute('data-client-key');
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
-        this.paymentLoader = document.getElementById(this.options.loaderId);
     }
 
     init() {
@@ -107,15 +105,16 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             e.stopPropagation();
             this._getCardToken();
         });
+
+        this.confirmOrderForm.addEventListener("submit", () => {
+        });
     }
 
     _getCardToken() {
-        this.paymentLoader.style.display = 'block';
         PTPayment.process()
             .then((result) => {
                 console.log('Token received:', result);
                 if (result.message) {
-                    console.log(result)
                     this._submitPayment(result.message);
                 } else {
                     console.error('Failed to receive a token:', result);
@@ -125,18 +124,10 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             .catch((error) => {
                 console.error('Error during payment processing:', error);
                 this._handleError(error);
-            })
-            .finally(() => {
-                this.paymentLoader.style.display = 'none';
             });
     }
 
-    _handleError(error) {
-        console.error('Error during card processing:', error);
-    }
-
     _submitPayment(token) {
-        this.paymentLoader.style.display = 'block';
         fetch('/capture', {
             method: 'POST',
             body: JSON.stringify({ token: token, amount: this.amount }),
@@ -145,27 +136,19 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('all data here', data)
-                    const transactionId = data.transactionId;
-
-                    if (typeof transactionId === 'string' || typeof transactionId === 'number') {
-                        console.log('Transaction ID:', transactionId);
-                        document.getElementById('payTrace-transaction-id').value = data.transactionId;
-
-                        document.getElementById('confirmOrderForm').submit();
-                    } else {
-                        console.error('Invalid transaction ID:', transactionId);
-                    }
+                    console.log('Transaction Successful:', data);
+                    document.getElementById('payTrace-transaction-id').value = data.transactionId;
+                    document.getElementById('confirmOrderForm').submit();
                 } else {
                     console.error('Payment failed:', data.message || 'Unknown error');
                 }
             })
             .catch(error => {
                 console.error('Payment submission failed:', error);
-            })
-            .finally(() => {
-                this.paymentLoader.style.display = 'none';
             });
     }
 
+    _handleError(error) {
+        console.error('Error during card processing:', error);
+    }
 }

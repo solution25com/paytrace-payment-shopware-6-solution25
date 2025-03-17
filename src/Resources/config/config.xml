@@ -24,24 +24,47 @@
             <defaultValue>sandbox</defaultValue>
         </input-field>
 
+    </card>
+
+
+    <card>
+        <title>Client Id and Client Secret - Production </title>
         <input-field type="text">
             <name>clientIdProd</name>
-            <label>clientIdProd</label>
+            <label>client Id</label>
         </input-field>
 
         <input-field type="password">
             <name>clientSecretProd</name>
-            <label>clientSecretProd</label>
+            <label>Client Secret</label>
         </input-field>
 
+    </card>
+
+    <card>
+        <title>Client Id and Client Secret - Sandbox </title>
         <input-field type="text">
             <name>clientIdSandbox</name>
-            <label>clientIdSandbox</label>
+            <label>client Id</label>
         </input-field>
 
         <input-field type="password">
             <name>clientSecretSandbox</name>
-            <label>clientSecretSandbox</label>
+            <label>Client Secret</label>
+        </input-field>
+    </card>
+
+    <card>
+        <input-field type="text">
+            <name>integratorId</name>
+            <label>Integrator Id</label>
+        </input-field>
+    </card>
+
+    <card>
+        <input-field type="text">
+            <name>merchantId</name>
+            <label>Merchant Id</label>
         </input-field>
     </card>
 

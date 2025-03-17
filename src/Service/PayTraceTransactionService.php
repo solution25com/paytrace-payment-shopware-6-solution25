@@ -45,7 +45,7 @@ class PayTraceTransactionService
       'payTraceTransaction' => [
         'data' => [
           'id' => $tablePayTraceId,
-          'nmiTransactionId' => $transactionId,
+          'payTraceTransactionId' => $transactionId,
           'paymentMethodName' => $paymentMethodName,
           'status' => $status,
         ]

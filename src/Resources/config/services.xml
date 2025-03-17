@@ -53,6 +53,16 @@
 
         </service>
 
+        <service id="PayTrace\Controller\PayTraceSavedCardsController">
+            <tag name="controller.service_arguments"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+            <call method="setTwig">
+                <argument type="service" id="twig"/>
+            </call>
+        </service>
+
 
         <service id="PayTrace\Service\PayTraceConfigService">
             <argument id="Shopware\Core\System\SystemConfig\SystemConfigService" type="service"/>
