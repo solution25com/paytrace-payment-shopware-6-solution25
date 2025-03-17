@@ -58,6 +58,7 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
       ]);
 
 
+
       $pageObject->addExtension(
         CheckoutTemplateCustomData::EXTENSION_NAME,
         $templateVariables

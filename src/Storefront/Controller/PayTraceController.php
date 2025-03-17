@@ -36,13 +36,24 @@ class PayTraceController extends StorefrontController
       $paymentResponse = $this->payTraceApiService->processPayment($data['token'], $data['amount'], $context);
 
       if ($paymentResponse['status'] === 'success') {
-        return new JsonResponse(['success' => true, 'message' => 'Payment processed successfully.'], JsonResponse::HTTP_OK);
+        return new JsonResponse([
+          'success' => true,
+          'message' => 'Payment processed successfully.',
+          'transactionId' => $paymentResponse['data']['transaction_id'],
+        ], JsonResponse::HTTP_OK);
       } else {
-        return new JsonResponse(['success' => false, 'message' => 'Payment failed: ' . $paymentResponse['message']], JsonResponse::HTTP_BAD_REQUEST);
+        return new JsonResponse([
+          'success' => false,
+          'message' => 'Payment failed: ' . $paymentResponse['message']
+        ], JsonResponse::HTTP_BAD_REQUEST);
       }
 
     } catch (\Exception $e) {
-      return new JsonResponse(['success' => false, 'message' => 'Payment processing failed due to an internal error.'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+      return new JsonResponse([
+        'success' => false,
+        'message' => 'Payment processing failed due to an internal error.'
+      ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
     }
   }
+
 }
