@@ -5,9 +5,73 @@
     <input type="hidden" name="parentname" value="payTrace Saved Cards">
   </div>
 
-    <div class="account-welcome">
-        <h1>Saved Cards</h1>
+  <div class="account-welcome">
+    <h1>Saved Cards</h1>
+  </div>
+
+  <div>
+    <form>
+      <div id='pt_hpf_form'></div>
+      <input type="button" id="ProtectForm" value="Add card"/>
+    </form>
+  </div>
+
+  {% if savedCards is not empty %}
+    <div class="saved-cards-list">
+      {% for card in savedCards %}
+        <div class="saved-card">
+          <p><strong>Vaulted Customer ID:</strong> {{ card.vaultedCustomerId }}</p>
+          <p><strong>Card Type:</strong> {{ card.cardType }}</p>
+          <p><strong>Customer Label:</strong> {{ card.customerLabel }}</p>
+        </div>
+      {% endfor %}
     </div>
+  {% else %}
+    <p>No saved cards found.</p>
+  {% endif %}
+
+  <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
+
+  <script>
+      PTPayment.setup({
+          authorization: { clientKey: '{{ paymentToken }}' }
+      }).then(function(instance) {
+          console.log('PayTrace setup complete');
+      }).catch(function(error) {
+          console.error('Error during PayTrace setup:', error);
+      });
+
+      const protectFormButton = document.getElementById('ProtectForm');
+
+      protectFormButton.addEventListener('click', function() {
+          PTPayment.process()
+              .then(function(result) {
+                  if (result.message) {
+                      console.log('Card token received:', result.message);
+
+                      fetch('/account/payTrace-saved-cards/add-card', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                              cardToken: result.message
+                          })
+                      })
+                          .then(response => response.json())
+                          .then(data => {
+                              console.log('Backend response:', data);
+                          })
+                          .catch(error => {
+                              console.error('Error during fetch request:', error);
+                          });
+                  } else {
+                      console.error('Failed to receive a card token');
+                  }
+              })
+              .catch(function(error) {
+                  console.error('Error during payment processing:', error);
+              });
+      });
+  </script>
 {% endblock %}
-
-

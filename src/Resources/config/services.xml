@@ -23,6 +23,10 @@
             <tag name="shopware.entity.definition" entity="payTrace_transaction"/>
         </service>
 
+        <service id="PayTrace\Core\Content\CustomerVault\CustomerVaultDefinition">
+            <tag name="shopware.entity.definition" entity="payTrace_customer_vault"/>
+        </service>
+
         <!-- Entity Definitions END -->
 
 
@@ -54,6 +58,8 @@
         </service>
 
         <service id="PayTrace\Controller\PayTraceSavedCardsController">
+            <argument type="service" id="payTrace_customer_vault.repository" />
+            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <tag name="controller.service_arguments"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>

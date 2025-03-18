@@ -10,6 +10,7 @@ abstract class Endpoints
   protected const TRANSACTION = 'TRANSACTION';
   protected const AUTH_TOKEN = 'AUTH_TOKEN';
   protected const REFUND = 'REFUND';
+  protected const ADD_CARD = 'ADD_CUSTOMER_CARD';
 
   private static array $endpoints = [
     self::PAYMENT_FIELD_TOKENS => [
@@ -28,6 +29,11 @@ abstract class Endpoints
       'method' => 'POST',
       'url' => '/v3/card/batch/refund'
     ],
+    self::ADD_CARD => [
+      'method' => 'POST',
+      'url' => '/v3/customer/create/pt-protect'
+    ]
+
   ];
 
   protected static function getEndpoint(string $endpoint): array

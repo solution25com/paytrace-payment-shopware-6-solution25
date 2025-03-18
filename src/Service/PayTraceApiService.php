@@ -157,6 +157,46 @@ class PayTraceApiService extends Endpoints
     return ['error' => true, 'message' => 'Invalid response received'];
   }
 
+  public function createCustomerProfile(array $data): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::ADD_CARD);
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'hpf_token' => $data['cardToken']['hpf_token'],
+        'enc_key' => $data['cardToken']['enc_key'],
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'billing_address' => [
+          'name' => 'Edon Sedon',
+          'street_address' => '123 Main St',
+          'street_address2' => 'Apt 4B',
+          'city' => 'Sample City',
+          'state' => 'CA',
+          'postal_code' => '90001',
+          'country' => 'USA',
+        ],
+        'customer_label' => 'EdonTestUser'
+      ]),
+    ];
+
+
+    $response = $this->request($fullEndpointUrl, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
+    }
+
+    return ['error' => true, 'message' => 'Invalid response received'];
+
+  }
+
   private function buildRequestBody(): array
   {
     return [
