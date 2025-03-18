@@ -10,6 +10,8 @@
   </div>
 
   <div>
+    <label>Name and surname</label>
+    <input type="text" id="nameSurname"/>
     <form>
       <div id='pt_hpf_form'></div>
       <input type="button" id="ProtectForm" value="Add card"/>
@@ -44,6 +46,8 @@
       const protectFormButton = document.getElementById('ProtectForm');
 
       protectFormButton.addEventListener('click', function() {
+          const name = document.getElementById('nameSurname').value;
+
           PTPayment.process()
               .then(function(result) {
                   if (result.message) {
@@ -55,7 +59,8 @@
                               'Content-Type': 'application/json'
                           },
                           body: JSON.stringify({
-                              cardToken: result.message
+                              cardToken: result.message,
+                              name: name
                           })
                       })
                           .then(response => response.json())
@@ -74,4 +79,5 @@
               });
       });
   </script>
+
 {% endblock %}

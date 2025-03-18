@@ -84,7 +84,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('IntegratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'Content-Type' => 'application/json',
       ],
     ];
@@ -173,7 +173,7 @@ class PayTraceApiService extends Endpoints
         'enc_key' => $data['cardToken']['enc_key'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
         'billing_address' => [
-          'name' => 'Edon Sedon',
+          'name' => $data['name'],
           'street_address' => '123 Main St',
           'street_address2' => 'Apt 4B',
           'city' => 'Sample City',
@@ -181,7 +181,7 @@ class PayTraceApiService extends Endpoints
           'postal_code' => '90001',
           'country' => 'USA',
         ],
-        'customer_label' => 'EdonTestUser'
+        'customer_label' => $data['name'],
       ]),
     ];
 
