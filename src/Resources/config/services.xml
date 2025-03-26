@@ -60,6 +60,7 @@
         <service id="PayTrace\Controller\PayTraceSavedCardsController">
             <argument type="service" id="payTrace_customer_vault.repository" />
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
+            <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
             <tag name="controller.service_arguments"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -83,6 +84,12 @@
             <argument type="service" id="order.repository"/>
             <argument type="service" id="order_transaction.repository" />
         </service>
+
+        <service id="PayTrace\Service\PayTraceCustomerVaultService">
+            <argument type="service" id="payTrace_customer_vault.repository"/>
+            <argument type="service" id="PayTracePayment.logger"/>
+        </service>
+
 
 
         <!-- Logger  -->

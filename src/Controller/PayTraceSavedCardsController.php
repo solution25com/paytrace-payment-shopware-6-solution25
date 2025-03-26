@@ -3,6 +3,7 @@
 namespace PayTrace\Controller;
 
 use PayTrace\Service\PayTraceApiService;
+use PayTrace\Service\PayTraceCustomerVaultService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -16,12 +17,14 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 class PayTraceSavedCardsController extends StorefrontController
 {
   private EntityRepository $customerVaultRepository;
-  protected PayTraceApiService $payTraceApiService;
+  private PayTraceApiService $payTraceApiService;
+  private PayTraceCustomerVaultService $payTraceCustomerVaultService;
 
-  public function __construct(EntityRepository $customerVaultRepository, PayTraceApiService $payTraceApiService)
+  public function __construct(EntityRepository $customerVaultRepository, PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService)
   {
     $this->customerVaultRepository = $customerVaultRepository;
     $this->payTraceApiService = $payTraceApiService;
+    $this->payTraceCustomerVaultService = $payTraceCustomerVaultService;
   }
 
   #[Route(path: '/account/payTrace-saved-cards', name: 'frontend.account.payTrace-saved-cards.page', methods: ['GET'])]
@@ -38,7 +41,6 @@ class PayTraceSavedCardsController extends StorefrontController
 
     $customerVaultRecords = $this->customerVaultRepository->search($criteria, $context->getContext())->getEntities();
 
-    // Generate the payment token
     $paymentToken = $this->payTraceApiService->generatePaymentToken();
 
     return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
@@ -54,17 +56,29 @@ class PayTraceSavedCardsController extends StorefrontController
     $data = json_decode($request->getContent(), true);
 
     $customerId = $context->getCustomer()?->getId();
-    $this->payTraceApiService->createCustomerProfile($data);
+
+    $countCustomer = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
+
+    $customerLabel = '_Card_' . ($countCustomer + 1);
+
+    $data['cardCount'] = $customerLabel;
+    $data['customerId'] = $customerId;
+
+    $responseFromMethod = $this->payTraceApiService->createCustomerProfile($data);
+
+    if ($responseFromMethod['message'] === 'Success') {
+      $customerVaultId = $responseFromMethod['data']['customer_id'];
+
+      $this->payTraceCustomerVaultService->store($context, $customerVaultId, '', $customerId . $customerLabel);
+    }
 
     $criteria = new Criteria();
     $criteria->addFilter(new EqualsFilter('customerId', $customerId));
-
     $customerVaultRecords = $this->customerVaultRepository->search($criteria, $context->getContext())->getEntities();
 
     return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
       'savedCards' => $customerVaultRecords,
     ]);
   }
-
 
 }

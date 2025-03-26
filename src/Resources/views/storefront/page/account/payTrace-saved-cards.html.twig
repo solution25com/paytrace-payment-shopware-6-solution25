@@ -1,32 +1,75 @@
 {% extends '@Storefront/storefront/page/account/index.html.twig' %}
 
 {% block page_account_main_content %}
+
   <div class="payTrace-saved b2b-create-title-text">
     <input type="hidden" name="parentname" value="payTrace Saved Cards">
   </div>
 
   <div class="account-welcome">
-    <h1>Saved Cards</h1>
+    <h1 class="text-center mb-4">Saved Cards</h1>
   </div>
 
-  <div>
-    <label>Name and surname</label>
-    <input type="text" id="nameSurname"/>
-    <form>
-      <div id='pt_hpf_form'></div>
-      <input type="button" id="ProtectForm" value="Add card"/>
+  <div class="container">
+    <form class="paytrace-form-container">
+      <div class="mb-3">
+        <label for="nameSurname" class="form-label">Name</label>
+        <input type="text" class="form-control" id="nameSurname" name="nameSurname" required />
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label for="streetAddress" class="form-label">Street Address</label>
+          <input type="text" class="form-control" id="streetAddress" name="streetAddress" required />
+        </div>
+
+        <div class="col-12 col-md-6 mb-3">
+          <label for="streetAddress2" class="form-label">Street Address 2 (Optional)</label>
+          <input type="text" class="form-control" id="streetAddress2" name="streetAddress2" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label for="city" class="form-label">City</label>
+          <input type="text" class="form-control" id="city" name="city" required />
+        </div>
+
+        <div class="col-12 col-md-6 mb-3">
+          <label for="state" class="form-label">State</label>
+          <input type="text" class="form-control" id="state" name="state" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label for="postalCode" class="form-label">Postal Code</label>
+          <input type="text" class="form-control" id="postalCode" name="postalCode" required />
+        </div>
+
+        <div class="col-12 col-md-6 mb-3">
+          <label for="country" class="form-label">Country</label>
+          <input type="text" class="form-control" id="country" name="country" required />
+        </div>
+      </div>
+
+      <div id="pt_hpf_form"></div>
+
+      <input type="button" id="ProtectForm" value="Add Card" class="btn btn-primary w-100" />
     </form>
   </div>
 
   {% if savedCards is not empty %}
-    <div class="saved-cards-list">
-      {% for card in savedCards %}
-        <div class="saved-card">
-          <p><strong>Vaulted Customer ID:</strong> {{ card.vaultedCustomerId }}</p>
-          <p><strong>Card Type:</strong> {{ card.cardType }}</p>
-          <p><strong>Customer Label:</strong> {{ card.customerLabel }}</p>
-        </div>
-      {% endfor %}
+    <div class="container mt-4">
+      <div class="saved-cards-list">
+        {% for card in savedCards %}
+          <div class="saved-card mb-3 p-3 border rounded-3">
+            <p><strong>Vaulted Customer ID:</strong> {{ card.vaultedCustomerId }}</p>
+            <p><strong>Card Type:</strong> {{ card.cardType }}</p>
+            <p><strong>Customer Label:</strong> {{ card.customerLabel }}</p>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   {% else %}
     <p>No saved cards found.</p>
@@ -47,29 +90,50 @@
 
       protectFormButton.addEventListener('click', function() {
           const name = document.getElementById('nameSurname').value;
+          const streetAddress = document.getElementById('streetAddress').value;
+          const streetAddress2 = document.getElementById('streetAddress2').value;
+          const city = document.getElementById('city').value;
+          const state = document.getElementById('state').value;
+          const postalCode = document.getElementById('postalCode').value;
+          const country = document.getElementById('country').value;
+
 
           PTPayment.process()
-              .then(function(result) {
+              .then(async function(result) {
                   if (result.message) {
-                      console.log('Card token received:', result.message);
-
-                      fetch('/account/payTrace-saved-cards/add-card', {
-                          method: 'POST',
-                          headers: {
-                              'Content-Type': 'application/json'
+                      const requestData = {
+                          cardToken: result.message,
+                          billing_address: {
+                              name: name,
+                              street_address: streetAddress,
+                              ...(streetAddress2 && { street_address2: streetAddress2 }),
+                              city: city,
+                              state: state,
+                              postal_code: postalCode,
+                              country: country,
                           },
-                          body: JSON.stringify({
-                              cardToken: result.message,
-                              name: name
-                          })
-                      })
-                          .then(response => response.json())
-                          .then(data => {
-                              console.log('Backend response:', data);
-                          })
-                          .catch(error => {
-                              console.error('Error during fetch request:', error);
+                      };
+                      console.log('res', result)
+
+                      try {
+                          const response = await fetch('/account/payTrace-saved-cards/add-card', {
+                              method: 'POST',
+                              headers: {
+                                  'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify(requestData),
                           });
+
+                          const res = await response.json();
+                          if (res.error) {
+                              console.error('Error from backend:', res.message);
+                          } else {
+                              console.log('Success:', res.message);
+                          }
+                      }
+                      catch (err) {
+                          console.error('Error during fetch request:', err);
+                      }
                   } else {
                       console.error('Failed to receive a card token');
                   }

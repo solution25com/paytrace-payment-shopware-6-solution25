@@ -7,13 +7,14 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
 use PayTrace\Library\Constants\Endpoints;
-use PayTrace\Library\Constants\EnvironmentUrl;
 use Psr\Http\Message\ResponseInterface;
 
 class PayTraceApiService extends Endpoints
 {
   private PayTraceConfigService $payTraceConfigService;
   private Client $client;
+  private ?string $authToken = null;
+  private ?int $authTokenExpiryTime = null;
 
   public function __construct(PayTraceConfigService $payTraceConfigService)
   {
@@ -21,38 +22,12 @@ class PayTraceApiService extends Endpoints
     $this->client = new Client();
   }
 
-  private function request(array $endpoint, array $options): ResponseInterface|array
-  {
-    try {
-      ['method' => $method, 'url' => $url] = $endpoint;
-      return $this->client->request($method, $url, $options);
-    } catch (GuzzleException $e) {
-      return $this->handleError($e);
-    }
-  }
-
-  private function handleError(GuzzleException $e): array
-  {
-    $response = $e->hasResponse() ? $e->getResponse() : null;
-    if ($response) {
-      $responseBody = $response->getBody()->getContents();
-      $decodedBody = json_decode($responseBody, true);
-      return [
-        'error' => true,
-        'code' => $e->getCode(),
-        'message' => $decodedBody['message'] ?? $decodedBody,
-      ];
-    }
-
-    return [
-      'error' => true,
-      'code' => $e->getCode(),
-      'message' => $e->getMessage(),
-    ];
-  }
-
   private function getAuthorizationToken(): string
   {
+    if ($this->authToken && time() < $this->authTokenExpiryTime) {
+      return $this->authToken;
+    }
+
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTH_TOKEN);
     $body = $this->buildRequestBody();
 
@@ -71,7 +46,10 @@ class PayTraceApiService extends Endpoints
         return "Error: " . ($decodedBody['message'] ?? 'Unknown error');
       }
 
-      return $decodedBody['data']['access_token'] ?? 'Unknown error';
+      $this->authToken = $decodedBody['data']['access_token'] ?? 'Unknown error';
+      $this->authTokenExpiryTime = time() + 900;
+
+      return $this->authToken;
     }
 
     return "Error: Invalid response received";
@@ -157,7 +135,7 @@ class PayTraceApiService extends Endpoints
     return ['error' => true, 'message' => 'Invalid response received'];
   }
 
-  public function createCustomerProfile(array $data): ResponseInterface|array
+  public function createCustomerProfile(array $data): ResponseInterface | array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::ADD_CARD);
 
@@ -173,29 +151,23 @@ class PayTraceApiService extends Endpoints
         'enc_key' => $data['cardToken']['enc_key'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
         'billing_address' => [
-          'name' => $data['name'],
-          'street_address' => '123 Main St',
-          'street_address2' => 'Apt 4B',
-          'city' => 'Sample City',
-          'state' => 'CA',
-          'postal_code' => '90001',
-          'country' => 'USA',
+          'name' => $data['billing_address']['name'],
+          'street_address' => $data['billing_address']['street_address'],
+          'street_address2' => $data['billing_address']['street_address2'] ?? null,
+          'city' => $data['billing_address']['city'],
+          'state' => $data['billing_address']['state'],
+          'postal_code' => $data['billing_address']['postal_code'],
+          'country' => $data['billing_address']['country'],
         ],
-        'customer_label' => $data['name'],
+        'customer_label' => $data['customerId'] . $data['cardCount'],
       ]),
     ];
 
-
     $response = $this->request($fullEndpointUrl, $options);
 
-    if ($response instanceof Response) {
-      $responseBody = $response->getBody()->getContents();
-      return json_decode($responseBody, true);
-    }
-
-    return ['error' => true, 'message' => 'Invalid response received'];
-
+    return $this->ApiResponse($response);
   }
+
 
   private function buildRequestBody(): array
   {
@@ -203,6 +175,55 @@ class PayTraceApiService extends Endpoints
       'grant_type' => 'client_credentials',
       'client_id' => $this->payTraceConfigService->getConfig('clientIdSandbox'),
       'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox'),
+    ];
+  }
+
+  private function ApiResponse(ResponseInterface $response): array
+  {
+    $responseBody = $response->getBody()->getContents();
+    $decodedResponse = json_decode($responseBody, true);
+
+    if (isset($decodedResponse['error']) && $decodedResponse['error']) {
+      return [
+        'error' => true,
+        'message' => $decodedResponse['message'] ?? 'Unknown error',
+      ];
+    }
+
+    return [
+      'error' => false,
+      'message' => 'Success',
+      'data' => $decodedResponse['data'],
+    ];
+  }
+
+  private function request(array $endpoint, array $options): ResponseInterface|array
+  {
+    try {
+      ['method' => $method, 'url' => $url] = $endpoint;
+      return $this->client->request($method, $url, $options);
+    } catch (GuzzleException $e) {
+      return $this->handleError($e);
+    }
+  }
+
+  private function handleError(GuzzleException $e): array
+  {
+    $response = $e->hasResponse() ? $e->getResponse() : null;
+    if ($response) {
+      $responseBody = $response->getBody()->getContents();
+      $decodedBody = json_decode($responseBody, true);
+      return [
+        'error' => true,
+        'code' => $e->getCode(),
+        'message' => $decodedBody['message'] ?? $decodedBody,
+      ];
+    }
+
+    return [
+      'error' => true,
+      'code' => $e->getCode(),
+      'message' => $e->getMessage(),
     ];
   }
 }
