@@ -95,4 +95,24 @@ class PayTraceCustomerVaultService
     return $count;
   }
 
+  public function dropdownCards(SalesChannelContext $context, string $customerId)
+  {
+    $criteria = new Criteria();
+    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
+
+    $savedCards = $this->vaultedCustomerRepository->search($criteria, $context->getContext())->getElements();
+
+    $formattedCards = [];
+
+    foreach ($savedCards as $card) {
+      $formattedCards[] = [
+        'vaultedCustomerId' => $card->getVaultedCustomerId(),
+        'customerLabel' => $card->getCustomerLabel(),
+      ];
+    }
+
+    return $formattedCards;
+  }
+
+
 }

@@ -35,8 +35,8 @@
         </service>
 
         <service id="PayTrace\Subscriber\CheckoutConfirmEventSubscriber">
-            <argument type="service" id="customer.repository"/>
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
+            <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
             <tag name="kernel.event_subscriber"/>
         </service>
 
@@ -89,8 +89,6 @@
             <argument type="service" id="payTrace_customer_vault.repository"/>
             <argument type="service" id="PayTracePayment.logger"/>
         </service>
-
-
 
         <!-- Logger  -->
 

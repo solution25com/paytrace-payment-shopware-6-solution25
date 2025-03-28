@@ -135,6 +135,40 @@ class PayTraceApiService extends Endpoints
     return ['error' => true, 'message' => 'Invalid response received'];
   }
 
+  public function processVaultedPayment(array $data): ResponseInterface|array
+  {
+    if (empty($data['selectedCardVaultedId'])) {
+      return ['error' => true, 'message' => 'Missing customer ID'];
+    }
+
+    $endpointDetails = Endpoints::getUrlDynamicParam(
+      Endpoints::VAULTED_TRANSACTION,
+      [$data['selectedCardVaultedId']],
+    );
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'amount' => $data['amount'],
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+      ]),
+    ];
+
+    $response = $this->request($endpointDetails, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
+    }
+
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
+
   public function createCustomerProfile(array $data): ResponseInterface | array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::ADD_CARD);
