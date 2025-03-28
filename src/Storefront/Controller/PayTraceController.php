@@ -56,4 +56,41 @@ class PayTraceController extends StorefrontController
     }
   }
 
+  #[Route(
+    path: '/vaulted-capture-paytrace',
+    name: 'frontend.payTrace.vaultedCapture',
+    methods: ['POST']
+  )]
+  public function vaultedCapture(Request $request, SalesChannelContext $context): JsonResponse
+  {
+    $data = json_decode($request->getContent(), true);
+
+    if (empty($data)) {
+      return new JsonResponse(['success' => false, 'message' => 'Missing Data .'], JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    try {
+      $paymentResponse = $this->payTraceApiService->processVaultedPayment($data);
+
+      if ($paymentResponse['status'] === 'success') {
+        return new JsonResponse([
+          'success' => true,
+          'message' => 'Payment processed successfully.',
+          'transactionId' => $paymentResponse['data']['transaction_id'],
+        ], JsonResponse::HTTP_OK);
+      } else {
+        return new JsonResponse([
+          'success' => false,
+          'message' => 'Payment failed: ' . $paymentResponse['message']
+        ], JsonResponse::HTTP_BAD_REQUEST);
+      }
+
+    } catch (\Exception $e) {
+      return new JsonResponse([
+        'success' => false,
+        'message' => 'Payment processing failed due to an internal error.'
+      ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }

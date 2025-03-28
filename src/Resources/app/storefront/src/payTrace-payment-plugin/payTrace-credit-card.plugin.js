@@ -11,81 +11,39 @@ export default class PayTraceCreditCardPlugin extends Plugin {
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
         this.clientKey = this.parentCreditCardWrapper.getAttribute('data-client-key');
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
+        this.cardsDropdown = this.parentCreditCardWrapper.getAttribute('data-cardsDropdown');
     }
 
     init() {
         this._registerElements();
+        this._populateDropdown();
         this._setupPayTrace();
         this._bindEvents();
     }
 
+    _populateDropdown() {
+        const cards = JSON.parse(this.cardsDropdown);
+
+        const dropdown = document.getElementById('saved-cards');
+
+        dropdown.innerHTML = '';
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '-- Select a saved card --';
+        dropdown.appendChild(defaultOption);
+
+        cards.forEach(card => {
+            const option = document.createElement('option');
+            option.value = card.vaultedCustomerId;
+            option.textContent = card.customerLabel;
+            dropdown.appendChild(option);
+        });
+    }
+
     _setupPayTrace() {
         PTPayment.setup({
-            styles: {
-                'code': {
-                    'font_color':'#5D99CA',
-                    'font_size':'13pt',
-                    'input_font':'serif, cursive, fantasy',
-                    'input_font_weight':'700',
-                    'input_margin':'5px 0px 5px 20px',
-                    'input_padding':'0px 5px 0px 5px',
-                    'label_color':'#5D99CA',
-                    'label_size':'16px',
-                    'label_width':'150px',
-                    'label_font':'sans-serif, arial, serif',
-                    'label_font_weight':'bold',
-                    'label_margin':'5px 0px 0px 20px',
-                    'label_padding':'2px 5px 2px 5px',
-                    'background_color':'white',
-                    'height':'25px',
-                    'width':'110px',
-                    'padding_bottom':'2px'
-                },
-                'cc': {
-                    'font_color':'#5D99CA',
-                    'font_size':'13pt',
-                    'input_font':'Times New Roman, arial, fantasy',
-                    'input_font_weight':'400',
-                    'input_margin':'5px 0px 5px 0px',
-                    'input_padding':'0px 5px 0px 5px',
-                    'label_color':'#5D99CA',
-                    'label_size':'16px',
-                    'label_width':'150px',
-                    'label_font':'Times New Roman, sans-serif, serif',
-                    'label_font_weight':'light',
-                    'label_margin':'5px 0px 0px 0px',
-                    'label_padding':'0px 5px 0px 5px',
-                    'background_color':'white',
-                    'height':'25px',
-                    'width':'320px',
-                    'padding_bottom':'0px'
-                },
-                'exp': {
-                    'font_color':'#5D99CA',
-                    'font_size':'12pt',
-                    'input_border_radius':'0px',
-                    'input_border_width':'2px',
-                    'input_font':'arial, cursive, fantasy',
-                    'input_font_weight':'400',
-                    'input_margin':'5px 0px 5px 0px',
-                    'input_padding':'0px 5px 0px 5px',
-                    'label_color':'#5D99CA',
-                    'label_size':'16px',
-                    'label_width':'150px',
-                    'label_font':'arial, fantasy, serif',
-                    'label_font_weight':'normal',
-                    'label_margin':'5px 0px 0px 0px',
-                    'label_padding':'2px 5px 2px 5px',
-                    'background_color':'white',
-                    'height':'25px',
-                    'width':'85px',
-                    'padding_bottom':'2px',
-                    'type':'dropdown'
-                },
-                'body': {
-                    'background_color':'white'
-                }
-            },
+            styles: {},
             authorization: {
                 clientKey: this.clientKey
             }
@@ -95,7 +53,6 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             })
             .catch((error) => {
                 console.error('Error during PayTrace setup:', error);
-                this._handleError(error);
             });
     }
 
@@ -106,9 +63,24 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             this._getCardToken();
         });
 
-        this.confirmOrderForm.addEventListener("submit", () => {
+
+        document.getElementById("SelectCardButton").addEventListener("click", (e) => {
+            e.preventDefault();
+            this._vaultedPayment();
+        }, { once: true });
+
+        document.getElementById('saved-cards').addEventListener('change', (e) => {
+            const selectedCard = e.target.value;
+            const selectCardButton = document.getElementById('SelectCardButton');
+
+            if (selectedCard) {
+                selectCardButton.style.display = 'block';
+            } else {
+                selectCardButton.style.display = 'none';
+            }
         });
     }
+
 
     _getCardToken() {
         PTPayment.process()
@@ -118,13 +90,23 @@ export default class PayTraceCreditCardPlugin extends Plugin {
                     this._submitPayment(result.message);
                 } else {
                     console.error('Failed to receive a token:', result);
-                    this._handleError('Token generation failed');
                 }
             })
             .catch((error) => {
                 console.error('Error during payment processing:', error);
-                this._handleError(error);
             });
+    }
+
+    _vaultedPayment() {
+        const selectedCardVaultedId = document.getElementById('saved-cards').value;
+        const amount = this.amount;
+
+        if (!selectedCardVaultedId) {
+            alert('No card');
+            return;
+        }
+
+        this._submitVaultedPayment(selectedCardVaultedId, amount);
     }
 
     _submitPayment(token) {
@@ -148,7 +130,25 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             });
     }
 
-    _handleError(error) {
-        console.error('Error during card processing:', error);
+    _submitVaultedPayment(selectedCardVaultedId, amount) {
+        console.log('_submitVaultedPayment')
+        fetch('/vaulted-capture-paytrace', {
+            method: 'POST',
+            body: JSON.stringify({ selectedCardVaultedId, amount: amount }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Transaction Successful:', data);
+                    document.getElementById('payTrace-transaction-id').value = data.transactionId;
+                    document.getElementById('confirmOrderForm').submit();
+                } else {
+                    console.error('Payment failed:', data.message || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                console.error('Payment submission failed:', error);
+            });
     }
 }

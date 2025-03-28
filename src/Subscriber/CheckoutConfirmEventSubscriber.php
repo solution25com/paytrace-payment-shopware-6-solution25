@@ -5,29 +5,23 @@ namespace PayTrace\Subscriber;
 
 use PayTrace\Gateways\CreditCard;
 use PayTrace\Service\PayTraceApiService;
+use PayTrace\Service\PayTraceCustomerVaultService;
 use PayTrace\Storefront\Struct\CheckoutTemplateCustomData;
-use Shopware\Core\Checkout\Payment\PaymentMethodEntity;
-use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
-use Symfony\Component\HttpFoundation\Response;
 
 
 class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
 {
-  private EntityRepository $customerRepository;
   private PayTraceApiService $payTraceApiService;
+  private PayTraceCustomerVaultService $payTraceCustomerVaultService;
 
-  public function __construct(EntityRepository $customerRepository, PayTraceApiService $payTraceApiService)
+  public function __construct(PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService)
   {
-    $this->customerRepository = $customerRepository;
     $this->payTraceApiService = $payTraceApiService;
+    $this->payTraceCustomerVaultService = $payTraceCustomerVaultService;
   }
 
-  /**
-   * @inheritDoc
-   */
   public static function getSubscribedEvents(): array
   {
     return [
@@ -39,7 +33,6 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
   {
 
     $clientKey = $this->payTraceApiService->generatePaymentToken();
-    $context = $event->getContext();
     $pageObject = $event->getPage();
     $amount = $pageObject->getCart()->getPrice()->getTotalPrice();
     $salesChannelContext = $event->getSalesChannelContext();
@@ -49,23 +42,22 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
     if ($selectedPaymentGateway->getHandlerIdentifier() == CreditCard::class) {
 
       $customerId = $salesChannelContext->getCustomer()->getId();
+      $cardsDropdown = $this->payTraceCustomerVaultService->dropdownCards($salesChannelContext,$customerId);
 
       $templateVariables->assign([
         'template' => '@Storefront/payTrace-payment/credit-card.html.twig',
         'isGuest' => $isGuest,
         'gateway' => 'creditCard',
         'amount' => $amount,
-        'clientKey' => $clientKey
+        'clientKey' => $clientKey,
+        'cardsDropdown' => json_encode($cardsDropdown),
       ]);
-
-
 
       $pageObject->addExtension(
         CheckoutTemplateCustomData::EXTENSION_NAME,
         $templateVariables
       );
     }
-
   }
 
 }
