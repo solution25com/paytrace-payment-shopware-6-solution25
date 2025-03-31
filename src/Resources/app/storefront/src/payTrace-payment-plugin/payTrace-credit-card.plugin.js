@@ -110,7 +110,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
     }
 
     _submitPayment(token) {
-        fetch('/capture', {
+        fetch('/capture-paytrace', {
             method: 'POST',
             body: JSON.stringify({ token: token, amount: this.amount }),
             headers: { 'Content-Type': 'application/json' }

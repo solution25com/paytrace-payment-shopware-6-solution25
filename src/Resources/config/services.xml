@@ -11,6 +11,7 @@
         <service id="PayTrace\Gateways\CreditCard">
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
+            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
             <tag name="shopware.payment.method.sync"/>
         </service>
 
@@ -41,9 +42,8 @@
         </service>
 
 
-        <service id="PayTrace\Subscriber\RefundOrderEventSubscriber">
+        <service id="PayTrace\Subscriber\OrderPaymentStatusChangeSubscriber">
             <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
-            <argument type="service" id="order_transaction.repository" />
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="order.repository"/>
             <tag name="kernel.event_subscriber"/>
@@ -51,6 +51,8 @@
 
         <service id="PayTrace\Storefront\Controller\PayTraceController" public="true">
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
+            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="PayTracePayment.logger"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
