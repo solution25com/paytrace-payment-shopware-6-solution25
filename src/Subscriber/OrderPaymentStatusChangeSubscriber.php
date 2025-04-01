@@ -4,10 +4,13 @@ namespace PayTrace\Subscriber;
 
 use PayTrace\Service\PayTraceApiService;
 use PayTrace\Service\PayTraceTransactionService;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\StateMachine\Event\StateMachineTransitionEvent;
 use Shopware\Core\System\StateMachine\StateMachineException;
+use Shopware\Core\System\StateMachine\Transition;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
@@ -19,7 +22,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
   public function __construct(
     PayTraceTransactionService $payTraceTransactionService,
     PayTraceApiService $payTraceApiService,
-    EntityRepository $orderRepository
+    EntityRepository $orderRepository,
   ) {
     $this->payTraceTransactionService = $payTraceTransactionService;
     $this->payTraceApiService = $payTraceApiService;
@@ -46,6 +49,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     match ($nextState) {
       'paid' => $this->handleCapture($orderId, $context),
+      'cancelled' => $this->handleVoid($orderId, $context),
       'refunded' => $this->handleRefund($orderId, $context),
       default => null
     };
@@ -99,6 +103,33 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
     } catch (\Exception $exception) {
       error_log('Error in onStateMachineTransition: ' . $exception->getMessage());
       throw new StateMachineException(400, 400, json_encode('Refund failed.'));
+    }
+  }
+
+  private function handleVoid(string $orderId, $context): void
+  {
+    try {
+      $transaction = $this->payTraceTransactionService->getTransactionByOrderId($orderId, $context);
+
+      if (!$transaction) {
+        throw new StateMachineException(400, 400, "Invalid transaction status for void.");
+      }
+
+      $transactionId = $transaction->getTransactionId();
+
+      $postData = [
+        "transactionId" => $transactionId,
+      ];
+
+      $response = $this->payTraceApiService->voidTransaction($postData);
+
+      if ($response[0]['status'] !== 'success') {
+        throw new StateMachineException(400, 400, json_encode($response));
+
+      }
+    } catch (\Exception $exception) {
+      error_log('Error in onStateMachineTransition: ' . $exception->getMessage());
+      throw new StateMachineException(400, 400, json_encode('Void(Cancel) failed.'));
     }
   }
 
