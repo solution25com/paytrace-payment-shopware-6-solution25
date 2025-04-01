@@ -7,17 +7,20 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
 use PayTrace\Library\Constants\Endpoints;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 class PayTraceApiService extends Endpoints
 {
   private PayTraceConfigService $payTraceConfigService;
+  private LoggerInterface $logger;
   private Client $client;
   private ?string $authToken = null;
   private ?int $authTokenExpiryTime = null;
 
-  public function __construct(PayTraceConfigService $payTraceConfigService)
+  public function __construct(PayTraceConfigService $payTraceConfigService, LoggerInterface $logger)
   {
     $this->payTraceConfigService = $payTraceConfigService;
+    $this->logger = $logger;
     $this->client = new Client();
   }
 
@@ -127,7 +130,12 @@ class PayTraceApiService extends Endpoints
     ];
 
 
+    $start = microtime(true);
     $response = $this->request($fullEndpointUrl, $options);
+    $end = microtime(true);
+    $executionTime = round($end - $start, 2);
+    $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
+
 
     if ($response instanceof Response) {
       $responseBody = $response->getBody()->getContents();
@@ -188,6 +196,44 @@ class PayTraceApiService extends Endpoints
             'transaction_id' => $data['transactionId'],
             'custom_dba' => 'Refund amount: ' . $data['amount'] . 'from transaction: ' . $data['transactionId'],
             'amount' => $data['amount']
+          ]
+        ]
+      ]),
+    ];
+
+    $response = $this->request($fullEndpointUrl, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $dec = json_decode($responseBody, true);
+
+      if (isset($dec['data'])) {
+        return $dec['data'];
+      }
+
+      return ['error' => 'No data returned from API'];
+    }
+
+    return ['error' => 'Network or request error occurred'];
+  }
+
+  public function voidTransaction(array $data): string|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::VOID);
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'batch_items' => [
+          [
+            'transaction_id' => $data['transactionId'],
+            'custom_dba' =>  'Void transaction: ' . $data['transactionId'],
           ]
         ]
       ]),

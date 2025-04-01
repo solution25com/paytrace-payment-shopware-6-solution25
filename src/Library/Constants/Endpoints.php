@@ -10,9 +10,11 @@ abstract class Endpoints
   protected const TRANSACTION = 'TRANSACTION';
   protected const AUTHORIZE = 'AUTHORIZE';
   protected const CAPTURE = 'CAPTURE';
+  protected const VOID = 'VOID';
+  protected const REFUND = 'REFUND';
+
   protected const VAULTED_TRANSACTION = 'VAULTED_TRANSACTION';
   protected const AUTH_TOKEN = 'AUTH_TOKEN';
-  protected const REFUND = 'REFUND';
   protected const ADD_CARD = 'ADD_CUSTOMER_CARD';
 
   private static array $endpoints = [
@@ -47,6 +49,10 @@ abstract class Endpoints
     self::VAULTED_TRANSACTION => [
       'method' => 'POST',
       'url' => '/v3/card/sale/customer/'
+    ],
+    self::VOID => [
+      'method' => 'POST',
+      'url' => '/v3/card/batch/void'
     ]
 
   ];
