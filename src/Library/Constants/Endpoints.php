@@ -8,6 +8,8 @@ abstract class Endpoints
 {
   protected const PAYMENT_FIELD_TOKENS = 'PAYMENT_FIELD_TOKENS';
   protected const TRANSACTION = 'TRANSACTION';
+  protected const AUTHORIZE = 'AUTHORIZE';
+  protected const CAPTURE = 'CAPTURE';
   protected const VAULTED_TRANSACTION = 'VAULTED_TRANSACTION';
   protected const AUTH_TOKEN = 'AUTH_TOKEN';
   protected const REFUND = 'REFUND';
@@ -21,6 +23,14 @@ abstract class Endpoints
     self::TRANSACTION => [
       'method' => 'POST',
       'url' => '/v3/card/sale/pt-protect'
+    ],
+    self::AUTHORIZE => [
+      'method' => 'POST',
+      'url' => '/v3/card/authorize/pt-protect'
+    ],
+    self::CAPTURE => [
+      'method' => 'POST',
+      'url' => '/v3/card/batch/capture'
     ],
     self::AUTH_TOKEN => [
       'method' => 'POST',
@@ -70,6 +80,5 @@ abstract class Endpoints
       'url'    => 'https://api.sandbox.paytrace.com' . $baseUrl . $paramBuilder . $queryString
     ];
   }
-
 
 }

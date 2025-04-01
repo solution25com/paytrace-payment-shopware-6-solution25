@@ -2,7 +2,6 @@
 
 namespace PayTrace\Service;
 
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
@@ -78,33 +77,6 @@ class PayTraceApiService extends Endpoints
     return ['error' => true, 'message' => 'Invalid response received'];
   }
 
-  public function captureRefund(array $body): string|array
-  {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::REFUND);
-
-    $options = [
-      'json' => $body,
-      'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
-      ],
-    ];
-
-    $response = $this->request($fullEndpointUrl, $options);
-
-    if ($response instanceof Response) {
-      $responseBody = $response->getBody()->getContents();
-      $dec = json_decode($responseBody, true);
-
-      if (isset($dec['data'])) {
-        return $dec['data'];
-      }
-
-      return ['error' => 'No data returned from API'];
-    }
-
-    return ['error' => 'Network or request error occurred'];
-  }
 
   public function processPayment(array $data, string $amount): ResponseInterface|array
   {
@@ -133,6 +105,108 @@ class PayTraceApiService extends Endpoints
     }
 
     return ['error' => true, 'message' => 'Invalid response received'];
+  }
+
+  public function processPaymentAuthorize(array $data, string $amount): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'hpf_token' => $data['hpf_token'],
+        'enc_key' => $data['enc_key'],
+        'amount' => $amount,
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+      ]),
+    ];
+
+
+    $response = $this->request($fullEndpointUrl, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
+    }
+
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
+
+  public function processCapture(array $data): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::CAPTURE);
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'batch_items' => [
+          [
+            'transaction_id' => $data['transactionId'],
+            'custom_dba' => 'Capturing :' . $data['amount'] . 'from transaction: ' . $data['transactionId'],
+            'amount' => $data['amount']
+          ]
+        ]
+      ]),
+    ];
+
+    $response = $this->request($fullEndpointUrl, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
+    }
+
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
+
+  public function captureRefund(array $data): string|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::REFUND);
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'batch_items' => [
+          [
+            'transaction_id' => $data['transactionId'],
+            'custom_dba' => 'Refund amount: ' . $data['amount'] . 'from transaction: ' . $data['transactionId'],
+            'amount' => $data['amount']
+          ]
+        ]
+      ]),
+    ];
+
+    $response = $this->request($fullEndpointUrl, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $dec = json_decode($responseBody, true);
+
+      if (isset($dec['data'])) {
+        return $dec['data'];
+      }
+
+      return ['error' => 'No data returned from API'];
+    }
+
+    return ['error' => 'Network or request error occurred'];
   }
 
   public function processVaultedPayment(array $data): ResponseInterface|array
