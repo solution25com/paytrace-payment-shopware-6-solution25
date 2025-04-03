@@ -12,10 +12,10 @@ abstract class Endpoints
   protected const CAPTURE = 'CAPTURE';
   protected const VOID = 'VOID';
   protected const REFUND = 'REFUND';
-
   protected const VAULTED_TRANSACTION = 'VAULTED_TRANSACTION';
   protected const AUTH_TOKEN = 'AUTH_TOKEN';
   protected const ADD_CARD = 'ADD_CUSTOMER_CARD';
+  protected const DELETE_CARD = 'DELETE_CUSTOMER_CARD';
 
   private static array $endpoints = [
     self::PAYMENT_FIELD_TOKENS => [
@@ -53,8 +53,11 @@ abstract class Endpoints
     self::VOID => [
       'method' => 'POST',
       'url' => '/v3/card/batch/void'
+    ],
+    self::DELETE_CARD => [
+      'method' => 'DELETE',
+      'url' => '/v3/customer/'
     ]
-
   ];
 
   protected static function getEndpoint(string $endpoint): array

@@ -81,4 +81,35 @@ class PayTraceSavedCardsController extends StorefrontController
     ]);
   }
 
+  #[Route(path: '/account/payTrace-saved-cards/delete-card/{vaultedCustomerId}', name: 'frontend.account.payTrace-saved-cards-delete-card.page', methods: ['POST'])]
+  public function deleteCard(Request $request, SalesChannelContext $context): Response
+  {
+    $data = json_decode($request->getContent(), true);
+
+    $customerId = $context->getCustomer()?->getId();
+
+    $customerVaultId = $data['cardId'];
+
+    $responseFromMethod = $this->payTraceApiService->deleteVaultedCard($customerVaultId);
+
+    if (isset($responseFromMethod['error']) && $responseFromMethod['error']) {
+      return $this->json([
+        'error' => true,
+        'message' => $responseFromMethod['message'],
+      ]);
+    }
+
+    if (isset($responseFromMethod['message']) && $responseFromMethod['message'] === 'Success') {
+      $this->payTraceCustomerVaultService->delete($context, $customerVaultId);
+    }
+
+    $criteria = new Criteria();
+    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
+    $customerVaultRecords = $this->customerVaultRepository->search($criteria, $context->getContext())->getEntities();
+
+    return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
+      'savedCards' => $customerVaultRecords,
+    ]);
+  }
+
 }

@@ -321,7 +321,47 @@ class PayTraceApiService extends Endpoints
 
     return $this->ApiResponse($response);
   }
+  public function deleteVaultedCard(string $vaultedCustomerId): ResponseInterface | array
+  {
+    $endpointDetails = Endpoints::getUrlDynamicParam(
+      Endpoints::DELETE_CARD,
+      [$vaultedCustomerId],
+    );
 
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+    ];
+
+    $response = $this->request($endpointDetails, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $decodedResponse = json_decode($responseBody, true);
+
+      if (isset($decodedResponse['error']) && $decodedResponse['error']) {
+        return [
+          'error' => true,
+          'message' => $decodedResponse['message'] ?? 'Unknown error',
+        ];
+      }
+
+      return [
+        'error' => false,
+        'message' => 'Success',
+        'data' => $decodedResponse['data'] ?? [],
+      ];
+    }
+
+    return [
+      'error' => true,
+      'message' => 'Invalid response received',
+    ];
+  }
 
   private function buildRequestBody(): array
   {
@@ -332,7 +372,7 @@ class PayTraceApiService extends Endpoints
     ];
   }
 
-  private function ApiResponse(ResponseInterface $response): array
+  private function ApiResponse(ResponseInterface $response): ResponseInterface | array
   {
     $responseBody = $response->getBody()->getContents();
     $decodedResponse = json_decode($responseBody, true);
