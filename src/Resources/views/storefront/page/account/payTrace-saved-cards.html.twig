@@ -1,0 +1,291 @@
+{% extends '@Storefront/storefront/page/account/index.html.twig' %}
+
+{% block page_account_main_content %}
+
+  <div class="payTrace-saved b2b-create-title-text">
+    <input type="hidden" name="parentname" value="payTrace Saved Cards">
+  </div>
+
+  <div class="container">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title text-center mb-4">Add a New Card</h5>
+        <form class="paytrace-form-container">
+          <div class="mb-3">
+            <label for="nameSurname" class="form-label">Name</label>
+            <input type="text" class="form-control" id="nameSurname" name="nameSurname" required />
+          </div>
+
+          <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="streetAddress" class="form-label">Street Address</label>
+              <input type="text" class="form-control" id="streetAddress" name="streetAddress" required />
+            </div>
+
+            <div class="col-12 col-md-6 mb-3">
+              <label for="streetAddress2" class="form-label">Street Address 2 (Optional)</label>
+              <input type="text" class="form-control" id="streetAddress2" name="streetAddress2" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="city" class="form-label">City</label>
+              <input type="text" class="form-control" id="city" name="city" required />
+            </div>
+
+            <div class="col-12 col-md-6 mb-3">
+              <label for="state" class="form-label">State</label>
+              <input type="text" class="form-control" id="state" name="state" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="postalCode" class="form-label">Postal Code</label>
+              <input type="text" class="form-control" id="postalCode" name="postalCode" required />
+            </div>
+
+            <div class="col-12 col-md-6 mb-3">
+              <label for="country" class="form-label">Country</label>
+              <input type="text" class="form-control" id="country" name="country" required />
+            </div>
+          </div>
+
+          <div id="pt_hpf_form"></div>
+
+          <button type="button" id="ProtectForm" class="btn btn-primary w-100 mt-3">Add Card</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if savedCards is not empty %}
+    <div class="container mt-4">
+      <div class="row">
+        {% for card in savedCards %}
+          <div class="col-12 col-sm-6 col-md-6 col-lg-6 mb-3">
+            <div class="saved-card p-3 border rounded-3 shadow-sm hover-card">
+              <div class="card-info">
+                <div class="card-logo">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Visa_Logo.png" alt="Visa" class="card-logo-img">
+                </div>
+                <p class="card-holder-name"><strong>{{ card.cardHolderName }}</strong></p>
+                <p class="card-type">{{ card.cardType }}</p>
+                <p class="vaulted-customer-id">ID: {{ card.vaultedCustomerId }}</p>
+                <div class="card-number">
+                  <span>**** **** **** {{ card.cardNumber|slice(12, 16) }}</span>
+                </div>
+              </div>
+              <button class="btn btn-danger delete-card-btn mt-2" data-card-id="{{ card.vaultedCustomerId }}">Delete</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <p class="text-center mt-4">No saved cards found.</p>
+  {% endif %}
+
+  <style>
+      /* Custom Styles for the Form */
+      .paytrace-form-container {
+          max-width: 600px;
+          margin: 0 auto;
+      }
+
+      /* Card Styles */
+      .saved-card {
+          position: relative;
+          background-color: #fff;
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          height: 280px; /* Set a fixed height to ensure cards fit properly */
+      }
+
+      .saved-card:hover {
+          transform: scale(1.03);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      .saved-card .card-info {
+          text-align: center;
+          padding: 10px;
+      }
+
+      .card-logo {
+          margin-bottom: 10px;
+      }
+
+      .card-logo-img {
+          width: 50px;
+          height: auto;
+      }
+
+      .card-holder-name {
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin-bottom: 5px;
+      }
+
+      .card-type {
+          font-size: 1rem;
+          color: #777;
+          margin-bottom: 10px;
+      }
+
+      .vaulted-customer-id {
+          font-size: 0.9rem;
+          color: #555;
+          margin-bottom: 10px;
+      }
+
+      .card-number {
+          font-size: 1.4rem;
+          font-weight: 600;
+          letter-spacing: 2px;
+          color: #333;
+          margin-bottom: 15px;
+      }
+
+      .btn-danger {
+          background-color: #dc3545;
+          border-color: #dc3545;
+          width: 100%;
+      }
+
+      .btn-danger:hover {
+          background-color: #c82333;
+          border-color: #bd2130;
+      }
+
+      /* Grid Layout for the Cards */
+      .row {
+          display: flex;
+          flex-wrap: wrap;
+      }
+
+      .col-12 {
+          width: 100%;
+      }
+
+      .col-sm-6,
+      .col-md-6,
+      .col-lg-6 {
+          width: 50%; /* This ensures 2 cards per row */
+      }
+
+      .col-md-6 {
+          max-width: 50%;
+      }
+  </style>
+
+
+  <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
+
+  <script>
+      PTPayment.setup({
+          authorization: { clientKey: '{{ paymentToken }}' }
+      }).then(function(instance) {
+          console.log('PayTrace setup complete');
+      }).catch(function(error) {
+          console.error('Error during PayTrace setup:', error);
+      });
+
+      const protectFormButton = document.getElementById('ProtectForm');
+
+      protectFormButton.addEventListener('click', function() {
+          const name = document.getElementById('nameSurname').value;
+          const streetAddress = document.getElementById('streetAddress').value;
+          const streetAddress2 = document.getElementById('streetAddress2').value;
+          const city = document.getElementById('city').value;
+          const state = document.getElementById('state').value;
+          const postalCode = document.getElementById('postalCode').value;
+          const country = document.getElementById('country').value;
+
+
+          PTPayment.process()
+              .then(async function(result) {
+                  if (result.message) {
+                      const requestData = {
+                          cardToken: result.message,
+                          billing_address: {
+                              name: name,
+                              street_address: streetAddress,
+                              ...(streetAddress2 && { street_address2: streetAddress2 }),
+                              city: city,
+                              state: state,
+                              postal_code: postalCode,
+                              country: country,
+                          },
+                      };
+                      console.log('res', result)
+
+                      try {
+                          const response = await fetch('/account/payTrace-saved-cards/add-card', {
+                              method: 'POST',
+                              headers: {
+                                  'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify(requestData),
+                          });
+
+                          const res = await response;
+                          if (res.error) {
+                              console.error('Error from backend:', res.message);
+                          } else {
+                              alert('successfully added card')
+                              location.reload();
+                          }
+                      }
+                      catch (err) {
+                          console.error('Error during fetch request:', err);
+                      }
+                  } else {
+                      console.error('Failed to receive a card token');
+                  }
+              })
+              .catch(function(error) {
+                  console.error('Error during payment processing:', error);
+              });
+      });
+
+      document.querySelectorAll('.delete-card-btn').forEach(button => {
+          button.addEventListener('click', async function(event) {
+              const cardId = event.target.getAttribute('data-card-id');
+              const cardId2 = { cardId:cardId }
+              const confirmed = confirm('Are you sure you want to delete this card?');
+              if (!confirmed) {
+                  return;
+              }
+
+              try {
+                  const response = await fetch(`/account/payTrace-saved-cards/delete-card/{vaultedCustomerId}`, {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(cardId2),
+                  });
+
+                  const res = await response;
+                  if (res.error) {
+                      console.error('Error deleting card:', res.message);
+                      alert('Failed to delete the card');
+                  } else {
+                      console.log('Card deleted successfully');
+                      event.target.closest('.saved-card').remove();
+                      alert('Card deleted successfully');
+                  }
+              } catch (err) {
+                  console.error('Error during fetch request:', err);
+                  alert('An error occurred while deleting the card');
+              }
+          });
+      });
+  </script>
+
+{% endblock %}

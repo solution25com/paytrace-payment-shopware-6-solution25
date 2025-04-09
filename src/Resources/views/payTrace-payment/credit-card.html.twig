@@ -1,0 +1,25 @@
+<template payTrace-payment-credit-card-plugin></template>
+<div id="payTrace_payment" data-payTrace-credit-card="true"
+     data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
+     data-amount="{{ page.extensions.payTrace_payment.amount }}"
+     data-cardsDropdown="{{ page.extensions.payTrace_payment.cardsDropdown }}">
+
+  <form>
+    <div id='pt_hpf_form'></div>
+    <input type="button" id="ProtectForm" value="Pay {{ page.cart.price.totalPrice|currency }}"
+           class="btn btn-primary btn-block w-100">
+  </form>
+
+  <form>
+  <div id="saved-cards-wrapper">
+    <label for="saved-cards">Choose a saved card:</label>
+    <select id="saved-cards" name="saved-cards">
+      <option value="">-- Select a saved card --</option>
+    </select>
+  </div>
+
+  <input type="button" id="SelectCardButton" value="Pay with Saved Card" class="btn btn-secondary btn-block w-100" style="display:none;">
+  </form>
+
+  <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
+</div>

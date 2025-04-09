@@ -1,0 +1,27 @@
+{
+    "name": "pay-trace/pay-trace",
+    "description": "pay-trace/pay-trace",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "MIT",
+    "require": {
+        "shopware/core": "~6.6.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "PayTrace\\PayTrace",
+        "label": {
+            "de-DE": "PayTrace",
+            "en-GB": "PayTrace"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "PayTrace\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PayTrace\\Tests\\": "tests/"
+        }
+    }
+}
