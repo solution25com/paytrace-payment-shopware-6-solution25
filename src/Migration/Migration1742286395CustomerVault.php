@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace PayTrace\Migration;
 
@@ -17,9 +15,9 @@ class Migration1742286395CustomerVault extends MigrationStep
         return 1742286395;
     }
 
-    public function update(Connection $connection): void
-    {
-        $connection->executeStatement('
+  public function update(Connection $connection): void
+  {
+    $connection->executeStatement('
             CREATE TABLE IF NOT EXISTS `payTrace_customer_vault` (
                 `id` BINARY(16) NOT NULL,
                 `customer_id` BINARY(16) NOT NULL,
@@ -30,10 +28,8 @@ class Migration1742286395CustomerVault extends MigrationStep
                 `created_at` DATETIME(3),
                 `updated_at` DATETIME(3) DEFAULT NULL,
                 PRIMARY KEY (`id`),
-                CONSTRAINT `fk.payTrace_customer_vault.customer_id` 
-                FOREIGN KEY (`customer_id`) 
-                REFERENCES `customer` (`id`) ON DELETE CASCADE
+                CONSTRAINT `fk.payTrace_customer_vault.customer_id` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ');
-    }
+  }
 }

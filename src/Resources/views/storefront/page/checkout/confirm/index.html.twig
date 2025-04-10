@@ -15,5 +15,7 @@
 {% endblock %}
 
 {% block page_checkout_confirm_form_submit %}
-        {{ parent() }}
+    {% if page.extensions.payTrace_payment and page.extensions.payTrace_payment.gateway === 'achEcheck' %}
+    {% sw_include page.extensions.payTrace_payment.template %}
+    {% endif %}
 {% endblock %}

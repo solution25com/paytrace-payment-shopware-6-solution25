@@ -15,6 +15,13 @@
             <tag name="shopware.payment.method.sync"/>
         </service>
 
+        <service id="PayTrace\Gateways\AchEcheck">
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
+            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
+            <tag name="shopware.payment.method.sync"/>
+        </service>
+
         <!-- Gateway END  -->
 
 

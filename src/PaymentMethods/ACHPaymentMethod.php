@@ -2,9 +2,9 @@
 
 namespace PayTrace\PaymentMethods;
 
-use PayTrace\Gateways\CreditCard;
+use PayTrace\Gateways\AchEcheck;
 
-class CreditCardPaymentMethod implements PaymentMethodInterface
+class ACHPaymentMethod implements PaymentMethodInterface
 {
 
     /**
@@ -12,7 +12,7 @@ class CreditCardPaymentMethod implements PaymentMethodInterface
      */
     public function getName(): string
     {
-        return 'PayTrace Credit Card';
+        return 'PayTrace ACH (eCheck) Payment';
     }
 
     /**
@@ -20,7 +20,7 @@ class CreditCardPaymentMethod implements PaymentMethodInterface
      */
     public function getDescription(): string
     {
-        return 'PayTrace Credit Card Payment';
+        return 'PayTrace ACH (eCheck) Payment';
     }
 
     /**
@@ -28,6 +28,6 @@ class CreditCardPaymentMethod implements PaymentMethodInterface
      */
     public function getPaymentHandler(): string
     {
-        return CreditCard::class;
+        return AchEcheck::class;
     }
 }
