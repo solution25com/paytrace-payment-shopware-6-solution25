@@ -1,6 +1,6 @@
 import Plugin from 'src/plugin-system/plugin.class';
 
-export default class PayTraceCreditCardPlugin extends Plugin {
+export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     static options = {
         confirmFormId: 'confirmOrderForm',
         parentCreditCardWrapperId: 'payTrace_payment'
@@ -85,7 +85,6 @@ export default class PayTraceCreditCardPlugin extends Plugin {
     _getCardToken() {
         PTPayment.process()
             .then((result) => {
-                console.log('Token received:', result);
                 if (result.message) {
                     this._submitPayment(result.message);
                 } else {
@@ -118,7 +117,6 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('Transaction Successful:', data);
                     document.getElementById('payTrace-transaction-id').value = data.transactionId;
                     document.getElementById('confirmOrderForm').submit();
                 } else {
@@ -131,7 +129,6 @@ export default class PayTraceCreditCardPlugin extends Plugin {
     }
 
     _submitVaultedPayment(selectedCardVaultedId, amount) {
-        console.log('_submitVaultedPayment')
         fetch('/vaulted-capture-paytrace', {
             method: 'POST',
             body: JSON.stringify({ selectedCardVaultedId, amount: amount }),
@@ -140,7 +137,6 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('Transaction Successful:', data);
                     document.getElementById('payTrace-transaction-id').value = data.transactionId;
                     document.getElementById('confirmOrderForm').submit();
                 } else {

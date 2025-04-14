@@ -1,6 +1,6 @@
 import Plugin from 'src/plugin-system/plugin.class';
 
-export default class PayTraceAchECheckPlugin extends Plugin {
+export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     static options = {
         confirmFormId: 'confirmOrderForm',
         parentCreditCardWrapperId: 'payTrace_payment',

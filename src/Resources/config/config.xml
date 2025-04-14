@@ -75,7 +75,7 @@
             <label>Credit card - Authorize and capture</label>
             <helpText>Allow admin to manually authorize and capture payments
                 When enabled, the admin can review and approve payments.All payment will be on hold until the admin approves it</helpText>
-            <default>false</default>
+            <defaultValue>true</defaultValue>
         </input-field>
     </card>
 
