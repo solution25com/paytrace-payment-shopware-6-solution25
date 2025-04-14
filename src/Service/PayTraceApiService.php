@@ -11,152 +11,187 @@ use Psr\Log\LoggerInterface;
 
 class PayTraceApiService extends Endpoints
 {
-    private PayTraceConfigService $payTraceConfigService;
-    private LoggerInterface $logger;
-    private Client $client;
-    private ?string $authToken = null;
-    private ?int $authTokenExpiryTime = null;
+  private PayTraceConfigService $payTraceConfigService;
+  private LoggerInterface $logger;
+  private Client $client;
+  private ?string $authToken = null;
+  private ?int $authTokenExpiryTime = null;
 
-    public function __construct(PayTraceConfigService $payTraceConfigService, LoggerInterface $logger)
-    {
-        $this->payTraceConfigService = $payTraceConfigService;
-        $this->logger = $logger;
-        $this->client = new Client();
+  public function __construct(PayTraceConfigService $payTraceConfigService, LoggerInterface $logger)
+  {
+    $this->payTraceConfigService = $payTraceConfigService;
+    $this->logger = $logger;
+    $this->client = new Client();
+  }
+
+  private function getAuthorizationToken(): string
+  {
+    if ($this->authToken && time() < $this->authTokenExpiryTime) {
+      return $this->authToken;
     }
 
-    private function getAuthorizationToken(): string
-    {
-        if ($this->authToken && time() < $this->authTokenExpiryTime) {
-            return $this->authToken;
-        }
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTH_TOKEN);
+    $body = $this->buildRequestBody();
 
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTH_TOKEN);
-        $body = $this->buildRequestBody();
+    $options = [
+      'form_params' => $body,
+      'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+    ];
 
-        $options = [
-        'form_params' => $body,
-        'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-        ];
+    $res = $this->request($fullEndpointUrl, $options);
 
-        $res = $this->request($fullEndpointUrl, $options);
+    if ($res instanceof Response) {
+      $responseBody = $res->getBody()->getContents();
+      $decodedBody = json_decode($responseBody, true);
 
-        if ($res instanceof Response) {
-            $responseBody = $res->getBody()->getContents();
-            $decodedBody = json_decode($responseBody, true);
+      if (isset($decodedBody['error']) && $decodedBody['error']) {
+        return "Error: " . ($decodedBody['message'] ?? 'Unknown error');
+      }
 
-            if (isset($decodedBody['error']) && $decodedBody['error']) {
-                return "Error: " . ($decodedBody['message'] ?? 'Unknown error');
-            }
+      $this->authToken = $decodedBody['data']['access_token'] ?? 'Unknown error';
+      $this->authTokenExpiryTime = time() + 900;
 
-            $this->authToken = $decodedBody['data']['access_token'] ?? 'Unknown error';
-            $this->authTokenExpiryTime = time() + 900;
-
-            return $this->authToken;
-        }
-
-        return "Error: Invalid response received";
+      return $this->authToken;
     }
 
-    public function generatePaymentToken(): string|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::PAYMENT_FIELD_TOKENS);
+    return "Error: Invalid response received";
+  }
 
-        $options = [
-        'headers' => [
+  public function generatePaymentToken(): string|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::PAYMENT_FIELD_TOKENS);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'Content-Type' => 'application/json',
-        ],
-        ];
+      ],
+    ];
 
-        $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            $dec = json_decode($responseBody, true);
-            return $dec['data']['clientKey'] ?? 'Error: No client key returned';
-        }
-
-        return ['error' => true, 'message' => 'Invalid response received'];
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $dec = json_decode($responseBody, true);
+      return $dec['data']['clientKey'] ?? 'Error: No client key returned';
     }
 
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
 
-    public function processPayment(array $data, string $amount): ResponseInterface|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::TRANSACTION);
 
-        $options = [
-        'headers' => [
+  public function processPayment(array $data, string $amount): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::TRANSACTION);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode([
+      ],
+      'body' => json_encode([
         'hpf_token' => $data['hpf_token'],
         'enc_key' => $data['enc_key'],
         'amount' => $amount,
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
-        ]),
-        ];
+      ]),
+    ];
 
-        $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            return json_decode($responseBody, true);
-        }
-
-        return ['error' => true, 'message' => 'Invalid response received'];
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
     }
 
-    public function processPaymentAuthorize(array $data, string $amount): ResponseInterface|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
 
-        $options = [
-        'headers' => [
+  public function processEcheckDeposit(array $data): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::ACH_DEPOSIT);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'std_entry_class' => $data['stdEntryClass'] ?? 'WEB',
+        'billing_name' => $data['billingName'] ?? '',
+        'bank_account' => [
+          'account_number' => $data['accountNumber'],
+          'routing_number' => $data['routingNumber'],
+          'account_type' => $data['accountType'] ?? 'Checking',
         ],
-        'body' => json_encode([
+        'amount' => $data['amount'],
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+      ]),
+    ];
+
+    $response = $this->request($fullEndpointUrl, $options);
+
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
+    }
+
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
+
+
+  public function processPaymentAuthorize(array $data, string $amount): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
         'hpf_token' => $data['hpf_token'],
         'enc_key' => $data['enc_key'],
         'amount' => $amount,
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
-        ]),
-        ];
+      ]),
+    ];
 
 
-        $start = microtime(true);
-        $response = $this->request($fullEndpointUrl, $options);
-        $end = microtime(true);
-        $executionTime = round($end - $start, 2);
-        $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
+    $start = microtime(true);
+    $response = $this->request($fullEndpointUrl, $options);
+    $end = microtime(true);
+    $executionTime = round($end - $start, 2);
+    $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
 
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            return json_decode($responseBody, true);
-        }
-
-        return ['error' => true, 'message' => 'Invalid response received'];
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
     }
 
-    public function processCapture(array $data): ResponseInterface|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::CAPTURE);
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
 
-        $options = [
-        'headers' => [
+  public function processCapture(array $data): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::CAPTURE);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode([
+      ],
+      'body' => json_encode([
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
         'batch_items' => [
           [
@@ -165,31 +200,31 @@ class PayTraceApiService extends Endpoints
             'amount' => $data['amount']
           ]
         ]
-        ]),
-        ];
+      ]),
+    ];
 
-        $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            return json_decode($responseBody, true);
-        }
-
-        return ['error' => true, 'message' => 'Invalid response received'];
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
     }
 
-    public function captureRefund(array $data): string|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::REFUND);
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
 
-        $options = [
-        'headers' => [
+  public function captureRefund(array $data): string|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::REFUND);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode([
+      ],
+      'body' => json_encode([
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
         'batch_items' => [
           [
@@ -198,37 +233,37 @@ class PayTraceApiService extends Endpoints
             'amount' => $data['amount']
           ]
         ]
-        ]),
-        ];
+      ]),
+    ];
 
-        $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            $dec = json_decode($responseBody, true);
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $dec = json_decode($responseBody, true);
 
-            if (isset($dec['data'])) {
-                return $dec['data'];
-            }
+      if (isset($dec['data'])) {
+        return $dec['data'];
+      }
 
-            return ['error' => 'No data returned from API'];
-        }
-
-        return ['error' => 'Network or request error occurred'];
+      return ['error' => 'No data returned from API'];
     }
 
-    public function voidTransaction(array $data): string|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::VOID);
+    return ['error' => 'Network or request error occurred'];
+  }
 
-        $options = [
-        'headers' => [
+  public function voidTransaction(array $data): string|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::VOID);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode([
+      ],
+      'body' => json_encode([
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
         'batch_items' => [
           [
@@ -236,71 +271,71 @@ class PayTraceApiService extends Endpoints
             'custom_dba' =>  'Void transaction: ' . $data['transactionId'],
           ]
         ]
-        ]),
-        ];
+      ]),
+    ];
 
-        $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            $dec = json_decode($responseBody, true);
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $dec = json_decode($responseBody, true);
 
-            if (isset($dec['data'])) {
-                return $dec['data'];
-            }
+      if (isset($dec['data'])) {
+        return $dec['data'];
+      }
 
-            return ['error' => 'No data returned from API'];
-        }
-
-        return ['error' => 'Network or request error occurred'];
+      return ['error' => 'No data returned from API'];
     }
 
-    public function processVaultedPayment(array $data): ResponseInterface|array
-    {
-        if (empty($data['selectedCardVaultedId'])) {
-            return ['error' => true, 'message' => 'Missing customer ID'];
-        }
+    return ['error' => 'Network or request error occurred'];
+  }
 
-        $endpointDetails = Endpoints::getUrlDynamicParam(
-            Endpoints::VAULTED_TRANSACTION,
-            [$data['selectedCardVaultedId']],
-        );
+  public function processVaultedPayment(array $data): ResponseInterface|array
+  {
+    if (empty($data['selectedCardVaultedId'])) {
+      return ['error' => true, 'message' => 'Missing customer ID'];
+    }
 
-        $options = [
-        'headers' => [
+    $endpointDetails = Endpoints::getUrlDynamicParam(
+      Endpoints::VAULTED_TRANSACTION,
+      [$data['selectedCardVaultedId']],
+    );
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode([
+      ],
+      'body' => json_encode([
         'amount' => $data['amount'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
-        ]),
-        ];
+      ]),
+    ];
 
-        $response = $this->request($endpointDetails, $options);
+    $response = $this->request($endpointDetails, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            return json_decode($responseBody, true);
-        }
-
-        return ['error' => true, 'message' => 'Invalid response received'];
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
     }
 
-    public function createCustomerProfile(array $data): ResponseInterface | array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::ADD_CARD);
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
 
-        $options = [
-        'headers' => [
+  public function createCustomerProfile(array $data): ResponseInterface | array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::ADD_CARD);
+
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode([
+      ],
+      'body' => json_encode([
         'hpf_token' => $data['cardToken']['hpf_token'],
         'enc_key' => $data['cardToken']['enc_key'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
@@ -314,114 +349,114 @@ class PayTraceApiService extends Endpoints
           'country' => $data['billing_address']['country'],
         ],
         'customer_label' => $data['customerId'] . $data['cardCount'],
-        ]),
-        ];
+      ]),
+    ];
 
-        $start = microtime(true);
-        $response = $this->request($fullEndpointUrl, $options);
-        $end = microtime(true);
-        $executionTime = round($end - $start, 2);
-        $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
+    $start = microtime(true);
+    $response = $this->request($fullEndpointUrl, $options);
+    $end = microtime(true);
+    $executionTime = round($end - $start, 2);
+    $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
 
-        return $this->ApiResponse($response);
-    }
-    public function deleteVaultedCard(string $vaultedCustomerId): ResponseInterface | array
-    {
-        $endpointDetails = Endpoints::getUrlDynamicParam(
-            Endpoints::DELETE_CARD,
-            [$vaultedCustomerId],
-        );
+    return $this->ApiResponse($response);
+  }
+  public function deleteVaultedCard(string $vaultedCustomerId): ResponseInterface | array
+  {
+    $endpointDetails = Endpoints::getUrlDynamicParam(
+      Endpoints::DELETE_CARD,
+      [$vaultedCustomerId],
+    );
 
-        $options = [
-        'headers' => [
+    $options = [
+      'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
         'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
-        ],
-        ];
+      ],
+    ];
 
-        $response = $this->request($endpointDetails, $options);
+    $response = $this->request($endpointDetails, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            $decodedResponse = json_decode($responseBody, true);
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      $decodedResponse = json_decode($responseBody, true);
 
-            if (isset($decodedResponse['error']) && $decodedResponse['error']) {
-                return [
-                'error' => true,
-                'message' => $decodedResponse['message'] ?? 'Unknown error',
-                ];
-            }
-
-            return [
-            'error' => false,
-            'message' => 'Success',
-            'data' => $decodedResponse['data'] ?? [],
-            ];
-        }
-
+      if (isset($decodedResponse['error']) && $decodedResponse['error']) {
         return [
-        'error' => true,
-        'message' => 'Invalid response received',
+          'error' => true,
+          'message' => $decodedResponse['message'] ?? 'Unknown error',
         ];
-    }
+      }
 
-    private function buildRequestBody(): array
-    {
-        return [
-        'grant_type' => 'client_credentials',
-        'client_id' => $this->payTraceConfigService->getConfig('clientIdSandbox'),
-        'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox'),
-        ];
-    }
-
-    private function apiResponse(ResponseInterface $response): ResponseInterface | array
-    {
-        $responseBody = $response->getBody()->getContents();
-        $decodedResponse = json_decode($responseBody, true);
-
-        if (isset($decodedResponse['error']) && $decodedResponse['error']) {
-            return [
-            'error' => true,
-            'message' => $decodedResponse['message'] ?? 'Unknown error',
-            ];
-        }
-
-        return [
+      return [
         'error' => false,
         'message' => 'Success',
-        'data' => $decodedResponse['data'],
-        ];
+        'data' => $decodedResponse['data'] ?? [],
+      ];
     }
 
-    private function request(array $endpoint, array $options): ResponseInterface|array
-    {
-        try {
-            ['method' => $method, 'url' => $url] = $endpoint;
-            return $this->client->request($method, $url, $options);
-        } catch (GuzzleException $e) {
-            return $this->handleError($e);
-        }
+    return [
+      'error' => true,
+      'message' => 'Invalid response received',
+    ];
+  }
+
+  private function buildRequestBody(): array
+  {
+    return [
+      'grant_type' => 'client_credentials',
+      'client_id' => $this->payTraceConfigService->getConfig('clientIdSandbox'),
+      'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox'),
+    ];
+  }
+
+  private function ApiResponse(ResponseInterface $response): ResponseInterface | array
+  {
+    $responseBody = $response->getBody()->getContents();
+    $decodedResponse = json_decode($responseBody, true);
+
+    if (isset($decodedResponse['error']) && $decodedResponse['error']) {
+      return [
+        'error' => true,
+        'message' => $decodedResponse['message'] ?? 'Unknown error',
+      ];
     }
 
-    private function handleError(GuzzleException $e): array
-    {
-        $response = $e->hasResponse() ? $e->getResponse() : null;
-        if ($response) {
-            $responseBody = $response->getBody()->getContents();
-            $decodedBody = json_decode($responseBody, true);
-            return [
-            'error' => true,
-            'code' => $e->getCode(),
-            'message' => $decodedBody['message'] ?? $decodedBody,
-            ];
-        }
+    return [
+      'error' => false,
+      'message' => 'Success',
+      'data' => $decodedResponse['data'],
+    ];
+  }
 
-        return [
+  private function request(array $endpoint, array $options): ResponseInterface|array
+  {
+    try {
+      ['method' => $method, 'url' => $url] = $endpoint;
+      return $this->client->request($method, $url, $options);
+    } catch (GuzzleException $e) {
+      return $this->handleError($e);
+    }
+  }
+
+  private function handleError(GuzzleException $e): array
+  {
+    $response = $e->hasResponse() ? $e->getResponse() : null;
+    if ($response) {
+      $responseBody = $response->getBody()->getContents();
+      $decodedBody = json_decode($responseBody, true);
+      return [
         'error' => true,
         'code' => $e->getCode(),
-        'message' => $e->getMessage(),
-        ];
+        'message' => $decodedBody['message'] ?? $decodedBody,
+      ];
     }
+
+    return [
+      'error' => true,
+      'code' => $e->getCode(),
+      'message' => $e->getMessage(),
+    ];
+  }
 }

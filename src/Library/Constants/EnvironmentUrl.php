@@ -6,6 +6,7 @@ namespace PayTrace\Library\Constants;
 
 enum EnvironmentUrl: string
 {
-    case SANDBOX = 'https://api.paytrace.com';
-    case PRODUCTION = 'https://api.sandbox.paytrace.com';
+  CASE SANDBOX = 'https://api.paytrace.com';
+  CASE PRODUCTION = 'https://api.sandbox.paytrace.com';
+
 }

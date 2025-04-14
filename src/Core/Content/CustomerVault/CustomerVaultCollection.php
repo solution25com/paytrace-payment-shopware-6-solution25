@@ -1,9 +1,6 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace PayTrace\Core\Content\CustomerVault;
-
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 /**
@@ -17,8 +14,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
  */
 class CustomerVaultCollection extends EntityCollection
 {
-    protected function getExpectedClass(): string
-    {
-        return CustomerVaultEntity::class;
-    }
+  protected function getExpectedClass(): string
+  {
+    return CustomerVaultEntity::class;
+  }
 }

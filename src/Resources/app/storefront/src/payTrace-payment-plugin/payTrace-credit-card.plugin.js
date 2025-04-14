@@ -6,8 +6,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
         parentCreditCardWrapperId: 'payTrace_payment'
     };
 
-    _registerElements()
-    {
+    _registerElements() {
         this.confirmOrderForm = document.forms[this.options.confirmFormId];
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
         this.clientKey = this.parentCreditCardWrapper.getAttribute('data-client-key');
@@ -15,16 +14,14 @@ export default class PayTraceCreditCardPlugin extends Plugin {
         this.cardsDropdown = this.parentCreditCardWrapper.getAttribute('data-cardsDropdown');
     }
 
-    init()
-    {
+    init() {
         this._registerElements();
         this._populateDropdown();
         this._setupPayTrace();
         this._bindEvents();
     }
 
-    _populateDropdown()
-    {
+    _populateDropdown() {
         const cards = JSON.parse(this.cardsDropdown);
 
         const dropdown = document.getElementById('saved-cards');
@@ -44,8 +41,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
         });
     }
 
-    _setupPayTrace()
-    {
+    _setupPayTrace() {
         PTPayment.setup({
             styles: {},
             authorization: {
@@ -60,8 +56,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             });
     }
 
-    _bindEvents()
-    {
+    _bindEvents() {
         document.getElementById("ProtectForm").addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -87,8 +82,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
     }
 
 
-    _getCardToken()
-    {
+    _getCardToken() {
         PTPayment.process()
             .then((result) => {
                 console.log('Token received:', result);
@@ -103,8 +97,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             });
     }
 
-    _vaultedPayment()
-    {
+    _vaultedPayment() {
         const selectedCardVaultedId = document.getElementById('saved-cards').value;
         const amount = this.amount;
 
@@ -116,8 +109,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
         this._submitVaultedPayment(selectedCardVaultedId, amount);
     }
 
-    _submitPayment(token)
-    {
+    _submitPayment(token) {
         fetch('/capture-paytrace', {
             method: 'POST',
             body: JSON.stringify({ token: token, amount: this.amount }),
@@ -138,8 +130,7 @@ export default class PayTraceCreditCardPlugin extends Plugin {
             });
     }
 
-    _submitVaultedPayment(selectedCardVaultedId, amount)
-    {
+    _submitVaultedPayment(selectedCardVaultedId, amount) {
         console.log('_submitVaultedPayment')
         fetch('/vaulted-capture-paytrace', {
             method: 'POST',

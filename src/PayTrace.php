@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace PayTrace;
 
@@ -21,38 +19,39 @@ class PayTrace extends Plugin
 {
     public function install(InstallContext $installContext): void
     {
-        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-            $this->addPaymentMethod(new $paymentMethod(), $installContext->getContext());
-        }
+      foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+        $this->addPaymentMethod(new $paymentMethod(), $installContext->getContext());
+      }
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
     {
-        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-            $this->setPaymentMethodIsActive(false, $uninstallContext->getContext(), new $paymentMethod());
-        }
+      foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+        $this->setPaymentMethodIsActive(false, $uninstallContext->getContext(), new $paymentMethod());
+      }
 
-        if ($uninstallContext->keepUserData()) {
-            return;
-        }
+      if ($uninstallContext->keepUserData()) {
+        return;
+      }
 
-        parent::uninstall($uninstallContext);
+      parent::uninstall($uninstallContext);
+
     }
 
     public function activate(ActivateContext $activateContext): void
     {
-        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-            $this->setPaymentMethodIsActive(true, $activateContext->getContext(), new $paymentMethod());
-        }
-        parent::activate($activateContext);
+      foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+        $this->setPaymentMethodIsActive(true, $activateContext->getContext(), new $paymentMethod());
+      }
+      parent::activate($activateContext);
     }
 
     public function deactivate(DeactivateContext $deactivateContext): void
     {
-        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-            $this->setPaymentMethodIsActive(false, $deactivateContext->getContext(), new $paymentMethod());
-        }
-        parent::deactivate($deactivateContext);
+      foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+        $this->setPaymentMethodIsActive(false, $deactivateContext->getContext(), new $paymentMethod());
+      }
+      parent::deactivate($deactivateContext);
     }
 
     public function update(UpdateContext $updateContext): void
@@ -67,85 +66,82 @@ class PayTrace extends Plugin
     {
     }
 
-    private function addPaymentMethod(PaymentMethodInterface $paymentMethod, Context $context): void
-    {
+  private function addPaymentMethod(PaymentMethodInterface $paymentMethod, Context $context): void
+  {
 
-        $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler());
+    $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler());
 
-        $pluginIdProvider = $this->getDependency(PluginIdProvider::class);
-        $pluginId = $pluginIdProvider->getPluginIdByBaseClass(get_class($this), $context);
+    $pluginIdProvider = $this->getDependency(PluginIdProvider::class);
+    $pluginId = $pluginIdProvider->getPluginIdByBaseClass(get_class($this), $context);
 
-        if ($paymentMethodId) {
-            $this->setPluginId($paymentMethodId, $pluginId, $context);
-            return;
-        }
-
-        $pluginIdProvider = $this->container->get(PluginIdProvider::class);
-        $pluginId = $pluginIdProvider->getPluginIdByBaseClass(get_class($this), $context);
-
-        $paymentData = [
-        'handlerIdentifier' => $paymentMethod->getPaymentHandler(),
-        'name' => $paymentMethod->getName(),
-        'description' => $paymentMethod->getDescription(),
-        'pluginId' => $pluginId,
-        'afterOrderEnabled' => true
-        ];
-
-        $paymentRepository = $this->getDependency('payment_method.repository');
-        $paymentRepository->create([$paymentData], $context);
+    if ($paymentMethodId) {
+      $this->setPluginId($paymentMethodId, $pluginId, $context);
+      return;
     }
 
-    private function setPluginId(string $paymentMethodId, string $pluginId, Context $context): void
-    {
-        $paymentRepository = $this->getDependency('payment_method.repository');
-        $paymentMethodData = [
-        'id' => $paymentMethodId,
-        'pluginId' => $pluginId,
-        ];
+    $pluginIdProvider = $this->container->get(PluginIdProvider::class);
+    $pluginId = $pluginIdProvider->getPluginIdByBaseClass(get_class($this), $context);
 
-        $paymentRepository->update([$paymentMethodData], $context);
+    $paymentData = [
+      'handlerIdentifier' => $paymentMethod->getPaymentHandler(),
+      'name' => $paymentMethod->getName(),
+      'description' => $paymentMethod->getDescription(),
+      'pluginId' => $pluginId,
+      'afterOrderEnabled' => true
+    ];
+
+    $paymentRepository = $this->getDependency('payment_method.repository');
+    $paymentRepository->create([$paymentData], $context);
+  }
+
+  private function setPluginId(string $paymentMethodId, string $pluginId, Context $context): void
+  {
+    $paymentRepository = $this->getDependency('payment_method.repository');
+    $paymentMethodData = [
+      'id' => $paymentMethodId,
+      'pluginId' => $pluginId,
+    ];
+
+    $paymentRepository->update([$paymentMethodData], $context);
+  }
+
+  private function setPaymentMethodIsActive(bool $active, Context $context, PaymentMethodInterface $paymentMethod): void
+  {
+
+    $paymentRepository = $this->getDependency('payment_method.repository');
+    $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler());
+
+    if (!$paymentMethodId) {
+      return;
     }
 
-    private function setPaymentMethodIsActive(
-        bool $active,
-        Context $context,
-        PaymentMethodInterface $paymentMethod
-    ): void {
+    $paymentMethodData = [
+      'id' => $paymentMethodId,
+      'active' => $active,
+    ];
 
-        $paymentRepository = $this->getDependency('payment_method.repository');
-        $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler());
+    $paymentRepository->update([$paymentMethodData], $context);
+  }
 
-        if (!$paymentMethodId) {
-            return;
-        }
+  private function getPaymentMethodId(string $paymentMethodHandler): ?string
+  {
+    $paymentRepository = $this->getDependency('payment_method.repository');
+    $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter(
+      'handlerIdentifier',
+      $paymentMethodHandler
+    ));
 
-        $paymentMethodData = [
-        'id' => $paymentMethodId,
-        'active' => $active,
-        ];
+    $paymentIds = $paymentRepository->searchIds($paymentCriteria, Context::createDefaultContext());
 
-        $paymentRepository->update([$paymentMethodData], $context);
+    if ($paymentIds->getTotal() === 0) {
+      return null;
     }
 
-    private function getPaymentMethodId(string $paymentMethodHandler): ?string
-    {
-        $paymentRepository = $this->getDependency('payment_method.repository');
-        $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter(
-            'handlerIdentifier',
-            $paymentMethodHandler
-        ));
+    return $paymentIds->getIds()[0];
+  }
 
-        $paymentIds = $paymentRepository->searchIds($paymentCriteria, Context::createDefaultContext());
-
-        if ($paymentIds->getTotal() === 0) {
-            return null;
-        }
-
-        return $paymentIds->getIds()[0];
-    }
-
-    public function getDependency($name): mixed
-    {
-        return $this->container->get($name);
-    }
+  public function getDependency($name): mixed
+  {
+    return $this->container->get($name);
+  }
 }
