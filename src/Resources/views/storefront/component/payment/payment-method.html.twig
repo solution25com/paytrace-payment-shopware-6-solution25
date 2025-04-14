@@ -62,7 +62,7 @@
           {% if payment.name == 'PayTrace Credit Card' and context.paymentMethod.name == 'PayTrace Credit Card' %}
             {% sw_include page.extensions.payTrace_payment.template %}
           {% endif %}
-            {% if payment.name == 'PayTrace ACH ' and context.paymentMethod.name == 'PayTrace Credit Card' %}
+            {% if payment.name == 'PayTrace ACH (eCheck) Payment' and context.paymentMethod.name == 'PayTrace ACH (eCheck) Payment' %}
                 {% sw_include page.extensions.payTrace_payment.template %}
             {% endif %}
 

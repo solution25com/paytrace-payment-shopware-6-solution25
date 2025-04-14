@@ -16,6 +16,7 @@ abstract class Endpoints
   protected const AUTH_TOKEN = 'AUTH_TOKEN';
   protected const ADD_CARD = 'ADD_CUSTOMER_CARD';
   protected const DELETE_CARD = 'DELETE_CUSTOMER_CARD';
+protected const ACH_DEPOSIT = 'ACH_DEPOSIT';
 
   private static array $endpoints = [
     self::PAYMENT_FIELD_TOKENS => [
@@ -57,7 +58,11 @@ abstract class Endpoints
     self::DELETE_CARD => [
       'method' => 'DELETE',
       'url' => '/v3/customer/'
-    ]
+    ],
+      self::ACH_DEPOSIT => [
+          'method' => 'POST',
+      'url' => '/v3/checks/payment'
+]
   ];
 
   protected static function getEndpoint(string $endpoint): array

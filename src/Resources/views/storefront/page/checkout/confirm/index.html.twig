@@ -1,5 +1,4 @@
 {% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
-
 {% block page_checkout_confirm_tos_control_checkbox %}
     {{ parent() }}
 
@@ -15,7 +14,5 @@
 {% endblock %}
 
 {% block page_checkout_confirm_form_submit %}
-    {% if page.extensions.payTrace_payment and page.extensions.payTrace_payment.gateway === 'achEcheck' %}
-    {% sw_include page.extensions.payTrace_payment.template %}
-    {% endif %}
+        {{ parent() }}
 {% endblock %}

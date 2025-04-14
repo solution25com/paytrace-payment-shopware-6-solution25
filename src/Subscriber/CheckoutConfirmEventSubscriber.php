@@ -61,15 +61,10 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
     }
       if ($selectedPaymentGateway->getHandlerIdentifier() == AchEcheck::class) {
 
-          $customerId = $salesChannelContext->getCustomer()->getId();
-         // $cardsDropdown = $this->payTraceCustomerVaultService->dropdownCards($salesChannelContext,$customerId);
-
           $templateVariables->assign([
               'template' => '@Storefront/payTrace-payment/ach-eCheck.html.twig',
-              'isGuest' => $isGuest,
               'gateway' => 'achEcheck',
               'amount' => $amount,
-              'clientKey' => $clientKey,
           ]);
 
           $pageObject->addExtension(

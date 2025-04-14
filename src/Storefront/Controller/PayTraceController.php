@@ -37,6 +37,30 @@ class PayTraceController extends StorefrontController
   }
 
 
+    #[Route(path: '/process-echeck-deposit', name: 'frontend.payTrace.process-echeck-deposit', methods: ['POST'])]
+    public function processEcheckDeposit(Request $request, SalesChannelContext $context): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data)) {
+            return $this->createJsonResponse(false, 'Missing data.', JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $paymentResponse = $this->payTraceApiService->processEcheckDeposit($data);
+
+            return $this->handlePaymentResponse($paymentResponse);
+        } catch (\Exception $e) {
+            $this->logger->error('Vaulted payment processing failed: ' . $e->getMessage());
+            return $this->createJsonResponse(
+                false,
+                'Payment processing failed due to an internal error.',
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+
   #[Route(path: '/capture-paytrace', name: 'frontend.payTrace.capture', methods: ['POST'])]
   public function capture(Request $request, SalesChannelContext $context): JsonResponse
   {
@@ -102,6 +126,7 @@ class PayTraceController extends StorefrontController
       JsonResponse::HTTP_BAD_REQUEST
     );
   }
+
 
   private function createJsonResponse(bool $success, string $message, int $statusCode, array $data = []): JsonResponse
   {

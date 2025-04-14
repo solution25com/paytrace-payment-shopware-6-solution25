@@ -1,4 +1,64 @@
-<template payTrace-payment-credit-card-plugin></template>
+<template payTrace-payment-ach-echeck-plugin></template>
 
-<h1>edaaaa</h1>
+<div id="payTrace_payment"
+     data-payTrace-ach-echeck="true"
+     data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
+     data-amount="{{ page.extensions.payTrace_payment.amount }}">
+
+    <form id="ach-form">
+        <div id="ach-data">
+            <input type="text" id="ach-full-name" name="achFullName" placeholder="Full Name" required><br>
+            <input type="text" class="form-control pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="Routing Number" required><br>
+            <input type="text" class="form-control pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="Account Number" required><br>
+        </div>
+
+        <input type="button" id="submit-ach-payment" value="Pay {{ page.cart.price.totalPrice|currency }}"
+               class="btn btn-primary btn-block w-100">
+    </form>
+
+    <script src="https://api.sandbox.paytrace.com/v3/assets/js/e2ee/paytrace-e2ee.js"></script>
 </div>
+
+
+<style>
+    #payTrace_payment {
+        max-width: 400px;
+        margin: 30px auto;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #ach-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    #ach-full-name {
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom:20px
+    }
+
+    #submit-ach-payment {
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #submit-ach-payment:hover {
+        background-color: #0056b3;
+    }
+</style>

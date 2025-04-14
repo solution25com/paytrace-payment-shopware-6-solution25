@@ -110,36 +110,40 @@ class PayTraceApiService extends Endpoints
     return ['error' => true, 'message' => 'Invalid response received'];
   }
 
-    public function processEcheckDeposit(array $data, string $amount): ResponseInterface|array
-    {
-        $fullEndpointUrl = Endpoints::getUrl(Endpoints::TRANSACTION);
+  public function processEcheckDeposit(array $data): ResponseInterface|array
+  {
+    $fullEndpointUrl = Endpoints::getUrl(Endpoints::ACH_DEPOSIT);
 
-        $options = [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-                'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
-                'X-Permalinks' => true,
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode([
-                'is_aof' => $data['is_aof'],
-                'idempotency_key'=> 'todo',
-                'std_entry_class' => $data['std_entry_class'],
-                'bank_account' => $data['bank_account'],
-                'amount' => $amount,
-                'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
-            ]),
-        ];
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode([
+        'std_entry_class' => $data['stdEntryClass'] ?? 'WEB',
+        'billing_name' => $data['billingName'] ?? '',
+        'bank_account' => [
+          'account_number' => $data['accountNumber'],
+          'routing_number' => $data['routingNumber'],
+          'account_type' => $data['accountType'] ?? 'Checking',
+        ],
+        'amount' => $data['amount'],
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+      ]),
+    ];
 
-        $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);
 
-        if ($response instanceof Response) {
-            $responseBody = $response->getBody()->getContents();
-            return json_decode($responseBody, true);
-        }
-
-        return ['error' => true, 'message' => 'Invalid response received'];
+    if ($response instanceof Response) {
+      $responseBody = $response->getBody()->getContents();
+      return json_decode($responseBody, true);
     }
+
+    return ['error' => true, 'message' => 'Invalid response received'];
+  }
+
 
   public function processPaymentAuthorize(array $data, string $amount): ResponseInterface|array
   {
