@@ -30,7 +30,7 @@ jobs:
           tools: composer:v2
 
       - name: Allow Symfony Runtime Plugin
-        run: composer config --no-plugins allow-plugins.symfony/runtime tru
+        run: composer config --no-plugins allow-plugins.symfony/runtime true
         
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist
