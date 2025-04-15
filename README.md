@@ -1,48 +1,123 @@
-# Paytrace Payment - Shopware 6 Plugin - Coming Soon
+![paytrace](https://github.com/user-attachments/assets/58d1ee9f-560d-43cf-8b47-c7692034a335)
+# PayTrace Payment for Shopware 6
 
-## ✨ Coming Soon - Shopware 6 Plugin
-Integrate **PayTrace** with Shopware for **secure** and **efficient** credit card and ACH payments. This plugin provides **tokenization, fraud protection**, and a **seamless checkout experience** to boost conversions.  
+## Introduction
 
-## 🚀 Why Choose PayTrace?  
-✔ **Fast & Secure Payments** – Accept Visa, MasterCard, AMEX, Discover, and ACH transactions.  
-✔ **Tokenization** – Store cards securely for fast repeat purchases.  
-✔ **Advanced Fraud Protection** – PCI DSS compliant to ensure transaction safety.  
-✔ **Multi-Currency Support** – Expand your business globally.  
-✔ **User-Friendly Admin Panel** – Manage payments, refunds, and settings with ease.  
+The **PayTrace Payment Plugin** enables secure and efficient credit card and ACH transactions directly within your Shopware 6 store. With advanced tokenization, fraud protection, and full admin control, PayTrace helps you boost conversions and process payments with confidence.
 
-### 📌 Features  
-✔ **Secure Payment Processing** – Process credit card and ACH payments via PayTrace.  
-✔ **Supports One-Time & Saved-Card Transactions** – Offer quick repeat purchases with stored cards.  
-✔ **Tokenization** – Encrypts and stores payment details securely.  
-✔ **Customizable Payment Settings** – Configure PayTrace settings in Shopware’s admin panel.  
-✔ **Fraud Protection** – Minimize risks with advanced security tools.  
-✔ **PCI DSS Compliance** – Meets industry standards for data protection.  
-✔ **Easy API Key Authentication** – Quick setup with PayTrace API.  
-✔ **Detailed Transaction History** – View payments, refunds, and void transactions in Shopware.  
-✔ **Multi-Currency Support** – Accept payments globally.  
-✔ **Optimized for Mobile & Desktop** – Seamless checkout experience on all devices.  
-✔ **Fast Approvals & Minimal Processing Delays** – Speed up payment confirmations.  
-✔ **Shopware 6 Compatibility** – Fully integrated with the latest Shopware version.  
-✔ **Dedicated Support & Updates** – Regular improvements for smooth operation.  
+This plugin supports one-time and saved-card transactions, integrates directly into the checkout, and provides merchants with detailed transaction visibility and management.
 
-## 🎉 Stay Updated
-Follow us for updates and more information:
-- [Website](https://www.solution25.com)
-- [GitHub Repository](https://github.com/orgs/solution25com/dashboard)
-- **Support & Contact:**  
-  - **Email:** [info@solution25.com](mailto:info@solution25.com)  
-  - **Phone:** +49 421 438 1919-0  
+---
 
-## 🛠 Installation (Available after release on May 1, 2025)
-Once the plugin is released, you can install it using the following command:
+##  Key Features
 
+###  Secure Payment Processing
+- Accept **Visa**, **MasterCard**, **AMEX**, **Discover**, and **ACH** transactions.
+
+###  Tokenization
+- Securely stores customer payment information for faster future checkouts.
+
+###  Saved Cards
+- Enable customers to reuse previously saved cards for quick repeat purchases.
+
+###  Admin Panel Integration
+- Configure API credentials, transaction settings, and view payment logs within the Shopware admin.
+
+###  Full Transaction Lifecycle
+- Support for **payments**, **refunds**, and **voids**, with logs available in order details.
+
+###  Multi-Currency Support
+- Accept payments in various currencies for international reach.
+
+###  PCI DSS Compliance
+- Meets strict security standards for payment processing and customer data.
+
+###  Flexible Configuration
+- Choose between sandbox or live PayTrace environments. Enable/disable specific payment types per Sales Channel.
+
+###  Mobile & Desktop Optimized
+- Responsive and smooth checkout experience across all devices.
+
+###  Real-Time Status Updates
+- Payment status automatically reflected in Shopware orders.
+
+---
+
+##  Get Started
+
+### Installation & Activation
+
+#### GitHub
+
+1. Clone the plugin into your Shopware plugins directory:
 ```bash
-bin/console plugin:install --activate PluginName
+git clone https://github.com/solution25com/paytrace-payment-shopware-6-solution25.git
 ```
-Step-by-step installation instructions will be available upon release.  
+2. **Install the Plugin in Shopware 6**
 
-## 🚀 Developers & Contributions
-If you want to contribute to the development, feel free to fork the repository and submit pull requests.
+- Log in to your Shopware 6 Administration panel.
+- Navigate to Extensions > My Extensions.
+- Locate the newly cloned plugin and click Install.
 
-Thank you for your interest! 🙌
+3. **Activate the Plugin**
+
+- After installation, click Activate to enable the plugin.
+- In your Shopware Admin, go to Settings > System > Plugins.
+- Upload or install the “PayTrace” plugin.
+- Once installed, toggle the plugin to activate it.
+
+4. **Verify Installation**
+
+- After activation, you will see MaxMind in the list of installed plugins.
+- The plugin name, version, and installation date should appear.
+
+## Plugin Configuration
+
+After installing the plugin, you can configure your **PayTrace** credentials and options through the Shopware Administration panel.
+
+### Accessing the Configuration
+
+1. Go to **Settings > Extensions > PayTrace**
+2. Select the **Sales Channel** you want to configure
+3. Set the following fields:
+
+### General Settings
+
+![Screenshot from 2025-04-15 15-38-50](https://github.com/user-attachments/assets/3ba2ecce-6644-4350-8896-66c5ce219f7b)
+
+### API Credentials
+
+#### Production
+
+![Screenshot from 2025-04-15 15-39-44](https://github.com/user-attachments/assets/84fa1fb5-d739-4908-9416-7261051ddabb)
+- Your PayTrace production client ID
+- Your PayTrace production client secret
+
+
+#### Sandbox
+
+![Screenshot from 2025-04-15 15-39-59](https://github.com/user-attachments/assets/ece709fc-3f35-4d47-b60a-f92ae0fc2ebb)
+- Your PayTrace sandbox client ID
+- Your PayTrace sandbox client secret
+
+### Additional Settings
+
+![Screenshot from 2025-04-15 15-40-59](https://github.com/user-attachments/assets/386cb784-efa0-4d44-bce0-c21eec62aba0)
+
+- If enabled, payments are captured immediately after authorization (applies to credit card transactions)
+
+
+
+## Checkout Experience
+
+The plugin integrates seamlessly into the Shopware 6 checkout, offering a smooth and intuitive payment process. Customers can choose between **Credit Card** and **ACH (eCheck)** payment methods provided by NMI, directly on the checkout page.
+
+### ACH (eCheck) Payment
+
+<img width="1330" alt="image" src="https://github.com/user-attachments/assets/2f302c33-c8ae-4066-a940-4f54984137db" />
+
+- Customers simply enter their **Full Name**, **Routing Number**, and **Account Number**.
+- The interface automatically updates the payment amount on the button.
+- Fully responsive and styled to match modern checkout flows.
+
 
