@@ -68,7 +68,7 @@ git clone https://github.com/solution25com/paytrace-payment-shopware-6-solution2
 
 4. **Verify Installation**
 
-- After activation, you will see MaxMind in the list of installed plugins.
+- After activation, you will see PayTrace in the list of installed plugins.
 - The plugin name, version, and installation date should appear.
 
 ## Plugin Configuration
@@ -119,5 +119,25 @@ The plugin integrates seamlessly into the Shopware 6 checkout, offering a smooth
 - Customers simply enter their **Full Name**, **Routing Number**, and **Account Number**.
 - The interface automatically updates the payment amount on the button.
 - Fully responsive and styled to match modern checkout flows.
+
+## Add a New Card
+
+The plugin supports storing and managing saved credit cards for faster and more convenient checkouts.
+
+### Accessing the Saved Cards
+
+Users can manage their saved payment methods through their **Account Dashboard** by navigating to:
+
+`PayTrace Saved Cards`
+
+### Adding a New Card
+
+Click **"PayTrace Saved Cards"** to open the card form. You will be prompted to enter:
+
+<img width="1466" alt="image(3)" src="https://github.com/user-attachments/assets/93f7a38b-f6dc-482e-8dc1-772e6b29a171" />
+
+
+<img width="1469" alt="image(2)" src="https://github.com/user-attachments/assets/760c3a0c-a4ee-424b-bb0e-c390e4486d28" />
+
 
 
