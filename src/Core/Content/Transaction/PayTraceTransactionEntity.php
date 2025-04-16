@@ -8,24 +8,12 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
 class PayTraceTransactionEntity extends Entity
 {
   use EntityIdTrait;
+  protected ?string $orderId;
+  protected ?string $paymentMethodName;
+  protected ?string $transactionId;
+  protected ?string $status;
 
-  protected $id;
-  protected string $orderId;
-  protected string $paymentMethodName;
-  protected string $transactionId;
-  protected string $status;
-
-  public function getId(): string
-  {
-    return $this->id;
-  }
-
-  public function setId(string $id): void
-  {
-    $this->id = $id;
-  }
-
-  public function getOrderId(): string
+  public function getOrderId(): ?string
   {
     return $this->orderId;
   }
@@ -35,7 +23,7 @@ class PayTraceTransactionEntity extends Entity
     $this->orderId = $orderId;
   }
 
-  public function getPaymentMethodName(): string
+  public function getPaymentMethodName(): ?string
   {
     return $this->paymentMethodName;
   }
@@ -45,7 +33,7 @@ class PayTraceTransactionEntity extends Entity
     $this->paymentMethodName = $paymentMethodName;
   }
 
-  public function getTransactionId(): string
+  public function getTransactionId(): ?string
   {
     return $this->transactionId;
   }
@@ -55,7 +43,7 @@ class PayTraceTransactionEntity extends Entity
     $this->transactionId = $transactionId;
   }
 
-  public function getStatus(): string
+  public function getStatus(): ?string
   {
     return $this->status;
   }

@@ -17,6 +17,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         this.confirmOrderForm = document.forms[this.options.confirmFormId];
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
+        this.errorEl = document.getElementById('error-message');
     }
 
     _loadPayTraceKey() {
@@ -31,7 +32,6 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         });
     }
 
-
     _getEncryptedTokens() {
         paytrace.setKeyAjax(this.options.publicKeyUrl);
 
@@ -41,7 +41,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
 
         if (!routingField || !accountField) {
             console.error('Input fields not found!');
-            alert('Form fields missing!');
+            this._showError('Form fields are missing.');
             return;
         }
 
@@ -49,8 +49,6 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         const encryptedAccount = paytrace.encryptValue(accountField.value);
 
         this._submitPayment(encryptedRouting, encryptedAccount, billingName);
-
-
     }
 
     _submitPayment(encryptedRouting, encryptedAccount, billingName) {
@@ -70,19 +68,33 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             .then(data => {
                 if (data.success) {
                     console.log('Transaction Successful:', data);
+                    this._hideError();
 
                     if (this.confirmOrderForm) {
                         this.confirmOrderForm.submit();
                     }
                 } else {
                     console.error('Payment failed:', data.message || 'Unknown error');
-                    alert('Payment failed: ' + (data.message || 'Unknown error'));
+                    this._showError(data.message || 'Payment failed.');
                 }
             })
             .catch(error => {
                 console.error('Payment submission failed:', error);
-                alert('An error occurred while submitting the payment.');
+                this._showError('An unexpected error occurred while submitting the payment.');
             });
     }
 
+    _showError(message) {
+        if (this.errorEl) {
+            this.errorEl.innerHTML = message;
+            this.errorEl.classList.remove('d-none');
+        }
+    }
+
+    _hideError() {
+        if (this.errorEl) {
+            this.errorEl.innerHTML = '';
+            this.errorEl.classList.add('d-none');
+        }
+    }
 }

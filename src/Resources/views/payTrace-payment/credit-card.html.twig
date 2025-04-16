@@ -4,6 +4,10 @@
      data-amount="{{ page.extensions.payTrace_payment.amount }}"
      data-cardsDropdown="{{ page.extensions.payTrace_payment.cardsDropdown }}">
 
+  <div>
+    <span class="error-message alert-danger d-none" id="error-message" role="alert"></span>
+  </div>
+  
   <form>
     <div id='pt_hpf_form'></div>
     <input type="button" id="ProtectForm" value="Pay {{ page.cart.price.totalPrice|currency }}"
@@ -11,15 +15,32 @@
   </form>
 
   <form>
-  <div id="saved-cards-wrapper">
-    <label for="saved-cards">Choose a saved card:</label>
-    <select id="saved-cards" name="saved-cards">
-      <option value="">-- Select a saved card --</option>
-    </select>
+    <div id="saved-cards-wrapper">
+      <label for="saved-cards">Choose a saved card:</label>
+      <select id="saved-cards" name="saved-cards">
+        <option value="">-- Select a saved card --</option>
+      </select>
   </div>
 
-  <input type="button" id="SelectCardButton" value="Pay with Saved Card" class="btn btn-secondary btn-block w-100" style="display:none;">
+    <input type="button" id="SelectCardButton" value="Pay with Saved Card" class="btn btn-secondary btn-block w-100" style="display:none;">
   </form>
 
   <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
 </div>
+
+<style>
+    .error-message {
+        padding: 15px 15px;
+        margin-bottom: 15px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #842029;
+        border-color: #f5c2c7;
+    }
+</style>
