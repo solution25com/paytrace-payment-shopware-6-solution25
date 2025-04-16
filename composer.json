@@ -1,17 +1,36 @@
 {
-    "name": "pay-trace/pay-trace",
-    "description": "pay-trace/pay-trace",
+    "name": "solution25/pay-trace",
+    "description": "Paytrace Payment - Shopware 6 Plugin",
     "type": "shopware-platform-plugin",
     "version": "1.0.0",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "solution25",
+            "email": "info@solution25.com",
+            "homepage": "https://solution25.com/"
+        }
+    ],
     "require": {
         "shopware/core": "~6.6.0"
     },
     "extra": {
         "shopware-plugin-class": "PayTrace\\PayTrace",
         "label": {
-            "de-DE": "PayTrace",
-            "en-GB": "PayTrace"
+            "de-DE": "PayTrace Zahlung",
+            "en-GB": "PayTrace Payment"
+        },
+        "description": {
+            "de-DE": "PayTrace Zahlungsanbieter Plugin für Shopware",
+            "en-GB": "PayTrace payment provider plugin for Shopware"
+        },
+        "manufacturerLink": {
+            "de-DE": "https://solution25.com/",
+            "en-GB": "https://solution25.com/en/home_en/"
+        },
+        "supportLink": {
+            "de-DE": "https://solution25.com/",
+            "en-GB": "https://solution25.com/en/home_en/"
         }
     },
     "autoload": {
