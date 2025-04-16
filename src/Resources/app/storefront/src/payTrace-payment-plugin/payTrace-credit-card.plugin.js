@@ -1,6 +1,6 @@
-import Plugin from 'src/plugin-system/plugin.class';
+import PluginBaseClass from 'src/plugin-system/plugin.class';
 
-export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
+export default class PayTraceCreditCardPlugin extends PluginBaseClass {
     static options = {
         confirmFormId: 'confirmOrderForm',
         parentCreditCardWrapperId: 'payTrace_payment'
