@@ -6,6 +6,7 @@
      data-amount="{{ page.extensions.payTrace_payment.amount }}">
 
     <form id="ach-form">
+        <span class="error-message alert-danger d-none" id="error-message" role="alert"></span>
         <div id="ach-data">
             <input type="text" id="ach-full-name" name="achFullName" placeholder="Full Name" required><br>
             <input type="text" class="form-control pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="Routing Number" required><br>
@@ -57,6 +58,22 @@
         cursor: pointer;
         transition: background-color 0.3s ease;
     }
+
+    .error-message {
+        padding: 12px 20px;
+        margin-bottom: 15px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #842029;
+        border-color: #f5c2c7;
+    }
+
 
     #submit-ach-payment:hover {
         background-color: #0056b3;

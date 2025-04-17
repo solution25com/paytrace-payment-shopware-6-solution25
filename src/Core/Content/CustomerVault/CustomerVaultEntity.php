@@ -2,32 +2,24 @@
 
 namespace PayTrace\Core\Content\CustomerVault;
 
+use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCustomFieldsTrait;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
 
 class CustomerVaultEntity extends Entity
 {
   use EntityIdTrait;
 
-  protected $id;
-
   protected ?String $customerId;
 
-  protected  $vaultedCustomerId;
+  protected  ?String $vaultedCustomerId;
 
-  protected  $cardType;
-  protected $cardHolderName;
-  protected $customerLabel;
+  protected ?String $cardType;
+  protected ?String $cardHolderName;
+  protected ?String $customerLabel;
+  protected ?CustomerEntity $customer = null;
 
-
-  public function getId(): string
-  {
-    return $this->id;
-  }
-
-  public function setId(string $id): void{
-    $this->id = $id;
-  }
 
   public function getCustomerId(): ?String{
     return $this->customerId;
@@ -37,7 +29,7 @@ class CustomerVaultEntity extends Entity
     $this->customerId = $customerId;
   }
 
-  public function getVaultedCustomerId(){
+  public function getVaultedCustomerId(): ?string{
     return $this->vaultedCustomerId;
   }
 
@@ -45,25 +37,35 @@ class CustomerVaultEntity extends Entity
     $this->vaultedCustomerId = $vaultedCustomerId;
   }
 
-  public function getCardType(){
+  public function getCardType(): ?string{
     return $this->cardType;
   }
   public function setCardType(string $cardType): void{
     $this->cardType = $cardType;
   }
 
-  public function getCustomerLabel(){
+  public function getCustomerLabel(): ?string{
     return $this->customerLabel;
   }
 
   public function setCustomerLabel(string $customerLabel): void{
     $this->customerLabel = $customerLabel;
   }
-  public function getCardHolderName(){
+  public function getCardHolderName(): ?string{
     return $this->cardHolderName;
   }
   public function setCardHolderName(string $cardHolderName): void{
     $this->cardHolderName = $cardHolderName;
+  }
+
+  public function getCustomer(): ?CustomerEntity
+  {
+    return $this->customer;
+  }
+
+  public function setCustomer(?CustomerEntity $customer): void
+  {
+    $this->customer = $customer;
   }
 
 }

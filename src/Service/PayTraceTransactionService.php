@@ -67,8 +67,7 @@ class PayTraceTransactionService
 
   public function getOrderByTransactionId(string $transactionId, Context $context): null|Entity
   {
-    $criteria = new Criteria();
-    $criteria->addFilter(new EqualsFilter('id', $transactionId));
+    $criteria = new Criteria([$transactionId]);
     try {
       return $this->orderTransactionRepository->search($criteria, $context)->last();
     } catch (\Exception $e) {

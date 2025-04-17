@@ -15,17 +15,14 @@ class AchEcheck implements SynchronousPaymentHandlerInterface
 {
     private OrderTransactionStateHandler $transactionStateHandler;
     private PayTraceTransactionService $payTraceTransactionService;
-    private PayTraceConfigService $payTraceConfigService;
 
     public function __construct(
         OrderTransactionStateHandler $transactionStateHandler,
         PayTraceTransactionService $payTraceTransactionService,
-        PayTraceConfigService $payTraceConfigService
     )
     {
         $this->transactionStateHandler = $transactionStateHandler;
         $this->payTraceTransactionService = $payTraceTransactionService;
-        $this->payTraceConfigService = $payTraceConfigService;
     }
 
     public function pay(SyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): void
@@ -34,8 +31,6 @@ class AchEcheck implements SynchronousPaymentHandlerInterface
         $orderId = $transaction->getOrder()->getId();
         $paymentMethodName = $salesChannelContext->getPaymentMethod()->getTranslated()['name'];
         $payTraceTransactionId = $dataBag->get('payTrace_transaction_id') ?? null;
-
-
 
         $this->transactionStateHandler->processUnconfirmed($transaction->getOrderTransaction()->getId(), $context);
         $status = TransactionStatuses::UNCONFIRMED->value;
