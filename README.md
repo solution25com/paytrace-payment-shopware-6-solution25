@@ -115,7 +115,7 @@ After installing the plugin, you can configure your **PayTrace** credentials and
 
 ## Checkout Experience
 
-The plugin integrates seamlessly into the Shopware 6 checkout, offering a smooth and intuitive payment process. Customers can choose between **Credit Card** and **ACH (eCheck)** payment methods provided by NMI, directly on the checkout page.
+The plugin integrates seamlessly into the Shopware 6 checkout, offering a smooth and intuitive payment process. Customers can choose between **Credit Card** and **ACH (eCheck)** payment methods provided by PayTrace, directly on the checkout page.
 
 ### ACH (eCheck) Payment
 
