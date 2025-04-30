@@ -11,6 +11,8 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
         this.cardsDropdown = this.parentCreditCardWrapper.getAttribute('data-cardsDropdown');
         this.errorEl = document.getElementById('error-message');
+        this.myTest = document.getElementById('nameSurname');
+        this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
     }
 
     init() {
@@ -41,8 +43,84 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
     _setupPayTrace() {
         PTPayment.setup({
-            styles: {},
-            authorization: {
+            styles: {
+                cc: {
+                    background_color: '#ffffff',
+                    border_color: '#ced4da',
+                    border_style: 'solid',
+                    font_color: '#495057',
+                    font_size: '14px',
+                    input_border_radius: '6px',
+                    input_border_width: '1px',
+                    input_font: 'Segoe UI, sans-serif',
+                    input_font_weight: '400',
+                    input_margin: '3px 0px 10px 0px',
+                    input_padding: '3px 8px 3px 8px',
+                    label_color: '#495057',
+                    label_font: 'Segoe UI, sans-serif',
+                    label_font_weight: '500',
+                    label_size: '12px',
+                    label_width: 'auto',
+                    label_margin: '0 0 4px 0',
+                    label_padding: '0 4px',
+                    label_border_style: 'none',
+                    height: '32px',
+                    width: '95%',
+                    padding_bottom: '4px'
+                },
+                code: {
+                    background_color: '#ffffff',
+                    border_color: '#ced4da',
+                    border_style: 'solid',
+                    font_color: '#495057',
+                    font_size: '14px',
+                    input_border_radius: '6px',
+                    input_border_width: '1px',
+                    input_font: 'Segoe UI, sans-serif',
+                    input_font_weight: '400',
+                    input_margin: '5px 0px 10px 0px',
+                    input_padding: '4px 8px 4px 8px',
+                    label_color: '#495057',
+                    label_font: 'Segoe UI, sans-serif',
+                    label_font_weight: '500',
+                    label_size: '13px',
+                    label_width: 'auto',
+                    label_margin: '0 0 4px 0',
+                    label_padding: '0 4px',
+                    label_border_style: 'none',
+                    height: '32px',
+                    width: '95%',
+                    padding_bottom: '4px'
+                },
+                exp: {
+                    background_color: '#ffffff',
+                    border_color: '#ced4da',
+                    border_style: 'solid',
+                    font_color: '#495057',
+                    font_size: '14px',
+                    input_border_radius: '6px',
+                    input_border_width: '1px',
+                    input_font: 'Segoe UI, sans-serif',
+                    input_font_weight: '400',
+                    input_margin: '5px 0px 10px 0px',
+                    input_padding: '4px 8px 4px 8px',
+                    label_color: '#495057',
+                    label_font: 'Segoe UI, sans-serif',
+                    label_font_weight: '500',
+                    label_size: '13px',
+                    label_width: 'auto',
+                    label_margin: '0 0 4px 0',
+                    label_padding: '0 4px',
+                    label_border_style: 'none',
+                    height: '32px',
+                    width: '100%',
+                    padding_bottom: '4px',
+                    type: 'dropdown'
+                },
+                body: {
+                    background_color: '#ffffff'
+                }
+            },            authorization: {
                 clientKey: this.clientKey
             }
         })
@@ -104,9 +182,11 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     }
 
     _submitPayment(token) {
+        const billingAddressData = this._getBillingData();
+
         fetch('/capture-paytrace', {
             method: 'POST',
-            body: JSON.stringify({ token: token, amount: this.amount }),
+            body: JSON.stringify({ token: token, amount: this.amount, billingData: billingAddressData}),
             headers: { 'Content-Type': 'application/json' }
         })
             .then(response => response.json())
@@ -162,4 +242,31 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             this.errorEl.classList.add('d-none');
         }
     }
+
+    _getBillingData() {
+        return {
+            name: document.getElementById('nameSurname').value,
+            street: document.getElementById('streetAddress').value,
+            street2: document.getElementById('streetAddress2').value,
+            city: document.getElementById('city').value,
+            state: document.getElementById('state').value,
+            zip: document.getElementById('postalCode').value,
+            country: document.getElementById('country').value
+        };
+    }
+
+
+
+    _validateBillingData() {
+        const inputs = this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
+        for (const input of inputs) {
+            if (input.required && !input.value.trim()) {
+                this._showError(`${input.name} is required.`);
+                input.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

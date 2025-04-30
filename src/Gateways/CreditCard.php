@@ -6,41 +6,66 @@ use PayTrace\Library\Constants\TransactionStatuses;
 use PayTrace\Service\PayTraceConfigService;
 use PayTrace\Service\PayTraceTransactionService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
+use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\SynchronousPaymentHandlerInterface;
+use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Cart\SyncPaymentTransactionStruct;
+use Shopware\Core\Framework\App\Manifest\Xml\Gateway\AbstractGateway;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 
-class CreditCard implements SynchronousPaymentHandlerInterface
+class CreditCard extends AbstractPaymentHandler
 {
   private OrderTransactionStateHandler $transactionStateHandler;
   private PayTraceTransactionService $payTraceTransactionService;
   private PayTraceConfigService $payTraceConfigService;
+  private EntityRepository $orderTransactionRepository;
 
   public function __construct(
     OrderTransactionStateHandler $transactionStateHandler,
     PayTraceTransactionService $payTraceTransactionService,
-    PayTraceConfigService $payTraceConfigService
+    PayTraceConfigService $payTraceConfigService,
+    EntityRepository $orderTransactionRepository,
+
   )
   {
     $this->transactionStateHandler = $transactionStateHandler;
     $this->payTraceTransactionService = $payTraceTransactionService;
     $this->payTraceConfigService = $payTraceConfigService;
+    $this->orderTransactionRepository = $orderTransactionRepository;
   }
 
-  public function pay(SyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): void
+  public function supports(PaymentHandlerType $type, string $paymentMethodId, Context $context): bool
   {
-    $authorizeOption = $this->payTraceConfigService->getConfig('authorizeAndCapture');
-    $context = $salesChannelContext->getContext();
-    $orderId = $transaction->getOrder()->getId();
-    $paymentMethodName = $salesChannelContext->getPaymentMethod()->getTranslated()['name'];
-    $payTraceTransactionId = $dataBag->get('payTrace_transaction_id') ?? null;
+    // TODO: Implement supports() method.
+    return true;
+  }
 
+  public function pay(Request $request, PaymentTransactionStruct $transaction, Context $context, ?Struct $validateStruct): ?RedirectResponse
+  {
+    $payTraceTransactionId = $request->getPayload()->get('payTrace_transaction_id');
+
+    $authorizeOption = $this->payTraceConfigService->getConfig('authorizeAndCapture');
     $transactionState = $authorizeOption ? TransactionStatuses::AUTHORIZED->value : TransactionStatuses::PAID->value;
     $transactionMethod = $authorizeOption ? 'authorize' : 'paid';
 
-    $this->transactionStateHandler->{$transactionMethod}($transaction->getOrderTransaction()->getId(), $context);
+    $transactionId = $transaction->getOrderTransactionId();
+    $criteria = new Criteria([$transactionId]);
+    $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
 
-    $this->payTraceTransactionService->addTransaction($orderId, $paymentMethodName, $payTraceTransactionId, $transactionState, $context);
+    $orderId = $orderTransaction->getOrderId();
+
+    $this->transactionStateHandler->{$transactionMethod}($transactionId, $context);
+
+    $this->payTraceTransactionService->addTransaction($orderId, "", $payTraceTransactionId, $transactionState, $context);
+
+    return null;
   }
 }

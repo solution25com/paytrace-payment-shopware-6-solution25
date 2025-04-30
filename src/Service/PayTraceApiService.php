@@ -81,7 +81,7 @@ class PayTraceApiService extends Endpoints
   }
 
 
-  public function processPayment(array $data, string $amount): ResponseInterface|array
+  public function processPayment(array $data, string $amount, array $billingData): ResponseInterface|array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::TRANSACTION);
 
@@ -145,7 +145,7 @@ class PayTraceApiService extends Endpoints
   }
 
 
-  public function processPaymentAuthorize(array $data, string $amount): ResponseInterface|array
+  public function processPaymentAuthorize(array $data, string $amount, array $billingData): ResponseInterface|array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
 

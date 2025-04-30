@@ -28,12 +28,12 @@ class PayTraceController extends StorefrontController
     $this->logger = $logger;
   }
 
-  private function processPayment(array $token, string $amount, bool $authAndCapture, SalesChannelContext $context): array {
+  private function processPayment(array $token, string $amount, array $billingData, bool $authAndCapture, SalesChannelContext $context): array {
     if ($authAndCapture) {
-      return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $context);
+      return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData, $context);
     }
 
-    return $this->payTraceApiService->processPayment($token, $amount, $context);
+    return $this->payTraceApiService->processPayment($token, $amount, $billingData, $context);
   }
 
 
@@ -72,7 +72,7 @@ class PayTraceController extends StorefrontController
     }
 
     try {
-      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $authAndCapture, $context,);
+      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $data['billingData'], $authAndCapture, $context,);
 
       return $this->handlePaymentResponse($paymentResponse);
     } catch (\Exception $e) {

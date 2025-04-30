@@ -7,40 +7,157 @@
   <div>
     <span class="error-message alert-danger d-none" id="error-message" role="alert"></span>
   </div>
-  
-  <form>
-    <div id='pt_hpf_form'></div>
-    <input type="button" id="ProtectForm" value="Pay {{ page.cart.price.totalPrice|currency }}"
-           class="btn btn-primary btn-block w-100">
-  </form>
 
-  <form>
-    <div id="saved-cards-wrapper">
-      <label for="saved-cards">Choose a saved card:</label>
-      <select id="saved-cards" name="saved-cards">
-        <option value="">-- Select a saved card --</option>
-      </select>
+  <div class="card" style="max-width: 500px; margin: 0 auto;">
+    <div class="card-body">
+      <h5 class="card-title text-center mb-3">Add a New Card</h5>
+      <form class="paytrace-form-container">
+        <div class="mb-2">
+          <label for="nameSurname" class="form-label">Name</label>
+          <input type="text" class="form-control form-control-sm" id="nameSurname" name="nameSurname" required />
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <label for="streetAddress" class="form-label">Street Address</label>
+            <input type="text" class="form-control form-control-sm" id="streetAddress" name="streetAddress" required />
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <label for="streetAddress2" class="form-label">Street Address 2</label>
+            <input type="text" class="form-control form-control-sm" id="streetAddress2" name="streetAddress2" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <label for="city" class="form-label">City</label>
+            <input type="text" class="form-control form-control-sm" id="city" name="city" required />
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <label for="state" class="form-label">State</label>
+            <input type="text" class="form-control form-control-sm" id="state" name="state" required />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <label for="postalCode" class="form-label">Postal Code</label>
+            <input type="text" class="form-control form-control-sm" id="postalCode" name="postalCode" required />
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <label for="country" class="form-label">Country</label>
+            <input type="text" class="form-control form-control-sm" id="country" name="country" required />
+          </div>
+        </div>
+
+        <div class="" id='pt_hpf_form'></div>
+        <input type="button" id="ProtectForm" value="Pay {{ page.cart.price.totalPrice|currency }}"
+               class="btn btn-primary w-100 btn-sm">
+      </form>
+
+      <form class="mt-3">
+        <div id="saved-cards-wrapper" class="mb-2">
+          <label for="saved-cards" class="form-label">Choose a saved card:</label>
+          <select id="saved-cards" name="saved-cards" class="form-select form-select-sm">
+            <option value="">-- Select a saved card --</option>
+          </select>
+        </div>
+
+        <input type="button" id="SelectCardButton" value="Pay with Saved Card"
+               class="btn btn-secondary w-100 btn-sm" style="display:none;">
+      </form>
+    </div>
   </div>
-
-    <input type="button" id="SelectCardButton" value="Pay with Saved Card" class="btn btn-secondary btn-block w-100" style="display:none;">
-  </form>
 
   <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
 </div>
 
 <style>
-    .error-message {
-        padding: 15px 15px;
-        margin-bottom: 15px;
-        border: 1px solid transparent;
+    #payTrace_payment .error-message {
+        padding: 10px;
+        margin-bottom: 10px;
         border-radius: 4px;
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 13px;
     }
 
-    .alert-danger {
+    #pt_hpf_form iframe {
+        /*width: 90% !important;*/
+        height: 300px !important;
+        margin-top:25px;
+        border: none;
+        overflow: hidden;
+    }
+
+    #payTrace_payment .alert-danger {
         background-color: #f8d7da;
         color: #842029;
-        border-color: #f5c2c7;
+        border: 1px solid #f5c2c7;
     }
+
+    #payTrace_payment .form-control-sm,
+    #payTrace_payment .form-select-sm {
+        font-size: 0.875rem;
+        padding: 0.45rem 0.75rem;
+        height: auto;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        background-color: #fff;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #payTrace_payment .form-control-sm:focus,
+    #payTrace_payment .form-select-sm:focus {
+        border-color: #66afe9;
+        box-shadow: 0 0 0 0.15rem rgba(102, 175, 233, 0.25);
+        outline: none;
+    }
+
+    #payTrace_payment label.form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+    }
+
+    #payTrace_payment .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    #payTrace_payment .btn-sm {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        border-radius: 5px;
+    }
+
+    #payTrace_payment .card {
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    #payTrace_payment .btn-primary {
+        background-color: #0069d9;
+        border-color: #0062cc;
+    }
+
+    #payTrace_payment .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004a99;
+    }
+
+    #payTrace_payment .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    #payTrace_payment .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
 </style>
+
