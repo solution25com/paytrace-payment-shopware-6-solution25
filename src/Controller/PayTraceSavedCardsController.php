@@ -87,9 +87,24 @@ class PayTraceSavedCardsController extends StorefrontController
   {
     $data = json_decode($request->getContent(), true);
 
-    $customerId = $context->getCustomer()?->getId();
+    if (!isset($data['cardId'])) {
+      return new Response(
+        'Missing required parameters: cardId or customerId.',
+        Response::HTTP_BAD_REQUEST
+      );
+    }
 
     $customerVaultId = $data['cardId'];
+    $customerId = $context->getCustomer()->getId();
+    $criteria = new Criteria();
+    $criteria->addFilter(new EqualsFilter('vaultedCustomerId', $customerVaultId));
+    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
+
+    $vaultedCard = $this->customerVaultRepository->search($criteria, $context->getContext())->first();
+
+    if (!$vaultedCard) {
+      return new Response('Unauthorized action.', Response::HTTP_FORBIDDEN);
+    }
 
     $responseFromMethod = $this->payTraceApiService->deleteVaultedCard($customerVaultId);
 

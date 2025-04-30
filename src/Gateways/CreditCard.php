@@ -62,9 +62,8 @@ class CreditCard extends AbstractPaymentHandler
 
     $orderId = $orderTransaction->getOrderId();
 
-    $this->transactionStateHandler->{$transactionMethod}($transactionId, $context);
-
     $this->payTraceTransactionService->addTransaction($orderId, "", $payTraceTransactionId, $transactionState, $context);
+    $this->transactionStateHandler->{$transactionMethod}($transactionId, $context);
 
     return null;
   }

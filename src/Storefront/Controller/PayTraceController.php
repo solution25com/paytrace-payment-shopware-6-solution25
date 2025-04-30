@@ -72,7 +72,7 @@ class PayTraceController extends StorefrontController
     }
 
     try {
-      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $data['billingData'], $authAndCapture, $context,);
+      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $data['billingData'], $authAndCapture, $context);
 
       return $this->handlePaymentResponse($paymentResponse);
     } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace PayTrace\Service;
 
+use PayTrace\Core\Content\Transaction\PayTraceTransactionEntity;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
@@ -75,5 +76,14 @@ class PayTraceTransactionService
     }
   }
 
+  public function updateTransactionStatus(string $transactionId, string $newStatus, Context $context): void
+  {
+    $this->payTraceTransactionRepository->update([
+      [
+        'id' => $transactionId,
+        'status' => $newStatus,
+      ]
+    ], $context);
+  }
 
 }

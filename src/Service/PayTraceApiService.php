@@ -96,6 +96,15 @@ class PayTraceApiService extends Endpoints
         'hpf_token' => $data['hpf_token'],
         'enc_key' => $data['enc_key'],
         'amount' => $amount,
+        'billing_address' => [
+          'street' => $billingData['street'],
+          'street2' => $billingData['street2'] ?? null,
+          'city' => $billingData['city'],
+          'state' => $billingData['state'],
+          'country' => $billingData['country'],
+          'postal_code' => $billingData['zip'],
+        ],
+        'billing_name' => $billingData['name'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
       ]),
     ];

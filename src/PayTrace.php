@@ -69,7 +69,7 @@ class PayTrace extends Plugin
   private function addPaymentMethod(PaymentMethodInterface $paymentMethod, Context $context): void
   {
 
-    $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler());
+    $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler(), $context);
 
     $pluginIdProvider = $this->getDependency(PluginIdProvider::class);
     $pluginId = $pluginIdProvider->getPluginIdByBaseClass(get_class($this), $context);
@@ -109,7 +109,7 @@ class PayTrace extends Plugin
   {
 
     $paymentRepository = $this->getDependency('payment_method.repository');
-    $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler());
+    $paymentMethodId = $this->getPaymentMethodId($paymentMethod->getPaymentHandler(), $context);
 
     if (!$paymentMethodId) {
       return;
@@ -123,7 +123,7 @@ class PayTrace extends Plugin
     $paymentRepository->update([$paymentMethodData], $context);
   }
 
-  private function getPaymentMethodId(string $paymentMethodHandler): ?string
+  private function getPaymentMethodId(string $paymentMethodHandler, Context $context): ?string
   {
     $paymentRepository = $this->getDependency('payment_method.repository');
     $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter(
@@ -131,7 +131,7 @@ class PayTrace extends Plugin
       $paymentMethodHandler
     ));
 
-    $paymentIds = $paymentRepository->searchIds($paymentCriteria, Context::createDefaultContext());
+    $paymentIds = $paymentRepository->searchIds($paymentCriteria, $context);
 
     if ($paymentIds->getTotal() === 0) {
       return null;

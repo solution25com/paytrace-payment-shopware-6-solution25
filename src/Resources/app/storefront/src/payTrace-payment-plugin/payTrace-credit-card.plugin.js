@@ -11,7 +11,6 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
         this.cardsDropdown = this.parentCreditCardWrapper.getAttribute('data-cardsDropdown');
         this.errorEl = document.getElementById('error-message');
-        this.myTest = document.getElementById('nameSurname');
         this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
     }
 
@@ -23,8 +22,13 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     }
 
     _populateDropdown() {
-        const cards = JSON.parse(this.cardsDropdown);
         const dropdown = document.getElementById('saved-cards');
+
+        if (!dropdown) {
+            return;
+        }
+
+        const cards = JSON.parse(this.cardsDropdown);
 
         dropdown.innerHTML = '';
 
@@ -40,6 +44,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             dropdown.appendChild(option);
         });
     }
+
 
     _setupPayTrace() {
         PTPayment.setup({
@@ -132,28 +137,42 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     }
 
     _bindEvents() {
-        document.getElementById("ProtectForm").addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._getCardToken();
-        });
+        const protectFormBtn = document.getElementById("ProtectForm");
+        if (protectFormBtn) {
+            protectFormBtn.addEventListener("click", (e) => {
+                if (!this._validateBillingData()) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                this._getCardToken();
+            });
+        }
 
-        document.getElementById("SelectCardButton").addEventListener("click", (e) => {
-            e.preventDefault();
-            this._vaultedPayment();
-        }, { once: true });
+        const selectCardBtn = document.getElementById("SelectCardButton");
+        const savedCardsDropdown = document.getElementById("saved-cards");
 
-        document.getElementById('saved-cards').addEventListener('change', (e) => {
-            const selectedCard = e.target.value;
-            const selectCardButton = document.getElementById('SelectCardButton');
+        if (selectCardBtn) {
+            selectCardBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                this._vaultedPayment();
+            }, { once: true });
+        }
 
-            if (selectedCard) {
-                selectCardButton.style.display = 'block';
-            } else {
-                selectCardButton.style.display = 'none';
-            }
-        });
+        if (savedCardsDropdown) {
+            savedCardsDropdown.addEventListener("change", (e) => {
+                const selectedCard = e.target.value;
+                const selectCardButton = document.getElementById('SelectCardButton');
+
+                if (selectedCard) {
+                    selectCardButton.style.display = 'block';
+                } else {
+                    selectCardButton.style.display = 'none';
+                }
+            });
+        }
     }
+
 
     _getCardToken() {
         PTPayment.process()
@@ -256,17 +275,27 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     }
 
 
-
     _validateBillingData() {
-        const inputs = this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
-        for (const input of inputs) {
-            if (input.required && !input.value.trim()) {
-                this._showError(`${input.name} is required.`);
-                input.focus();
+        const requiredFields = [
+            { id: 'nameSurname', name: 'Name' },
+            { id: 'streetAddress', name: 'Street Address' },
+            { id: 'city', name: 'City' },
+            { id: 'state', name: 'State' },
+            { id: 'postalCode', name: 'Postal Code' },
+            { id: 'country', name: 'Country' }
+        ];
+
+        for (const field of requiredFields) {
+            const el = document.getElementById(field.id);
+            if (!el || !el.value.trim()) {
+                this._showError(`${field.name} is required.`);
+                el?.focus();
                 return false;
             }
         }
+
         return true;
     }
+
 
 }

@@ -54,6 +54,7 @@
             <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="order.repository"/>
+            <argument type="service" id="PayTracePayment.logger"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
