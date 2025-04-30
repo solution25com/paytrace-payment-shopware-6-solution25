@@ -14,6 +14,8 @@ use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
+use Doctrine\DBAL\Connection;
+
 
 class PayTrace extends Plugin
 {
@@ -28,6 +30,18 @@ class PayTrace extends Plugin
     {
       foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
         $this->setPaymentMethodIsActive(false, $uninstallContext->getContext(), new $paymentMethod());
+        if (!$uninstallContext->keepUserData()) {
+          $connection = $this->container->get(Connection::class);
+          $connection->executeStatement('DROP TABLE IF EXISTS payTrace_customer_vault');
+          $connection->executeStatement('DROP TABLE IF EXISTS payTrace_transaction');
+
+          $connection->executeStatement(
+            'DELETE FROM `migration` WHERE `class` LIKE :migrationPattern;',
+            [
+              'migrationPattern' => 'PayTrace\Migration\%',
+            ]
+          );
+        }
       }
 
       if ($uninstallContext->keepUserData()) {
