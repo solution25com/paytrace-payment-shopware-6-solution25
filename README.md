@@ -45,19 +45,14 @@ This plugin supports one-time and saved-card transactions, integrates directly i
 
 ##  Get Started
 
-### Installation & Activation :
+### Installation & Activation
 
-## GitHub
+#### GitHub
 
 1. Clone the plugin into your Shopware plugins directory:
 ```bash
 git clone https://github.com/solution25com/paytrace-payment-shopware-6-solution25.git
 ```
-## Packagist
- ```
-  composer require solution25/pay-trace
-  ```
-
 2. **Install the Plugin in Shopware 6**
 
 - Log in to your Shopware 6 Administration panel.
@@ -115,7 +110,7 @@ After installing the plugin, you can configure your **PayTrace** credentials and
 
 ## Checkout Experience
 
-The plugin integrates seamlessly into the Shopware 6 checkout, offering a smooth and intuitive payment process. Customers can choose between **Credit Card** and **ACH (eCheck)** payment methods provided by PayTrace, directly on the checkout page.
+The plugin integrates seamlessly into the Shopware 6 checkout, offering a smooth and intuitive payment process. Customers can choose between **Credit Card** and **ACH (eCheck)** payment methods provided by NMI, directly on the checkout page.
 
 ### ACH (eCheck) Payment
 
