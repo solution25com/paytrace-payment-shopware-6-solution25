@@ -33,7 +33,8 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
   public function addPaymentMethodSpecificFormFields(CheckoutConfirmPageLoadedEvent $event): void
   {
 
-    $clientKey = $this->payTraceApiService->generatePaymentToken();
+    $clientKeyResult = $this->payTraceApiService->generatePaymentToken();
+    $clientKey = is_string($clientKeyResult) ? $clientKeyResult : null;
     $pageObject = $event->getPage();
     $amount = $pageObject->getCart()->getPrice()->getTotalPrice();
     $salesChannelContext = $event->getSalesChannelContext();

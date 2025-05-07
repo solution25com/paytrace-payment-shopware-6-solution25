@@ -68,7 +68,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'Content-Type' => 'application/json',
       ],
     ];
@@ -97,7 +97,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -114,7 +114,7 @@ class PayTraceApiService extends Endpoints
           'postal_code' => $billingData['zip'],
         ],
         'billing_name' => $billingData['fullName'],
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
       ]),
     ];
 
@@ -135,7 +135,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId')  ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -148,7 +148,7 @@ class PayTraceApiService extends Endpoints
           'account_type' => $data['accountType'] ?? 'Checking',
         ],
         'amount' => $data['amount'],
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
       ]),
     ];
 
@@ -170,7 +170,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -187,7 +187,7 @@ class PayTraceApiService extends Endpoints
           'postal_code' => $billingData['zip'],
         ],
         'billing_name' => $billingData['fullName'],
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
       ]),
     ];
 
@@ -214,12 +214,12 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
         'batch_items' => [
           [
             'transaction_id' => $data['transactionId'],
@@ -247,12 +247,12 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
         'batch_items' => [
           [
             'transaction_id' => $data['transactionId'],
@@ -286,12 +286,12 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
         'batch_items' => [
           [
             'transaction_id' => $data['transactionId'],
@@ -331,13 +331,13 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
         'amount' => $data['amount'],
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
       ]),
     ];
 
@@ -358,14 +358,14 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
         'hpf_token' => $data['cardToken']['hpf_token'],
         'enc_key' => $data['cardToken']['enc_key'],
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
+        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
         'billing_address' => [
           'name' => $data['billing_address']['name'],
           'street_address' => $data['billing_address']['street_address'],
@@ -397,7 +397,7 @@ class PayTraceApiService extends Endpoints
     $options = [
       'headers' => [
         'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId'),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -432,9 +432,9 @@ class PayTraceApiService extends Endpoints
   private function buildRequestBody(): array
   {
     return [
-      'grant_type' => 'client_credentials',
-      'client_id' => $this->payTraceConfigService->getConfig('clientIdSandbox'),
-      'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox'),
+      'grant_type'    => 'client_credentials',
+      'client_id'     => $this->payTraceConfigService->getConfig('clientIdSandbox') ?? '',
+      'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox') ?? '',
     ];
   }
 

@@ -17,17 +17,20 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
   private PayTraceTransactionService $payTraceTransactionService;
   private PayTraceApiService $payTraceApiService;
   private EntityRepository $orderRepository;
+  private EntityRepository $paymentMethodRepository;
   private LoggerInterface $logger;
 
   public function __construct(
     PayTraceTransactionService $payTraceTransactionService,
     PayTraceApiService $payTraceApiService,
     EntityRepository $orderRepository,
+    EntityRepository $paymentMethodRepository,
     LoggerInterface $logger
   ) {
     $this->payTraceTransactionService = $payTraceTransactionService;
     $this->payTraceApiService = $payTraceApiService;
     $this->orderRepository = $orderRepository;
+    $this->paymentMethodRepository = $paymentMethodRepository;
     $this->logger = $logger;
   }
 
@@ -44,14 +47,15 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
     $context = $event->getContext();
 
     $orderTransaction = $this->payTraceTransactionService->getOrderByTransactionId($event->getEntityId(), $context);
+    $paymentMethod = $this->paymentMethodRepository->search(new Criteria([$orderTransaction->getPaymentMethodId()]), $context)->first();
+    $payTraceHandlerIdentifier = $paymentMethod->getHandlerIdentifier();
 
-    if (empty($orderTransaction)) {
+    if ($payTraceHandlerIdentifier !== 'PayTrace\Gateways\CreditCard') {
       return;
     }
 
-
-    if (!$orderTransaction) {
-      throw new \Exception("Order transaction not found for transaction ID: " . $event->getEntityId());
+    if (empty($orderTransaction)) {
+      return;
     }
 
     $orderId = $orderTransaction->getOrderId();

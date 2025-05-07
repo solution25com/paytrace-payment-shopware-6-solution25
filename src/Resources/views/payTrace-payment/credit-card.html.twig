@@ -1,3 +1,4 @@
+{% if page.extensions.payTrace_payment.clientKey %}
 <template payTrace-payment-credit-card-plugin></template>
 <div id="payTrace_payment" data-payTrace-credit-card="true"
      data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
@@ -31,6 +32,15 @@
 
   <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
 </div>
+{% else %}
+  <div id="error-message">
+    <div class="error-alert">
+      <strong>PayTrace Configuration Missing or Incorrect:</strong>
+      <p>Required API credentials are missing. Please check your plugin settings for <code>Sandbox</code> or <code>Production</code>.</p>
+    </div>
+  </div>
+{% endif %}
+
 
 <style>
     #payTrace_payment .error-message {
@@ -114,6 +124,23 @@
         background-color: #5a6268;
         border-color: #545b62;
     }
+    #error-message {
+        margin: 10px 0;
+        background-color: transparent;
+    }
+
+    #error-message .error-alert {
+        padding: 6px 12px;
+        align-items: flex-start;
+        border-radius: 4px;
+        background: #F9DDDD;
+        color: #D72828;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+    }
+
 
 </style>
 
