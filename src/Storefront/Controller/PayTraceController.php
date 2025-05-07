@@ -28,7 +28,7 @@ class PayTraceController extends StorefrontController
     $this->logger = $logger;
   }
 
-  private function processPayment(array $token, string $amount, array $billingData, bool $authAndCapture, SalesChannelContext $context): array {
+  private function processPayment(array $token, string $amount, $billingData, bool $authAndCapture, SalesChannelContext $context): array {
     if ($authAndCapture) {
       return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData, $context);
     }
@@ -66,15 +66,32 @@ class PayTraceController extends StorefrontController
   {
     $authAndCapture = $this->payTraceConfigService->getConfig('authorizeAndCapture');
     $data = json_decode($request->getContent(), true);
+    $customer = $context->getCustomer();
 
     if (empty($data)) {
       return $this->createJsonResponse(false, 'Missing payment token.', JsonResponse::HTTP_BAD_REQUEST);
     }
 
+    if (!$customer) {
+      return $this->createJsonResponse(false, 'Missing customer.', JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    $customerData = [
+      'fullName' => $customer->getFirstName() . ' ' . $customer->getLastName(),
+      'city' => $customer->getActiveBillingAddress()->getCity(),
+      'country' => $customer->getActiveBillingAddress()->getCountry()->getIso(),
+      'state' => explode('-', $customer->getActiveBillingAddress()->getCountryState()->getShortCode())[1] ?? null,
+      'street' => $customer->getActiveBillingAddress()->getStreet(),
+      'street2' => $customer->getActiveBillingAddress()->getAdditionalAddressLine1(),
+      'zip' => $customer->getActiveBillingAddress()->getZipcode(),
+      'email' => $customer->getEmail(),
+    ];
+
     try {
-      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $data['billingData'], $authAndCapture, $context);
+      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $customerData, $authAndCapture, $context);
 
       return $this->handlePaymentResponse($paymentResponse);
+
     } catch (\Exception $e) {
       $this->logger->error('Payment processing failed: ' . $e->getMessage());
       return $this->createJsonResponse(

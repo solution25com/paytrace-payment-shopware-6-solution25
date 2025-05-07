@@ -81,7 +81,7 @@ class PayTraceApiService extends Endpoints
   }
 
 
-  public function processPayment(array $data, string $amount, array $billingData): ResponseInterface|array
+  public function processPayment(array $token, string $amount, array $billingData): ResponseInterface|array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::TRANSACTION);
 
@@ -93,8 +93,8 @@ class PayTraceApiService extends Endpoints
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
-        'hpf_token' => $data['hpf_token'],
-        'enc_key' => $data['enc_key'],
+        'hpf_token' => $token['hpf_token'],
+        'enc_key' => $token['enc_key'],
         'amount' => $amount,
         'billing_address' => [
           'street' => $billingData['street'],
@@ -104,7 +104,7 @@ class PayTraceApiService extends Endpoints
           'country' => $billingData['country'],
           'postal_code' => $billingData['zip'],
         ],
-        'billing_name' => $billingData['name'],
+        'billing_name' => $billingData['fullName'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
       ]),
     ];
@@ -154,7 +154,7 @@ class PayTraceApiService extends Endpoints
   }
 
 
-  public function processPaymentAuthorize(array $data, string $amount, array $billingData): ResponseInterface|array
+  public function processPaymentAuthorize(array $token, string $amount, array $billingData): ResponseInterface|array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
 
@@ -166,9 +166,18 @@ class PayTraceApiService extends Endpoints
         'Content-Type' => 'application/json',
       ],
       'body' => json_encode([
-        'hpf_token' => $data['hpf_token'],
-        'enc_key' => $data['enc_key'],
+        'hpf_token' => $token['hpf_token'],
+        'enc_key' => $token['enc_key'],
         'amount' => $amount,
+        'billing_address' => [
+          'street' => $billingData['street'],
+          'street2' => $billingData['street2'] ?? null,
+          'city' => $billingData['city'],
+          'state' => $billingData['state'],
+          'country' => $billingData['country'],
+          'postal_code' => $billingData['zip'],
+        ],
+        'billing_name' => $billingData['fullName'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId'),
       ]),
     ];

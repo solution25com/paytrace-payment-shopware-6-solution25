@@ -54,11 +54,9 @@ class PayTraceSavedCardsController extends StorefrontController
   public function addCard(Request $request, SalesChannelContext $context): Response
   {
     $data = json_decode($request->getContent(), true);
-
     $customerId = $context->getCustomer()?->getId();
 
     $countCustomer = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
-
     $customerLabel = '_Card_' . ($countCustomer + 1);
 
     $data['cardCount'] = $customerLabel;
@@ -70,15 +68,23 @@ class PayTraceSavedCardsController extends StorefrontController
       $customerVaultId = $responseFromMethod['data']['customer_id'];
       $cardHolderName = $data['billing_address']['name'];
 
-      $this->payTraceCustomerVaultService->store($context, $customerVaultId, $cardHolderName, '', $customerId . $customerLabel);
+      $this->payTraceCustomerVaultService->store(
+        $context,
+        $customerVaultId,
+        $cardHolderName,
+        '',
+        $customerId . $customerLabel
+      );
+
+      return $this->json([
+        'success' => true,
+        'message' => 'Card added successfully',
+      ]);
     }
 
-    $criteria = new Criteria();
-    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
-    $customerVaultRecords = $this->customerVaultRepository->search($criteria, $context->getContext())->getEntities();
-
-    return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
-      'savedCards' => $customerVaultRecords,
+    return $this->json([
+      'error' => true,
+      'message' => $responseFromMethod['message'] ?? 'Unknown error',
     ]);
   }
 
@@ -86,16 +92,18 @@ class PayTraceSavedCardsController extends StorefrontController
   public function deleteCard(Request $request, SalesChannelContext $context): Response
   {
     $data = json_decode($request->getContent(), true);
+    $customer = $context->getCustomer();
 
-    if (!isset($data['cardId'])) {
-      return new Response(
-        'Missing required parameters: cardId or customerId.',
-        Response::HTTP_BAD_REQUEST
-      );
+    if (!$customer || !isset($data['cardId'])) {
+      return $this->json([
+        'error' => true,
+        'message' => 'Missing required parameters: cardId or customerId.',
+      ], Response::HTTP_BAD_REQUEST);
     }
 
     $customerVaultId = $data['cardId'];
-    $customerId = $context->getCustomer()->getId();
+    $customerId = $customer->getId();
+
     $criteria = new Criteria();
     $criteria->addFilter(new EqualsFilter('vaultedCustomerId', $customerVaultId));
     $criteria->addFilter(new EqualsFilter('customerId', $customerId));
@@ -103,7 +111,10 @@ class PayTraceSavedCardsController extends StorefrontController
     $vaultedCard = $this->customerVaultRepository->search($criteria, $context->getContext())->first();
 
     if (!$vaultedCard) {
-      return new Response('Unauthorized action.', Response::HTTP_FORBIDDEN);
+      return $this->json([
+        'error' => true,
+        'message' => 'Unauthorized action.',
+      ], Response::HTTP_FORBIDDEN);
     }
 
     $responseFromMethod = $this->payTraceApiService->deleteVaultedCard($customerVaultId);
@@ -117,15 +128,18 @@ class PayTraceSavedCardsController extends StorefrontController
 
     if (isset($responseFromMethod['message']) && $responseFromMethod['message'] === 'Success') {
       $this->payTraceCustomerVaultService->delete($context, $customerVaultId);
+
+      return $this->json([
+        'success' => true,
+        'message' => 'Card deleted successfully',
+      ]);
     }
 
-    $criteria = new Criteria();
-    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
-    $customerVaultRecords = $this->customerVaultRepository->search($criteria, $context->getContext())->getEntities();
-
-    return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
-      'savedCards' => $customerVaultRecords,
+    return $this->json([
+      'error' => true,
+      'message' => 'Unexpected error occurred while deleting the card',
     ]);
   }
+
 
 }

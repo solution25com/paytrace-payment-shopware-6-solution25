@@ -58,7 +58,7 @@ git clone https://github.com/solution25com/paytrace-payment-shopware-6-solution2
  ```
   composer require solution25/pay-trace
   ```
-
+  
 
 2. **Install the Plugin in Shopware 6**
 

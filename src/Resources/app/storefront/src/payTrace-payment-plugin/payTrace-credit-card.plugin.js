@@ -16,20 +16,16 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
     init() {
         this._registerElements();
+        this._registerEvents();
         this._populateDropdown();
         this._setupPayTrace();
-        this._bindEvents();
     }
 
     _populateDropdown() {
         const dropdown = document.getElementById('saved-cards');
-
-        if (!dropdown) {
-            return;
-        }
+        if (!dropdown) return;
 
         const cards = JSON.parse(this.cardsDropdown);
-
         dropdown.innerHTML = '';
 
         const defaultOption = document.createElement('option');
@@ -44,7 +40,6 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             dropdown.appendChild(option);
         });
     }
-
 
     _setupPayTrace() {
         PTPayment.setup({
@@ -136,43 +131,79 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             });
     }
 
-    _bindEvents() {
-        const protectFormBtn = document.getElementById("ProtectForm");
-        if (protectFormBtn) {
-            protectFormBtn.addEventListener("click", (e) => {
-                if (!this._validateBillingData()) {
+    _registerEvents() {
+        this.confirmOrderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            this._disableSubmit();
+
+            const savedCardSelected = document.getElementById('saved-cards')?.value;
+
+            if (savedCardSelected) {
+                this._vaultedPayment();
+                return;
+            }
+
+            PTPayment.validate((validationErrors) => {
+                if (validationErrors.length > 0) {
+                    this._handleValidationErrors(validationErrors);
                     return;
                 }
-                e.preventDefault();
-                e.stopPropagation();
+
                 this._getCardToken();
             });
-        }
+        });
 
         const selectCardBtn = document.getElementById("SelectCardButton");
-        const savedCardsDropdown = document.getElementById("saved-cards");
-
         if (selectCardBtn) {
             selectCardBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 this._vaultedPayment();
-            }, { once: true });
-        }
-
-        if (savedCardsDropdown) {
-            savedCardsDropdown.addEventListener("change", (e) => {
-                const selectedCard = e.target.value;
-                const selectCardButton = document.getElementById('SelectCardButton');
-
-                if (selectedCard) {
-                    selectCardButton.style.display = 'block';
-                } else {
-                    selectCardButton.style.display = 'none';
-                }
             });
         }
+
+        const inputs = this.parentCreditCardWrapper.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => this._hideError(input));
+        });
     }
 
+    _handleValidationErrors(validationErrors) {
+        PTPayment.style({
+            'cc': { 'border_color': '#ced4da' },
+            'exp': { 'border_color': '#ced4da' },
+            'code': { 'border_color': '#ced4da' }
+        });
+
+        const errorMessages = [];
+
+        validationErrors.forEach((err) => {
+            if (err.responseCode === '35') {
+                PTPayment.style({ 'cc': { 'border_color': 'red' } });
+                errorMessages.push(err.description);
+            }
+
+            if (err.responseCode === '43') {
+                PTPayment.style({ 'exp': { 'border_color': 'red' } });
+                errorMessages.push(err.description);
+            }
+
+            if (err.responseCode === '148') {
+                PTPayment.style({ 'code': { 'border_color': 'red' } });
+                errorMessages.push(err.description);
+            }
+        });
+
+        if (errorMessages.length > 0) {
+            const combinedMessage = errorMessages
+                .map((msg, i) => `${i + 1}) ${msg}`)
+                .join('<br>');
+            this._showError(combinedMessage);
+        } else {
+            this._getCardToken();
+        }
+    }
 
     _getCardToken() {
         PTPayment.process()
@@ -201,11 +232,10 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     }
 
     _submitPayment(token) {
-        const billingAddressData = this._getBillingData();
-
+        console.log('here in submit')
         fetch('/capture-paytrace', {
             method: 'POST',
-            body: JSON.stringify({ token: token, amount: this.amount, billingData: billingAddressData}),
+            body: JSON.stringify({ token: token, amount: this.amount }),
             headers: { 'Content-Type': 'application/json' }
         })
             .then(response => response.json())
@@ -238,7 +268,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     document.getElementById('payTrace-transaction-id').value = data.transactionId;
                     this.confirmOrderForm.submit();
                 } else {
-                    console.error('Payment failed:', data.message || 'Unknown error');
+                    console.error('Vaulted payment failed:', data.message || 'Unknown error');
                     this._showError(data.message || 'Vaulted card payment failed.');
                 }
             })
@@ -253,49 +283,36 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             this.errorEl.innerHTML = message;
             this.errorEl.classList.remove('d-none');
         }
+        this._enableSubmit();
     }
 
-    _hideError() {
+    _hideError(inputElement = null) {
         if (this.errorEl) {
             this.errorEl.innerHTML = '';
             this.errorEl.classList.add('d-none');
         }
-    }
 
-    _getBillingData() {
-        return {
-            name: document.getElementById('nameSurname').value,
-            street: document.getElementById('streetAddress').value,
-            street2: document.getElementById('streetAddress2').value,
-            city: document.getElementById('city').value,
-            state: document.getElementById('state').value,
-            zip: document.getElementById('postalCode').value,
-            country: document.getElementById('country').value
-        };
-    }
-
-
-    _validateBillingData() {
-        const requiredFields = [
-            { id: 'nameSurname', name: 'Name' },
-            { id: 'streetAddress', name: 'Street Address' },
-            { id: 'city', name: 'City' },
-            { id: 'state', name: 'State' },
-            { id: 'postalCode', name: 'Postal Code' },
-            { id: 'country', name: 'Country' }
-        ];
-
-        for (const field of requiredFields) {
-            const el = document.getElementById(field.id);
-            if (!el || !el.value.trim()) {
-                this._showError(`${field.name} is required.`);
-                el?.focus();
-                return false;
-            }
+        // Reset border color when the user interacts with the input fields
+        if (inputElement) {
+            PTPayment.style({
+                [inputElement.name]: { 'border_color': '#ced4da' }
+            });
         }
 
-        return true;
+        this._enableSubmit();
     }
 
+    _disableSubmit() {
+        const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
+        if (confirmButton) {
+            confirmButton.disabled = true;
+        }
+    }
 
+    _enableSubmit() {
+        const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
+        if (confirmButton) {
+            confirmButton.disabled = false;
+        }
+    }
 }
