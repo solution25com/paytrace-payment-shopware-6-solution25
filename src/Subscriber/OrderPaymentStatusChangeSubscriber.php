@@ -45,6 +45,11 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     $orderTransaction = $this->payTraceTransactionService->getOrderByTransactionId($event->getEntityId(), $context);
 
+    if (empty($orderTransaction)) {
+      return;
+    }
+
+
     if (!$orderTransaction) {
       throw new \Exception("Order transaction not found for transaction ID: " . $event->getEntityId());
     }
@@ -56,8 +61,9 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
     }
 
     $payTraceTransaction = $this->payTraceTransactionService->getTransactionByOrderId($orderId, $context);
+    $payTraceTransactionId = $payTraceTransaction->getTransactionId();
 
-    if (!$payTraceTransaction) {
+    if (!$payTraceTransactionId) {
       throw new \Exception("PayTrace transaction not found for order ID: " . $orderId);
     }
 
@@ -65,22 +71,21 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     if ($nextState === 'paid') {
       if ($currentStatus !== 'paid') {
-        $this->handleCapture($orderId, $context, $payTraceTransaction);
+        $this->handleCapture($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId());
       }
     } elseif ($nextState === 'cancelled') {
-      $this->handleVoid($orderId, $context, $payTraceTransaction);
+      $this->handleVoid($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId());
     } elseif ($nextState === 'refunded') {
-      $this->handleRefund($orderId, $context, $payTraceTransaction);
+      $this->handleRefund($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId());
     }
   }
 
-  private function handleCapture(string $orderId, $context, PayTraceTransactionEntity $transaction): void
+  private function handleCapture(string $orderId, $context, $payTraceTransactionId, $transactionId): void
   {
-    $transactionId = $transaction->getTransactionId();
     $orderAmount = $this->getOrderTotalAmount($orderId, $context);
 
     $postData = [
-      "transactionId" => $transactionId,
+      "transactionId" => $payTraceTransactionId,
       "amount" => $orderAmount
     ];
 
@@ -91,17 +96,16 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
       throw new StateMachineException(400, 400, json_encode($response));
     }
 
-    $this->payTraceTransactionService->updateTransactionStatus($transaction->getId(), 'paid', $context);
+    $this->payTraceTransactionService->updateTransactionStatus($transactionId, 'paid', $context);
   }
 
-  private function handleRefund(string $orderId, $context, PayTraceTransactionEntity $transaction): void
+  private function handleRefund(string $orderId, $context, $payTraceTransactionId, $transactionId): void
   {
     try {
-      $transactionId = $transaction->getTransactionId();
       $orderAmount = $this->getOrderTotalAmount($orderId, $context);
 
       $postData = [
-        "transactionId" => $transactionId,
+        "transactionId" => $payTraceTransactionId,
         "amount" => $orderAmount
       ];
 
@@ -112,20 +116,19 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
         throw new StateMachineException(400, 400, json_encode($response));
       }
 
-      $this->payTraceTransactionService->updateTransactionStatus($transaction->getId(), 'refunded', $context);
+      $this->payTraceTransactionService->updateTransactionStatus($transactionId, 'refunded', $context);
     } catch (\Exception $exception) {
       $this->logger->error('Refund failed', ['exception' => $exception]);
       throw new StateMachineException(400, 400, 'Refund failed.');
     }
   }
 
-  private function handleVoid(string $orderId, $context, PayTraceTransactionEntity $transaction): void
+  private function handleVoid(string $orderId, $context, $payTraceTransactionId, $transactionId): void
   {
     try {
-      $transactionId = $transaction->getTransactionId();
 
       $postData = [
-        "transactionId" => $transactionId,
+        "transactionId" => $payTraceTransactionId,
       ];
 
       $response = $this->payTraceApiService->voidTransaction($postData);
@@ -135,7 +138,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
         throw new StateMachineException(400, 400, json_encode($response));
       }
 
-      $this->payTraceTransactionService->updateTransactionStatus($transaction->getId(), 'cancelled', $context);
+      $this->payTraceTransactionService->updateTransactionStatus($transactionId, 'cancelled', $context);
     } catch (\Exception $exception) {
       $this->logger->error('Void (cancel) failed', ['exception' => $exception]);
       throw new StateMachineException(400, 400, 'Void (cancel) failed.');

@@ -38,7 +38,11 @@ class PayTraceApiService extends Endpoints
       'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
     ];
 
+    $start = microtime(true);
     $res = $this->request($fullEndpointUrl, $options);
+    $end = microtime(true);
+    $executionTime = round($end - $start, 2);
+    $this->logger->alert('ExecutionTime for Bearer token: ' . $executionTime);
 
     if ($res instanceof Response) {
       $responseBody = $res->getBody()->getContents();
@@ -69,7 +73,12 @@ class PayTraceApiService extends Endpoints
       ],
     ];
 
+    $start = microtime(true);
     $response = $this->request($fullEndpointUrl, $options);
+    $end = microtime(true);
+    $executionTime = round($end - $start, 2);
+    $this->logger->alert('ExecutionTime for PaymentToken: ' . $executionTime);
+
 
     if ($response instanceof Response) {
       $responseBody = $response->getBody()->getContents();
@@ -371,7 +380,7 @@ class PayTraceApiService extends Endpoints
     ];
 
     $start = microtime(true);
-    $response = $this->request($fullEndpointUrl, $options);
+    $response = $this->request($fullEndpointUrl, $options);-
     $end = microtime(true);
     $executionTime = round($end - $start, 2);
     $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);

@@ -55,7 +55,7 @@ class PayTraceTransactionService
 
   }
 
-  public function getTransactionByOrderId(string $orderId, Context $context): null|Entity
+  public function getTransactionByOrderId(string $orderId, Context $context)
   {
     $criteria = new Criteria();
     $criteria->addFilter(new EqualsFilter('orderId', $orderId));
@@ -66,7 +66,7 @@ class PayTraceTransactionService
     }
   }
 
-  public function getOrderByTransactionId(string $transactionId, Context $context): null|Entity
+  public function getOrderByTransactionId(string $transactionId, Context $context)
   {
     $criteria = new Criteria([$transactionId]);
     try {

@@ -156,7 +156,17 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         });
 
         const selectCardBtn = document.getElementById("SelectCardButton");
-        if (selectCardBtn) {
+        const savedCardsDropdown = document.getElementById("saved-cards");
+
+        if (selectCardBtn && savedCardsDropdown) {
+            savedCardsDropdown.addEventListener("change", (e) => {
+                if (e.target.value) {
+                    selectCardBtn.style.display = "block";
+                } else {
+                    selectCardBtn.style.display = "none";
+                }
+            });
+
             selectCardBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 this._vaultedPayment();
@@ -232,7 +242,6 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     }
 
     _submitPayment(token) {
-        console.log('here in submit')
         fetch('/capture-paytrace', {
             method: 'POST',
             body: JSON.stringify({ token: token, amount: this.amount }),

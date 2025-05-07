@@ -6,43 +6,50 @@
     <input type="hidden" name="parentname" value="payTrace Saved Cards">
   </div>
 
-  <div class="text-center my-4">
-    <button class="btn btn-outline-primary" type="button" id="toggleAddCardForm">
-      + Add New Card
+  <div class="sc-form-toggle-wrapper text-center my-4">
+    <button class="sc-form-toggle-btn" type="button" id="toggleAddCardForm">
+    <span class="sc-form-toggle-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </span>
+      <span class="sc-form-toggle-text">Add New Card</span>
     </button>
   </div>
 
-  <div class="container" id="addCardFormContainer" style="display: none;">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h5 class="card-title text-center mb-4">Add a New Card</h5>
-        <form class="paytrace-form-container">
-          <div class="mb-3">
-            <label for="nameSurname" class="form-label">Name</label>
-            <input type="text" class="form-control" id="nameSurname" name="nameSurname" required />
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-2">
-              <label for="streetAddress" class="form-label">Street Address*</label>
-              <input type="text" class="form-control form-control-sm" id="streetAddress" name="streetAddress" required />
-            </div>
-
-            <div class="col-md-6 mb-2">
-              <label for="streetAddress2" class="form-label">Street Address 2</label>
-              <input type="text" class="form-control form-control-sm" id="streetAddress2" name="streetAddress2" />
+  <div class="container sc-form-container" id="addCardFormContainer" style="display: none;">
+    <div class="card shadow-sm mb-4 sc-form-card">
+      <div class="card-body sc-form-card-body">
+        <h5 class="card-title text-center mb-4 sc-form-title">Add a New Card</h5>
+        <form class="paytrace-form-container sc-form">
+          <div class="row sc-form-row">
+            <div class="col-md-12 mb-2 sc-form-col">
+              <label for="nameSurname" class="form-label sc-form-label">Name on Card*</label>
+              <input type="text" class="form-control sc-form-input" id="nameSurname" name="nameSurname" placeholder="John Smith" required />
             </div>
           </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-2">
-              <label for="city" class="form-label">City*</label>
-              <input type="text" class="form-control form-control-sm" id="city" name="city" required />
+          <div class="row sc-form-row">
+            <div class="col-md-6 mb-2 sc-form-col">
+              <label for="streetAddress" class="form-label sc-form-label">Street Address*</label>
+              <input type="text" class="form-control form-control-sm sc-form-input" id="streetAddress" name="streetAddress" placeholder="123 Main St" required />
             </div>
 
-            <div class="col-md-6 mb-2">
-              <label for="state" class="form-label">State*</label>
-              <select id="state" name="state" class="form-select form-select-sm" required>
+            <div class="col-md-6 mb-2 sc-form-col">
+              <label for="streetAddress2" class="form-label sc-form-label">Street Address 2</label>
+              <input type="text" class="form-control form-control-sm sc-form-input" id="streetAddress2" name="streetAddress2" placeholder="Apt 4B" />
+            </div>
+          </div>
+
+          <div class="row sc-form-row">
+            <div class="col-md-6 mb-2 sc-form-col">
+              <label for="city" class="form-label sc-form-label">City*</label>
+              <input type="text" class="form-control form-control-sm sc-form-input" id="city" name="city" placeholder="New York" required />
+            </div>
+
+            <div class="col-md-6 mb-2 sc-form-col">
+              <label for="state" class="form-label sc-form-label">State*</label>
+              <select id="state" name="state" class="form-select form-select-sm sc-form-select" required>
                 <option value="">-- Select State --</option>
                 <option value="AL">Alabama</option>
                 <option value="AK">Alaska</option>
@@ -105,27 +112,29 @@
                 <option value="AP">Armed Forces Pacific</option>
               </select>
             </div>
+          </div>
 
-            <div class="row">
-            <div class="col-md-6 mb-2">
-              <label for="postalCode" class="form-label">Postal Code*</label>
-              <input type="text" class="form-control form-control-sm" id="postalCode" name="postalCode" required />
+          <div class="row sc-form-row">
+            <div class="col-md-6 mb-2 sc-form-col">
+              <label for="postalCode" class="form-label sc-form-label">Postal Code*</label>
+              <input type="text" class="form-control form-control-sm sc-form-input" id="postalCode" name="postalCode" placeholder="10001" required />
             </div>
 
-            <div class="col-md-6 mb-2">
-              <label for="country" class="form-label">Country*</label>
-              <select id="country" name="country" class="form-select form-select-sm" required>
+            <div class="col-md-6 mb-2 sc-form-col">
+              <label for="country" class="form-label sc-form-label">Country*</label>
+              <select id="country" name="country" class="form-select form-select-sm sc-form-select" required>
                 <option value="">Select Country</option>
-                <option value="US" selected> United States </option>
+                <option value="US" selected>United States</option>
               </select>
             </div>
           </div>
 
-          <div id="pt_hpf_form" class="my-3"></div>
-          <div id="errorContainer" class="error-container" style="display: none;"></div>
+          <div id="pt_hpf_form" class="my-3 sc-form-payment-fields"></div>
+          <div id="errorContainer" class="error-container sc-form-error" style="display: none;"></div>
 
-          <button type="button" id="ProtectForm" class="btn btn-primary w-100 mt-3">Add Card</button>
-          </div>
+          <button type="button" id="ProtectForm" class="btn btn-primary w-100 mt-3 sc-form-submit">
+            <i class="fas fa-credit-card sc-form-submit-icon"></i> Add Card
+          </button>
         </form>
       </div>
     </div>
@@ -138,6 +147,9 @@
           <div class="col-12 col-sm-6 col-md-6 col-lg-6 mb-3">
             <div class="saved-card p-3 border rounded-3 shadow-sm hover-card">
               <div class="card-info">
+                <div class="card-logo mb-2">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Visa_Logo.png" alt="Visa" class="card-logo-img">
+                </div>
                 <p class="card-holder-name mb-1"><strong>{{ card.cardHolderName }}</strong></p>
                 <p class="card-type mb-1">{{ card.cardType }}</p>
                 <p class="vaulted-customer-id mb-1">ID: {{ card.vaultedCustomerId }}</p>
@@ -329,26 +341,19 @@
                               });
 
                               const res = await response.json();
-                              console.log('response', res)
                               if (res.error) {
-                                  console.log('1',res.error)
                                   console.error('Error from backend:', res.message);
-                                  alert('Failed to add card: ' + res.message);
                               } else {
-                                  alert('Successfully added card');
                                   location.reload();
                               }
                           } catch (err) {
-                              console.log('2',err)
                               console.error('Error during fetch request:', err);
                           }
                       } else {
-                          console.log('3')
                           console.error('Failed to receive a card token');
                       }
                   })
                   .catch(function(error) {
-                      console.log('4', error)
                       console.error('Error during payment processing:', error);
                   });
           });
@@ -370,15 +375,12 @@
 
                       const res = await response.json();
                       if (res.error) {
-                          alert('Failed to delete the card');
                           console.error('Error:', res.message);
                       } else {
-                          alert('Card deleted successfully');
                           event.target.closest('.saved-card').remove();
                       }
                   } catch (err) {
                       console.error('Error during delete request:', err);
-                      alert('An error occurred while deleting the card');
                   }
               });
           });
@@ -394,6 +396,10 @@
       .saved-card:hover {
           transform: translateY(-4px);
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-logo-img {
+          height: 30px;
       }
 
       .card-info {
@@ -417,6 +423,197 @@
           padding: 10px;
           margin-top: 10px;
           border-radius: 5px;
+      }
+      .sc-form-toggle-wrapper {
+          position: relative;
+          margin: 2rem 0;
+      }
+
+      .sc-form-toggle-btn {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 12px 24px;
+          background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+          color: white;
+          border: none;
+          border-radius: 50px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          z-index: 1;
+      }
+
+      .sc-form-toggle-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #3a0ca3 0%, #4361ee 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          z-index: -1;
+          border-radius: 50px;
+      }
+
+      .sc-form-toggle-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .sc-form-toggle-btn:hover::before {
+          opacity: 1;
+      }
+
+      .sc-form-toggle-btn:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .sc-form-toggle-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.3s ease;
+      }
+
+      .sc-form-toggle-btn.active .sc-form-toggle-icon {
+          transform: rotate(45deg);
+      }
+
+      .sc-form-toggle-text {
+          position: relative;
+      }
+
+      .sc-form-container {
+          max-width: 800px;
+          margin: 0 auto;
+          animation: fadeIn 0.3s ease-out;
+      }
+
+      .sc-form-card {
+          border: none;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .sc-form-card-body {
+          padding: 2rem;
+      }
+
+      .sc-form-title {
+          color: #2c3e50;
+          font-weight: 600;
+          font-size: 1.5rem;
+          margin-bottom: 1.5rem;
+      }
+
+      .sc-form-label {
+          font-weight: 500;
+          color: #4a5568;
+          margin-bottom: 0.5rem;
+          display: block;
+          font-size: 0.9rem;
+      }
+
+      .sc-form-input,
+      .sc-form-select {
+          padding: 0.5rem 0.75rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          font-size: 0.9rem;
+          transition: all 0.2s ease;
+          width: 100%;
+      }
+
+      .sc-form-input:focus,
+      .sc-form-select:focus {
+          border-color: #4299e1;
+          box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+          outline: none;
+      }
+
+      .sc-form-select {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 0.75rem center;
+          background-size: 1em;
+      }
+
+      .sc-form-row {
+          margin-bottom: 1rem;
+      }
+
+      .sc-form-col {
+          padding-left: 0.5rem;
+          padding-right: 0.5rem;
+      }
+
+      .sc-form-payment-fields {
+          margin: 1.5rem 0;
+          background: #f8fafc;
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid #edf2f7;
+      }
+
+      .sc-form-submit {
+          padding: 0.75rem;
+          border-radius: 6px;
+          font-weight: 500;
+          letter-spacing: 0.5px;
+          transition: all 0.3s;
+          position: relative;
+          overflow: hidden;
+          border: none;
+          background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      }
+
+      .sc-form-submit:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+      }
+
+      .sc-form-submit:active {
+          transform: translateY(0);
+      }
+
+      .sc-form-submit-icon {
+          margin-right: 8px;
+      }
+
+      .sc-form-error {
+          background-color: #fff5f5;
+          color: #c53030;
+          padding: 1rem;
+          border-radius: 6px;
+          margin: 1rem 0;
+          border: 1px solid #fed7d7;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (max-width: 768px) {
+          .sc-form-card-body {
+              padding: 1.5rem;
+          }
+
+          .sc-form-col {
+              margin-bottom: 1rem;
+          }
       }
 
   </style>
