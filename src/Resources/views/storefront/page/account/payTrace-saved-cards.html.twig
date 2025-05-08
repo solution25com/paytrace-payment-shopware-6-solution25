@@ -154,13 +154,20 @@
                         <div class="saved-card p-3 border rounded-3 shadow-sm hover-card">
                             <div class="card-info">
                                 <div class="card-logo mb-2">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Visa_Logo.png"
-                                         alt="Visa" class="card-logo-img">
+                                    {% set cardType = card.cardType|lower %}
+                                    {% set logoMap = {
+                                        'visa': 'https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png',
+                                        'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Mastercard.jpg',
+                                        'discover': 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Discover.png',
+                                        'american express': 'https://upload.wikimedia.org/wikipedia/commons/3/38/American_Express.png'
+                                    } %}
+                                    {% set logoPath = logoMap[cardType] ?? 'https://via.placeholder.com/80x50?text=Card' %}
+                                    <img src="{{ logoPath }}" alt="{{ card.cardType }}" class="card-logo-img">
                                 </div>
                                 <p class="card-holder-name mb-1"><strong>{{ card.cardHolderName }}</strong></p>
                                 <p class="card-type mb-1">{{ card.cardType }}</p>
                                 <div class="card-number mb-2">
-                                    <span>**** **** **** {{ card.lastDigits|slice(12, 16) }}</span>
+                                    <span> {{ card.lastDigits }}</span>
                                 </div>
                                 <button class="btn btn-danger delete-card-btn mt-2"
                                         data-card-id="{{ card.vaultedCustomerId }}">Delete

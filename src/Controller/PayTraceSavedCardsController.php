@@ -7,6 +7,7 @@ use PayTrace\Service\PayTraceCustomerVaultService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -70,23 +71,31 @@ class PayTraceSavedCardsController extends StorefrontController
 
       try{
         $responseFromCustomerProfile = $this->payTraceApiService->getCustomerProfile($customerVaultId);
+
+        if($responseFromCustomerProfile['message'] === 'Success'){
+          $masked = $responseFromCustomerProfile['data']['card_masked'];
+          $firstDigits = substr($masked, 0, strpos($masked, 'x'));
+
+          $lastDigits =  '**** - **** - **** -' .substr($masked,-4);
+          $cardType = $this->payTraceCustomerVaultService->getCardType($firstDigits);
+
+          $this->payTraceCustomerVaultService->store(
+            $context,
+            $customerVaultId,
+            $cardHolderName,
+            $cardType,
+            $lastDigits,
+            $customerId . $customerLabel
+          );
+
+        }
       }catch (\Exception $exception){
+        return new JsonResponse([
+          'message' => $exception->getMessage(),
+          'success'=> false,
+        ]);
+
       }
-
-      $masked = $responseFromCustomerProfile['data']['card_masked'];
-      $firstDigits = substr($masked, 0, strpos($masked, 'x'));
-
-      $lastDigits =  '****-****-**** -' .substr($masked,-4);
-      $cardType = $this->payTraceCustomerVaultService->getCardType($firstDigits);
-
-      $this->payTraceCustomerVaultService->store(
-        $context,
-        $customerVaultId,
-        $cardHolderName,
-        $cardType,
-        $lastDigits,
-        $customerId . $customerLabel
-      );
 
       return $this->json([
         'success' => true,

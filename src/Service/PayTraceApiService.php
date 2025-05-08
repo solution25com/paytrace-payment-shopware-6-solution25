@@ -455,7 +455,7 @@ class PayTraceApiService extends Endpoints
     ];
   }
 
-  private function ApiResponse(ResponseInterface $response): ResponseInterface | array
+  private function ApiResponse(ResponseInterface $response): array
   {
     $responseBody = $response->getBody()->getContents();
     $decodedResponse = json_decode($responseBody, true);
