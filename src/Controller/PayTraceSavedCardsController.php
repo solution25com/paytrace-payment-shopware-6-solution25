@@ -68,11 +68,23 @@ class PayTraceSavedCardsController extends StorefrontController
       $customerVaultId = $responseFromMethod['data']['customer_id'];
       $cardHolderName = $data['billing_address']['name'];
 
+      try{
+        $responseFromCustomerProfile = $this->payTraceApiService->getCustomerProfile($customerVaultId);
+      }catch (\Exception $exception){
+      }
+
+      $masked = $responseFromCustomerProfile['data']['card_masked'];
+      $firstDigits = substr($masked, 0, strpos($masked, 'x'));
+
+      $lastDigits =  '****-****-**** -' .substr($masked,-4);
+      $cardType = $this->payTraceCustomerVaultService->getCardType($firstDigits);
+
       $this->payTraceCustomerVaultService->store(
         $context,
         $customerVaultId,
         $cardHolderName,
-        '',
+        $cardType,
+        $lastDigits,
         $customerId . $customerLabel
       );
 

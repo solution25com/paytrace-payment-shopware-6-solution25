@@ -380,13 +380,30 @@ class PayTraceApiService extends Endpoints
     ];
 
     $start = microtime(true);
-    $response = $this->request($fullEndpointUrl, $options);-
+    $response = $this->request($fullEndpointUrl, $options);
     $end = microtime(true);
     $executionTime = round($end - $start, 2);
     $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
 
     return $this->ApiResponse($response);
   }
+
+  public function getCustomerProfile(string $vaultedCustomerId): array
+  {
+    $endpoint = Endpoints::getUrlDynamicParam(Endpoints::CUSTOMER_PROFILE, [$vaultedCustomerId]);
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ]
+    ];
+    $response = $this->request($endpoint, $options);
+    return $this->ApiResponse($response);
+  }
+
+
   public function deleteVaultedCard(string $vaultedCustomerId): ResponseInterface | array
   {
     $endpointDetails = Endpoints::getUrlDynamicParam(

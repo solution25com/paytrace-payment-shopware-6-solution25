@@ -24,6 +24,7 @@ class PayTraceCustomerVaultService
                         string $vaultedShopperId,
                         string $cardHolderName,
                         string $cardType,
+                        string $lastDigits,
                         string $customerLabel): void
   {
     $context = $salesChannelContext->getContext();
@@ -43,6 +44,7 @@ class PayTraceCustomerVaultService
               'vaultedCustomerId' => $vaultedShopperId,
               'cardHolderName' => $cardHolderName,
               'cardType' => $cardType,
+              'lastDigits' => $lastDigits,
               'customerLabel' => $customerLabel,
               'createdAt' => (new \DateTime())->format('Y-m-d H:i:s'),
             ]
@@ -58,6 +60,7 @@ class PayTraceCustomerVaultService
               'vaultedCustomerId' => $vaultedShopperId,
               'cardHolderName' => $cardHolderName,
               'cardType' => $cardType,
+              'lastDigits' => $lastDigits,
               'customerLabel' => $customerLabel,
               'createdAt' => (new \DateTime())->format('Y-m-d H:i:s'),
             ]
@@ -113,11 +116,42 @@ class PayTraceCustomerVaultService
       $formattedCards[] = [
         'vaultedCustomerId' => $card->getVaultedCustomerId(),
         'customerLabel' => $card->getCustomerLabel(),
+        'lastDigits' => $card->getLastDigits(),
+        'cardType' => $card->getCardType(),
       ];
     }
 
     return $formattedCards;
   }
 
+  function getCardType(string $cardNumber): string {
+    $cardNumber = preg_replace('/\D/', '', $cardNumber); // Remove non-digits
+
+    if (preg_match('/^4[0-9]{0,}$/', $cardNumber)) {
+      return 'Visa';
+    }
+
+    if (preg_match('/^5[1-5][0-9]{0,}$/', $cardNumber)) {
+      return 'MasterCard';
+    }
+
+    if (preg_match('/^3[47][0-9]{0,}$/', $cardNumber)) {
+      return 'American Express';
+    }
+
+    if (preg_match('/^6(?:011|5[0-9]{2})[0-9]{0,}$/', $cardNumber)) {
+      return 'Discover';
+    }
+
+    if (preg_match('/^35(?:2[89]|[3-8][0-9])[0-9]{0,}$/', $cardNumber)) {
+      return 'JCB';
+    }
+
+    if (preg_match('/^3(?:0[0-5]|[68][0-9])[0-9]{0,}$/', $cardNumber)) {
+      return 'Diners Club';
+    }
+
+    return 'Unknown';
+  }
 
 }

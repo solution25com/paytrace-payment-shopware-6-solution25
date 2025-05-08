@@ -16,6 +16,7 @@ class CustomerVaultEntity extends Entity
   protected  ?String $vaultedCustomerId;
 
   protected ?String $cardType;
+  protected ?string $lastDigits;
   protected ?String $cardHolderName;
   protected ?String $customerLabel;
   protected ?CustomerEntity $customer = null;
@@ -42,6 +43,14 @@ class CustomerVaultEntity extends Entity
   }
   public function setCardType(string $cardType): void{
     $this->cardType = $cardType;
+  }
+
+  public function getLastDigits(): ?string{
+    return $this->lastDigits;
+  }
+
+  public function setLastDigits(string $lastDigits): void{
+    $this->lastDigits = $lastDigits;
   }
 
   public function getCustomerLabel(): ?string{

@@ -30,13 +30,12 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
         const defaultOption = document.createElement('option');
         defaultOption.value = '';
-        defaultOption.textContent = '-- Select a saved card --';
+        defaultOption.textContent = 'Select a saved card';
         dropdown.appendChild(defaultOption);
 
         cards.forEach(card => {
             const option = document.createElement('option');
-            option.value = card.vaultedCustomerId;
-            option.textContent = card.customerLabel;
+            option.textContent = card.cardType + ' - ' + card.lastDigits;
             dropdown.appendChild(option);
         });
     }
@@ -64,7 +63,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     label_margin: '0 0 4px 0',
                     label_padding: '0 4px',
                     label_border_style: 'none',
-                    height: '32px',
+                    height: '30px',
                     width: '95%',
                     padding_bottom: '4px'
                 },
@@ -88,7 +87,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     label_margin: '0 0 4px 0',
                     label_padding: '0 4px',
                     label_border_style: 'none',
-                    height: '32px',
+                    height: '30px',
                     width: '95%',
                     padding_bottom: '4px'
                 },
@@ -112,8 +111,8 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     label_margin: '0 0 4px 0',
                     label_padding: '0 4px',
                     label_border_style: 'none',
-                    height: '32px',
-                    width: '100%',
+                    height: '40px',
+                    width: '40%',
                     padding_bottom: '4px',
                     type: 'dropdown'
                 },
@@ -124,7 +123,10 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 clientKey: this.clientKey
             }
         })
-            .then(() => {})
+            .then(() => {
+                PTPayment.theme('label-extended-top')
+                console.warn('PayTrace setup complete');
+            })
             .catch((error) => {
                 console.error('Error during PayTrace setup:', error);
                 this._showError('Failed to initialize payment system.');

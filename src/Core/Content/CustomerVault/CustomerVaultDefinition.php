@@ -40,6 +40,7 @@ class CustomerVaultDefinition extends EntityDefinition
       (new StringField('vaulted_customer_id', 'vaultedCustomerId'))->addFlags(new Required()),
       (new StringField('card_holder_name', 'cardHolderName'))->addFlags(new Required()),
       (new StringField('card_type', 'cardType')),
+      (new StringField('last_four', 'lastDigits')),
       (new StringField('customer_label', 'customerLabel'))->addFlags(new Required()),
 
       new OneToOneAssociationField('customer', 'customer_id', 'id', CustomerDefinition::class, false)

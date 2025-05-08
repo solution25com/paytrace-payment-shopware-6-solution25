@@ -4,6 +4,7 @@
      data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
      data-amount="{{ page.extensions.payTrace_payment.amount }}"
      data-is-guest="{{ page.extensions.payTrace_payment.isGuest }}"
+     data-card-type="{{ page.extensions.payTrace_payment.cardType }}"
      data-cardsDropdown="{{ page.extensions.payTrace_payment.cardsDropdown }}">
 
 
@@ -21,7 +22,7 @@
     <input type="button" id="SelectCardButton" value="Pay with Saved Card"
            class="btn btn-secondary w-100 btn-sm" style="display:none;">
   </form>
-  <div class="card" style="max-width: 500px; margin: 0 auto;">
+  <div class="card" style="max-width: 500px; margin: 10px auto; background-color: white">
     <div class="card-body">
         <div class="" id='pt_hpf_form'></div>
       <div>
@@ -32,6 +33,7 @@
 
   <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
 </div>
+
 {% else %}
   <div id="error-message">
     <div class="error-alert">
@@ -40,7 +42,6 @@
     </div>
   </div>
 {% endif %}
-
 
 <style>
     #payTrace_payment .error-message {
@@ -115,15 +116,6 @@
         border-color: #004a99;
     }
 
-    #payTrace_payment .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-    }
-
-    #payTrace_payment .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #545b62;
-    }
     #error-message {
         margin: 10px 0;
         background-color: transparent;
@@ -140,7 +132,6 @@
         font-weight: 400;
         line-height: 20px;
     }
-
 
 </style>
 
