@@ -39,7 +39,7 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
     $amount = $pageObject->getCart()->getPrice()->getTotalPrice();
     $salesChannelContext = $event->getSalesChannelContext();
     $selectedPaymentGateway = $salesChannelContext->getPaymentMethod();
-    $isGuest = $salesChannelContext->getCustomer()->getGuest();
+    $isGuest = $salesChannelContext->getCustomer()?->getGuest() ?? null;
     $templateVariables = new CheckoutTemplateCustomData();
     if ($selectedPaymentGateway->getHandlerIdentifier() == CreditCard::class) {
 
@@ -60,19 +60,19 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
         $templateVariables
       );
     }
-      if ($selectedPaymentGateway->getHandlerIdentifier() == AchEcheck::class) {
+    if ($selectedPaymentGateway->getHandlerIdentifier() == AchEcheck::class) {
 
-          $templateVariables->assign([
-              'template' => '@Storefront/payTrace-payment/ach-eCheck.html.twig',
-              'gateway' => 'achEcheck',
-              'amount' => $amount,
-          ]);
+      $templateVariables->assign([
+        'template' => '@Storefront/payTrace-payment/ach-eCheck.html.twig',
+        'gateway' => 'achEcheck',
+        'amount' => $amount,
+      ]);
 
-          $pageObject->addExtension(
-              CheckoutTemplateCustomData::EXTENSION_NAME,
-              $templateVariables
-          );
-      }
+      $pageObject->addExtension(
+        CheckoutTemplateCustomData::EXTENSION_NAME,
+        $templateVariables
+      );
+    }
   }
 
 }

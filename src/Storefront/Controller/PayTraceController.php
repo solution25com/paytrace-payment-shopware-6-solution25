@@ -10,6 +10,7 @@ use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Psr\Http\Message\ResponseInterface;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class PayTraceController extends StorefrontController
@@ -28,37 +29,37 @@ class PayTraceController extends StorefrontController
     $this->logger = $logger;
   }
 
-  private function processPayment(array $token, string $amount, $billingData, bool $authAndCapture, SalesChannelContext $context): array {
+  private function processPayment(array $token, string $amount, array $billingData, bool $authAndCapture, SalesChannelContext $context): array | ResponseInterface {
     if ($authAndCapture) {
-      return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData, $context);
+      return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData);
     }
 
-    return $this->payTraceApiService->processPayment($token, $amount, $billingData, $context);
+    return $this->payTraceApiService->processPayment($token, $amount, $billingData);
   }
 
 
-    #[Route(path: '/process-echeck-deposit', name: 'frontend.payTrace.process-echeck-deposit', methods: ['POST'])]
-    public function processEcheckDeposit(Request $request, SalesChannelContext $context): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
+  #[Route(path: '/process-echeck-deposit', name: 'frontend.payTrace.process-echeck-deposit', methods: ['POST'])]
+  public function processEcheckDeposit(Request $request, SalesChannelContext $context): JsonResponse
+  {
+    $data = json_decode($request->getContent(), true);
 
-        if (empty($data)) {
-            return $this->createJsonResponse(false, 'Missing data.', JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        try {
-            $paymentResponse = $this->payTraceApiService->processEcheckDeposit($data);
-
-            return $this->handlePaymentResponse($paymentResponse);
-        } catch (\Exception $e) {
-            $this->logger->error('Vaulted payment processing failed: ' . $e->getMessage());
-            return $this->createJsonResponse(
-                false,
-                'Payment processing failed due to an internal error.',
-                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
+    if (empty($data)) {
+      return $this->createJsonResponse(false, 'Missing data.', JsonResponse::HTTP_BAD_REQUEST);
     }
+
+    try {
+      $paymentResponse = $this->payTraceApiService->processEcheckDeposit($data);
+
+      return $this->handlePaymentResponse((array) $paymentResponse);
+    } catch (\Exception $e) {
+      $this->logger->error('Vaulted payment processing failed: ' . $e->getMessage());
+      return $this->createJsonResponse(
+        false,
+        'Payment processing failed due to an internal error.',
+        JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 
 
   #[Route(path: '/capture-paytrace', name: 'frontend.payTrace.capture', methods: ['POST'])]
@@ -76,14 +77,20 @@ class PayTraceController extends StorefrontController
       return $this->createJsonResponse(false, 'Missing customer.', JsonResponse::HTTP_BAD_REQUEST);
     }
 
+    $billingAddress = $customer->getActiveBillingAddress();
+    $country = $billingAddress?->getCountry();
+    $state = $billingAddress?->getCountryState();
+
     $customerData = [
       'fullName' => $customer->getFirstName() . ' ' . $customer->getLastName(),
-      'city' => $customer->getActiveBillingAddress()->getCity(),
-      'country' => $customer->getActiveBillingAddress()->getCountry()->getIso(),
-      'state' => explode('-', $customer->getActiveBillingAddress()->getCountryState()->getShortCode())[1] ?? null,
-      'street' => $customer->getActiveBillingAddress()->getStreet(),
-      'street2' => $customer->getActiveBillingAddress()->getAdditionalAddressLine1(),
-      'zip' => $customer->getActiveBillingAddress()->getZipcode(),
+      'city' => $billingAddress?->getCity(),
+      'country' => $country?->getIso(),
+      'state' => $state && strpos($state->getShortCode(), '-') !== false
+        ? explode('-', $state->getShortCode())[1]
+        : null,
+      'street' => $billingAddress?->getStreet(),
+      'street2' => $billingAddress?->getAdditionalAddressLine1(),
+      'zip' => $billingAddress?->getZipcode(),
       'email' => $customer->getEmail(),
     ];
 
@@ -115,7 +122,7 @@ class PayTraceController extends StorefrontController
     try {
       $paymentResponse = $this->payTraceApiService->processVaultedPayment($data);
 
-      return $this->handlePaymentResponse($paymentResponse);
+      return $this->handlePaymentResponse((array) $paymentResponse);
     } catch (\Exception $e) {
       $this->logger->error('Vaulted payment processing failed: ' . $e->getMessage());
       return $this->createJsonResponse(
@@ -150,3 +157,4 @@ class PayTraceController extends StorefrontController
     return new JsonResponse(array_merge(['success' => $success, 'message' => $message], $data), $statusCode);
   }
 }
+

@@ -154,7 +154,7 @@ class PayTrace extends Plugin
     return $paymentIds->getIds()[0];
   }
 
-  public function getDependency($name): mixed
+  public function getDependency(string $name): mixed
   {
     return $this->container->get($name);
   }

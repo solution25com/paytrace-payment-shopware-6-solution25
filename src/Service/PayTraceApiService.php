@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\Response;
 use PayTrace\Library\Constants\Endpoints;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Exception\RequestException;
 
 class PayTraceApiService extends Endpoints
 {
@@ -385,6 +386,10 @@ class PayTraceApiService extends Endpoints
     $executionTime = round($end - $start, 2);
     $this->logger->alert('ExecutionTime for authorization: ' . $executionTime);
 
+    if (!$response instanceof ResponseInterface) {
+      return $response;
+    }
+
     return $this->ApiResponse($response);
   }
 
@@ -400,6 +405,11 @@ class PayTraceApiService extends Endpoints
       ]
     ];
     $response = $this->request($endpoint, $options);
+
+    if (!$response instanceof ResponseInterface) {
+      return $response;
+    }
+
     return $this->ApiResponse($response);
   }
 
@@ -486,15 +496,19 @@ class PayTraceApiService extends Endpoints
 
   private function handleError(GuzzleException $e): array
   {
-    $response = $e->hasResponse() ? $e->getResponse() : null;
-    if ($response) {
-      $responseBody = $response->getBody()->getContents();
-      $decodedBody = json_decode($responseBody, true);
-      return [
-        'error' => true,
-        'code' => $e->getCode(),
-        'message' => $decodedBody['message'] ?? $decodedBody,
-      ];
+    if ($e instanceof RequestException && $e->hasResponse()) {
+      $response = $e->getResponse();
+
+      if ($response instanceof ResponseInterface) {
+        $responseBody = $response->getBody()->getContents();
+        $decodedBody = json_decode($responseBody, true);
+
+        return [
+          'error' => true,
+          'code' => $e->getCode(),
+          'message' => $decodedBody['message'] ?? $decodedBody,
+        ];
+      }
     }
 
     return [

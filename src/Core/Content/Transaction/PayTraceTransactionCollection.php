@@ -4,6 +4,8 @@ namespace PayTrace\Core\Content\Transaction;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 /**
+ * @extends EntityCollection<PayTraceTransactionEntity>
+ *
  * @method void add(PayTraceTransactionEntity $entity)
  * @method void set(string $key, PayTraceTransactionEntity $entity)
  * @method PayTraceTransactionEntity[] getIterator()

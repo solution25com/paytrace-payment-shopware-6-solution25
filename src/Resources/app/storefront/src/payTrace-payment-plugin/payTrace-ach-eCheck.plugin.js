@@ -23,9 +23,12 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     }
 
     _bindEvents() {
-        document.getElementById("submit-ach-payment").addEventListener("click", (e) => {
+        if (!this.confirmOrderForm) return;
+
+        this.confirmOrderForm.addEventListener('submit', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            this._disableSubmit();
             this._getEncryptedTokens();
         });
     }
@@ -61,21 +64,18 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'application/json' }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this._hideError();
-
-                    if (this.confirmOrderForm) {
-                        this.confirmOrderForm.submit();
-                    }
-                } else {
-                    this._showError(data.message || 'Payment failed.');
-                }
-            })
-            .catch(error => {
-                this._showError('An unexpected error occurred while submitting the payment. | ' + {error});
-            });
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  this._hideError();
+                  this.confirmOrderForm.submit();
+              } else {
+                  this._showError(data.message || 'Payment failed.');
+              }
+          })
+          .catch(error => {
+              this._showError('An unexpected error occurred while submitting the payment. | ' + {error});
+          });
     }
 
     _showError(message) {
@@ -83,6 +83,8 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             this.errorEl.innerHTML = message;
             this.errorEl.classList.remove('d-none');
         }
+
+        this._enableSubmit();
     }
 
     _hideError() {
@@ -90,5 +92,22 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             this.errorEl.innerHTML = '';
             this.errorEl.classList.add('d-none');
         }
+
+        this._enableSubmit();
     }
+
+    _disableSubmit() {
+        const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
+        if (confirmButton) {
+            confirmButton.disabled = true;
+        }
+    }
+
+    _enableSubmit() {
+        const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
+        if (confirmButton) {
+            confirmButton.disabled = false;
+        }
+    }
+
 }

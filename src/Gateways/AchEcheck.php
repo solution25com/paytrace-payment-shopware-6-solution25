@@ -5,6 +5,7 @@ namespace PayTrace\Gateways;
 use PayTrace\Library\Constants\TransactionStatuses;
 use PayTrace\Service\PayTraceConfigService;
 use PayTrace\Service\PayTraceTransactionService;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
@@ -24,9 +25,14 @@ class AchEcheck extends AbstractPaymentHandler
 {
     private OrderTransactionStateHandler $transactionStateHandler;
     private PayTraceTransactionService $payTraceTransactionService;
+
+    /** @var EntityRepository<OrderTransactionCollection> */
     private EntityRepository $orderTransactionRepository;
 
 
+    /**
+     * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
+     */
   public function __construct(
         OrderTransactionStateHandler $transactionStateHandler,
         PayTraceTransactionService $payTraceTransactionService,
@@ -50,7 +56,7 @@ class AchEcheck extends AbstractPaymentHandler
 
     $this->transactionStateHandler->processUnconfirmed($transaction->getOrderTransactionId(), $context);
     $status = TransactionStatuses::UNCONFIRMED->value;
-    $this->payTraceTransactionService->addTransaction($orderId, "", $payTraceTransactionId, $status, $context);
+    $this->payTraceTransactionService->addTransaction($orderId, "", (string) $payTraceTransactionId, $status, $context);
 
     return null;
   }

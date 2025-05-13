@@ -4,6 +4,8 @@ namespace PayTrace\Core\Content\CustomerVault;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 /**
+ * @extends EntityCollection<CustomerVaultEntity>
+ *
  * @method void add(CustomerVaultEntity $entity)
  * @method void set(string $key, CustomerVaultEntity $entity)
  * @method CustomerVaultEntity[] getIterator()

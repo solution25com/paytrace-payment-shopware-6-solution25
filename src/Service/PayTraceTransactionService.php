@@ -10,24 +10,37 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\Checkout\Order\OrderCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 class PayTraceTransactionService
 {
+
   private EntityRepository $payTraceTransactionRepository;
+
+    /** @var EntityRepository<OrderCollection> */
   private EntityRepository $orderRepository;
+
+    /** @var EntityRepository<OrderTransactionCollection> */
   private EntityRepository $orderTransactionRepository;
 
+
+    /**
+     * @param EntityRepository<OrderCollection> $orderRepository
+     * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
+     */
   public function __construct(EntityRepository $payTraceTransactionRepository,
                               EntityRepository $orderRepository,
                               EntityRepository $orderTransactionRepository,
-                              )
+  )
   {
     $this->payTraceTransactionRepository = $payTraceTransactionRepository;
     $this->orderRepository = $orderRepository;
     $this->orderTransactionRepository = $orderTransactionRepository;
   }
 
-  public function addTransaction($orderId, $paymentMethodName, $transactionId, $status, $context): void
+  public function addTransaction(string $orderId,string $paymentMethodName,string $transactionId,string $status,Context $context): void
   {
     $tablePayTraceId = Uuid::randomHex();
     $this->payTraceTransactionRepository->create([

@@ -35,7 +35,8 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
         cards.forEach(card => {
             const option = document.createElement('option');
-            option.textContent = card.cardType + ' - ' + card.lastDigits;
+            option.value = card.vaultedCustomerId;
+            option.textContent = card.cardType + ' - **** **** **** ' + card.lastDigits;
             dropdown.appendChild(option);
         });
     }

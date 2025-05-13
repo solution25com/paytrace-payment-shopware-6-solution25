@@ -12,9 +12,6 @@
             <input type="text" class="form-control pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="Routing Number" required><br>
             <input type="text" class="form-control pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="Account Number" required><br>
         </div>
-
-        <input type="button" id="submit-ach-payment" value="Pay {{ page.cart.price.totalPrice|currency }}"
-               class="btn btn-primary btn-block w-100">
     </form>
 
     <script src="https://api.sandbox.paytrace.com/v3/assets/js/e2ee/paytrace-e2ee.js"></script>

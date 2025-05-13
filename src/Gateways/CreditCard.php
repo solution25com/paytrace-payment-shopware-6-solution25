@@ -5,6 +5,7 @@ namespace PayTrace\Gateways;
 use PayTrace\Library\Constants\TransactionStatuses;
 use PayTrace\Service\PayTraceConfigService;
 use PayTrace\Service\PayTraceTransactionService;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
@@ -20,14 +21,21 @@ use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 
 class CreditCard extends AbstractPaymentHandler
 {
   private OrderTransactionStateHandler $transactionStateHandler;
   private PayTraceTransactionService $payTraceTransactionService;
   private PayTraceConfigService $payTraceConfigService;
+
+
+  /** @var EntityRepository<OrderTransactionCollection> */
   private EntityRepository $orderTransactionRepository;
 
+    /**
+     * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
+     */
   public function __construct(
     OrderTransactionStateHandler $transactionStateHandler,
     PayTraceTransactionService $payTraceTransactionService,
@@ -58,11 +66,17 @@ class CreditCard extends AbstractPaymentHandler
 
     $transactionId = $transaction->getOrderTransactionId();
     $criteria = new Criteria([$transactionId]);
+
+    /** @var OrderTransactionEntity|null $orderTransaction */
     $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+
+    if (!$orderTransaction instanceof OrderTransactionEntity) {
+      throw new \RuntimeException('OrderTransaction not found for ID ' . $transactionId);
+    }
 
     $orderId = $orderTransaction->getOrderId();
 
-    $this->payTraceTransactionService->addTransaction($orderId, "", $payTraceTransactionId, $transactionState, $context);
+    $this->payTraceTransactionService->addTransaction($orderId, "",(string) $payTraceTransactionId, $transactionState, $context);
     $this->transactionStateHandler->{$transactionMethod}($transactionId, $context);
 
     return null;

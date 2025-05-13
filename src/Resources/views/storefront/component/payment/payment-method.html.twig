@@ -1,11 +1,17 @@
 {% sw_extends '@Storefront/storefront/component/payment/payment-method.html.twig' %}
 
 {% block component_payment_method_field %}
-      {{ parent() }}
-          {% if payment.name == 'PayTrace Credit Card' and context.paymentMethod.name == 'PayTrace Credit Card' %}
+    {{ parent() }}
+
+    {% if payment.name == 'PayTrace Credit Card' and context.paymentMethod.name == 'PayTrace Credit Card' %}
+        {% if page.extensions.payTrace_payment is defined and page.extensions.payTrace_payment.template is not null %}
             {% sw_include page.extensions.payTrace_payment.template %}
-          {% endif %}
-            {% if payment.name == 'PayTrace ACH (eCheck) Payment' and context.paymentMethod.name == 'PayTrace ACH (eCheck) Payment' %}
-                {% sw_include page.extensions.payTrace_payment.template %}
-            {% endif %}
+        {% endif %}
+    {% endif %}
+
+    {% if payment.name == 'PayTrace ACH (eCheck) Payment' and context.paymentMethod.name == 'PayTrace ACH (eCheck) Payment' %}
+        {% if page.extensions.payTrace_payment is defined and page.extensions.payTrace_payment.template is not null %}
+            {% sw_include page.extensions.payTrace_payment.template %}
+        {% endif %}
+    {% endif %}
 {% endblock %}

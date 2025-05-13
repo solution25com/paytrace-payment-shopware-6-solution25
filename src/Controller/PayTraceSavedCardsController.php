@@ -13,14 +13,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use PayTrace\Core\Content\CustomerVault\CustomerVaultEntity;
+use PayTrace\Core\Content\CustomerVault\CustomerVaultCollection;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class PayTraceSavedCardsController extends StorefrontController
 {
+
+  /**
+   * @var EntityRepository<CustomerVaultCollection>
+   */
   private EntityRepository $customerVaultRepository;
   private PayTraceApiService $payTraceApiService;
   private PayTraceCustomerVaultService $payTraceCustomerVaultService;
 
+
+    /**
+     * @param EntityRepository<CustomerVaultCollection> $customerVaultRepository
+     */
   public function __construct(EntityRepository $customerVaultRepository, PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService)
   {
     $this->customerVaultRepository = $customerVaultRepository;
@@ -57,6 +67,13 @@ class PayTraceSavedCardsController extends StorefrontController
     $data = json_decode($request->getContent(), true);
     $customerId = $context->getCustomer()?->getId();
 
+    if (!$customerId) {
+      return $this->json([
+        'error' => true,
+        'message' => 'Customer not found',
+      ], Response::HTTP_UNAUTHORIZED);
+    }
+
     $countCustomer = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
     $customerLabel = '_Card_' . ($countCustomer + 1);
 
@@ -65,7 +82,7 @@ class PayTraceSavedCardsController extends StorefrontController
 
     $responseFromMethod = $this->payTraceApiService->createCustomerProfile($data);
 
-    if ($responseFromMethod['message'] === 'Success') {
+    if(is_array($responseFromMethod) && ($responseFromMethod['message'] ?? null) === 'Success') {
       $customerVaultId = $responseFromMethod['data']['customer_id'];
       $cardHolderName = $data['billing_address']['name'];
 
@@ -74,9 +91,15 @@ class PayTraceSavedCardsController extends StorefrontController
 
         if($responseFromCustomerProfile['message'] === 'Success'){
           $masked = $responseFromCustomerProfile['data']['card_masked'];
-          $firstDigits = substr($masked, 0, strpos($masked, 'x'));
 
-          $lastDigits =  '**** - **** - **** -' .substr($masked,-4);
+          $pos = strpos($masked, 'x');
+          if ($pos === false) {
+            throw new \RuntimeException("Invalid masked value: 'x' not found.");
+          }
+
+          $firstDigits = substr($masked, 0, $pos);
+
+          $lastDigits =  substr($masked,-4);
           $cardType = $this->payTraceCustomerVaultService->getCardType($firstDigits);
 
           $this->payTraceCustomerVaultService->store(
@@ -129,6 +152,7 @@ class PayTraceSavedCardsController extends StorefrontController
     $criteria->addFilter(new EqualsFilter('vaultedCustomerId', $customerVaultId));
     $criteria->addFilter(new EqualsFilter('customerId', $customerId));
 
+    /** @var CustomerVaultEntity|null $vaultedCard */
     $vaultedCard = $this->customerVaultRepository->search($criteria, $context->getContext())->first();
 
     if (!$vaultedCard) {
@@ -140,14 +164,14 @@ class PayTraceSavedCardsController extends StorefrontController
 
     $responseFromMethod = $this->payTraceApiService->deleteVaultedCard($customerVaultId);
 
-    if (isset($responseFromMethod['error']) && $responseFromMethod['error']) {
+    if (is_array($responseFromMethod) && ($responseFromMethod['error'] ?? false)) {
       return $this->json([
         'error' => true,
         'message' => $responseFromMethod['message'],
       ]);
     }
 
-    if (isset($responseFromMethod['message']) && $responseFromMethod['message'] === 'Success') {
+    if (is_array($responseFromMethod) && ($responseFromMethod['message'] ?? null) === 'Success') {
       $this->payTraceCustomerVaultService->delete($context, $customerVaultId);
 
       return $this->json([

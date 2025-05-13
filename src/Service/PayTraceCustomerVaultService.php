@@ -9,8 +9,10 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
+
 class PayTraceCustomerVaultService
 {
+
   private EntityRepository $vaultedCustomerRepository;
   private LoggerInterface $logger;
 
@@ -28,7 +30,7 @@ class PayTraceCustomerVaultService
                         string $customerLabel): void
   {
     $context = $salesChannelContext->getContext();
-    $salesChannelCustomerId = $salesChannelContext->getCustomer()->getId();
+    $salesChannelCustomerId = $salesChannelContext->getCustomer()?->getId() ?? null;
 
     try {
       $existingShopper = $this->vaultedCustomerRepository->search(
@@ -125,9 +127,9 @@ class PayTraceCustomerVaultService
   }
 
   function getCardType(string $cardNumber): string {
-    $cardNumber = preg_replace('/\D/', '', $cardNumber); // Remove non-digits
+    $cardNumber = (string) preg_replace('/\D/', '', $cardNumber); // Remove non-digits
 
-    if (preg_match('/^4[0-9]{0,}$/', $cardNumber)) {
+    if (preg_match('/^4[0-9]{0,}$/',$cardNumber)) {
       return 'Visa';
     }
 
