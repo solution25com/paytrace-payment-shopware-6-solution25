@@ -4,7 +4,6 @@ namespace PayTrace\Controller;
 
 use PayTrace\Service\PayTraceApiService;
 use PayTrace\Service\PayTraceCustomerVaultService;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,27 +12,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use PayTrace\Core\Content\CustomerVault\CustomerVaultEntity;
-use PayTrace\Core\Content\CustomerVault\CustomerVaultCollection;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class PayTraceSavedCardsController extends StorefrontController
 {
-
-  /**
-   * @var EntityRepository<CustomerVaultCollection>
-   */
-  private EntityRepository $customerVaultRepository;
   private PayTraceApiService $payTraceApiService;
   private PayTraceCustomerVaultService $payTraceCustomerVaultService;
 
-
-    /**
-     * @param EntityRepository<CustomerVaultCollection> $customerVaultRepository
-     */
-  public function __construct(EntityRepository $customerVaultRepository, PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService)
+  public function __construct(PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService)
   {
-    $this->customerVaultRepository = $customerVaultRepository;
     $this->payTraceApiService = $payTraceApiService;
     $this->payTraceCustomerVaultService = $payTraceCustomerVaultService;
   }
@@ -47,10 +34,7 @@ class PayTraceSavedCardsController extends StorefrontController
       return $this->redirectToRoute('frontend.account.login.page');
     }
 
-    $criteria = new Criteria();
-    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
-
-    $customerVaultRecords = $this->customerVaultRepository->search($criteria, $context->getContext())->getEntities();
+    $customerVaultRecords = $this->payTraceCustomerVaultService->getCustomerVaultRecords($customerId, $context->getContext());
 
     $paymentToken = $this->payTraceApiService->generatePaymentToken();
 
@@ -152,8 +136,7 @@ class PayTraceSavedCardsController extends StorefrontController
     $criteria->addFilter(new EqualsFilter('vaultedCustomerId', $customerVaultId));
     $criteria->addFilter(new EqualsFilter('customerId', $customerId));
 
-    /** @var CustomerVaultEntity|null $vaultedCard */
-    $vaultedCard = $this->customerVaultRepository->search($criteria, $context->getContext())->first();
+    $vaultedCard = $this->payTraceCustomerVaultService->getCustomerVaultRecords($customerId, $context->getContext(), $criteria);
 
     if (!$vaultedCard) {
       return $this->json([
@@ -185,6 +168,5 @@ class PayTraceSavedCardsController extends StorefrontController
       'message' => 'Unexpected error occurred while deleting the card',
     ]);
   }
-
 
 }

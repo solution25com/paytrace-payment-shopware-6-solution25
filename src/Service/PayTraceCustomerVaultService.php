@@ -3,6 +3,8 @@
 namespace PayTrace\Service;
 
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -127,7 +129,7 @@ class PayTraceCustomerVaultService
   }
 
   function getCardType(string $cardNumber): string {
-    $cardNumber = (string) preg_replace('/\D/', '', $cardNumber); // Remove non-digits
+    $cardNumber = (string) preg_replace('/\D/', '', $cardNumber);
 
     if (preg_match('/^4[0-9]{0,}$/',$cardNumber)) {
       return 'Visa';
@@ -154,6 +156,18 @@ class PayTraceCustomerVaultService
     }
 
     return 'Unknown';
+  }
+  public function getCustomerVaultRecords(string $customerId, Context $context, ?Criteria $criteria = null): EntityCollection
+  {
+    if (!$criteria) {
+      $criteria = new Criteria();
+    }
+
+    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
+
+    return $this->vaultedCustomerRepository
+      ->search($criteria, $context)
+      ->getEntities();
   }
 
 }

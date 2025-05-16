@@ -38,11 +38,6 @@
 
         <!-- Entity Definitions END -->
 
-
-        <service id="PayTrace\Command\ExampleCommand">
-            <tag name="console.command"/>
-        </service>
-
         <service id="PayTrace\Subscriber\CheckoutConfirmEventSubscriber">
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
@@ -55,6 +50,7 @@
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="order.repository"/>
             <argument type="service" id="payment_method.repository"/>
+            <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
             <argument type="service" id="PayTracePayment.logger"/>
             <tag name="kernel.event_subscriber"/>
         </service>
@@ -62,6 +58,7 @@
         <service id="PayTrace\Storefront\Controller\PayTraceController" public="true">
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="PayTrace\Library\Constants\ValidatorUtility"/>
             <argument type="service" id="PayTracePayment.logger"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -70,7 +67,6 @@
         </service>
 
         <service id="PayTrace\Controller\PayTraceSavedCardsController">
-            <argument type="service" id="payTrace_customer_vault.repository" />
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
             <tag name="controller.service_arguments"/>
@@ -116,6 +112,16 @@
         <service id="PayTracePayment.rotatingHandler" class="Monolog\Handler\RotatingFileHandler">
             <argument type="string">%kernel.logs_dir%/PayTracePayment-%kernel.environment%.log</argument>
         </service>
+
+        <!-- Logger END -->
+
+        <!-- Validator  -->
+        <service id="PayTrace\Library\Constants\ValidatorUtility">
+            <argument type="service" id="validator"/>
+            <argument type="service" id="PayTracePayment.logger"/>
+        </service>
+        <!-- Validator END -->
+
 
     </services>
 </container>

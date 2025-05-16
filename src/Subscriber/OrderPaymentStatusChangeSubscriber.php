@@ -4,16 +4,16 @@ namespace PayTrace\Subscriber;
 
 use PayTrace\Service\PayTraceApiService;
 use PayTrace\Service\PayTraceTransactionService;
-use PayTrace\Core\Content\Transaction\PayTraceTransactionEntity;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\StateMachine\Event\StateMachineTransitionEvent;
 use Shopware\Core\System\StateMachine\StateMachineException;
-use Symfony\Component\Console\Input\StringInput;
+use Shopware\Core\System\StateMachine\StateMachineRegistry;
+use Shopware\Core\System\StateMachine\Transition;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 
@@ -27,6 +27,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     /** @var EntityRepository<PaymentMethodCollection> */
   private EntityRepository $paymentMethodRepository;
+  private StateMachineRegistry $stateMachineRegistry;
   private LoggerInterface $logger;
 
 
@@ -39,12 +40,14 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
     PayTraceApiService $payTraceApiService,
     EntityRepository $orderRepository,
     EntityRepository $paymentMethodRepository,
+    StateMachineRegistry $stateMachineRegistry,
     LoggerInterface $logger
   ) {
     $this->payTraceTransactionService = $payTraceTransactionService;
     $this->payTraceApiService = $payTraceApiService;
     $this->orderRepository = $orderRepository;
     $this->paymentMethodRepository = $paymentMethodRepository;
+    $this->stateMachineRegistry = $stateMachineRegistry;
     $this->logger = $logger;
   }
 
@@ -129,8 +132,10 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
       $response = $this->payTraceApiService->captureRefund($postData);
 
-      if ($response[0]['status'] !== 'success') {
+      if ($response['data'][0]['status'] !== 'success') {
         $this->logger->error('PayTrace refund failed', ['response' => $response]);
+
+        // TODO: revert state to paid if refund fail
         throw new StateMachineException(400, 'PAYMENT_PROCESSING_FAILED', (string) json_encode($response));
       }
 

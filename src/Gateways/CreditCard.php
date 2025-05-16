@@ -29,7 +29,6 @@ class CreditCard extends AbstractPaymentHandler
   private PayTraceTransactionService $payTraceTransactionService;
   private PayTraceConfigService $payTraceConfigService;
 
-
   /** @var EntityRepository<OrderTransactionCollection> */
   private EntityRepository $orderTransactionRepository;
 
@@ -52,7 +51,6 @@ class CreditCard extends AbstractPaymentHandler
 
   public function supports(PaymentHandlerType $type, string $paymentMethodId, Context $context): bool
   {
-    // TODO: Implement supports() method.
     return true;
   }
 

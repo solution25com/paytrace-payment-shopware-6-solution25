@@ -36,7 +36,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     _getEncryptedTokens() {
         paytrace.setKeyAjax(this.options.publicKeyUrl);
 
-        const routingField = document.getElementById('achRoutingNumber');
+        const routingField = document.getElementById('achRoutingNumber').value;
         const accountField = document.getElementById('achAccountNumber');
         const billingName = document.getElementById('ach-full-name').value;
 
@@ -45,7 +45,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             return;
         }
 
-        const encryptedRouting = paytrace.encryptValue(routingField.value);
+        const encryptedRouting = routingField;
         const encryptedAccount = paytrace.encryptValue(accountField.value);
 
         this._submitPayment(encryptedRouting, encryptedAccount, billingName);
