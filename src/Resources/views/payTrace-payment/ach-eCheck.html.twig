@@ -14,6 +14,22 @@
             <input type="text" class="form-control ach-forma pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_routing_number'|trans }}" required><br>
             <input type="text" class="form-control ach-forma pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_account_number'|trans }}" required><br>
         </div>
+        <div id="account-type-selection">
+            <label>
+                <input type="radio" name="accountType" value="Checking" checked>
+                Checking
+            </label>
+            <label class="savings">
+                <input type="radio" name="accountType" value="Savings">
+                Savings
+            </label>
+            <div id="paytrace-loading-indicator" class="d-none" style="text-align:center; margin: 15px 0;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
     </form>
 
     <script src="https://api.sandbox.paytrace.com/v3/assets/js/e2ee/paytrace-e2ee.js"></script>

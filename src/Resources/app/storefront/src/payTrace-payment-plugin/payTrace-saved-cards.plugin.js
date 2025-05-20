@@ -180,6 +180,7 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
 
   async _handleFormSubmit() {
     if (!this._validateBillingData()) return;
+    this._showLoading();
 
     const getValue = id => this.el.querySelector(`#${id}`)?.value || '';
     const streetAddress2 = getValue('streetAddress2');
@@ -199,6 +200,7 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
 
       if (!result.message) {
         console.error('Failed to receive a card token');
+        this._hideLoading();
         return;
       }
 
@@ -214,11 +216,14 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
       const res = await response.json();
       if (res.error) {
         console.error('Error from backend:', res.message);
+        this._hideLoading();
       } else {
+        this._hideLoading();
         location.reload();
       }
     } catch (error) {
       console.error('Error during payment processing:', error);
+      this._hideLoading();
     }
   }
 
@@ -230,6 +235,8 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
 
     const userConfirmed = confirm(this._t('paytrace_shopware6.savedCards.js.error_confirm_delete'));
     if (!userConfirmed) return;
+
+    this._showDeleteLoading(button);
 
     try {
       const response = await fetch(`/account/payTrace-saved-cards/delete-card/${cardId}`, {
@@ -249,9 +256,38 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
       console.error('Error during delete request:', err);
       this._showError([this._t('paytrace_shopware6.savedCards.js.error_delete_failed')]);
     }
+    finally {
+      this._hideDeleteLoading(button);
+    }
   }
   _t(key) {
     return window.translation?.[key] || key;
   }
+
+
+  _showLoading() {
+    const loader = document.getElementById('paytrace-loading-indicator');
+    if (loader) {
+      loader.classList.remove('d-none');
+    }
+  }
+
+  _hideLoading() {
+    const loader = document.getElementById('paytrace-loading-indicator');
+    if (loader) {
+      loader.classList.add('d-none');
+    }
+  }
+
+  _showDeleteLoading(button) {
+    const loader = button.closest('.saved-card').querySelector('.delete-loading-indicator');
+    if (loader) loader.classList.remove('d-none');
+  }
+
+  _hideDeleteLoading(button) {
+    const loader = button.closest('.saved-card').querySelector('.delete-loading-indicator');
+    if (loader) loader.classList.add('d-none');
+  }
+
 
 }

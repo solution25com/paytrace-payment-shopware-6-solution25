@@ -134,7 +134,7 @@ class PayTraceApiService extends Endpoints
         'bank_account' => [
           'account_number' => $data['accountNumber'],
           'routing_number' => $data['routingNumber'],
-          'account_type' => $data['accountType'] ?? 'Checking',
+          'account_type' => $data['accountType'] ?? 'Checking'
         ],
         'amount' => $data['amount'],
         'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',

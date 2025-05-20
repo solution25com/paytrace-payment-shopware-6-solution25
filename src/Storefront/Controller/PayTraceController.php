@@ -59,6 +59,7 @@ class PayTraceController extends StorefrontController
       'billingName' => [new Assert\NotBlank(), new Assert\Type('string')],
       'routingNumber' => [new Assert\NotBlank(), new Assert\Type('string')],
       'accountNumber' => [new Assert\NotBlank(), new Assert\Type('string')],
+      'accountType' => [new Assert\NotBlank(), new Assert\Type('string')],
       'amount' => [new Assert\NotBlank(), new Assert\Type('string')],
     ]);
 

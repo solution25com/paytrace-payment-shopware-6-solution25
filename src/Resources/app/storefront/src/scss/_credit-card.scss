@@ -86,3 +86,22 @@
   font-weight: 400;
   line-height: 20px;
 }
+
+#paytrace-loading-indicator {
+  margin: 1rem auto;
+}
+
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+  border: 0.25em solid #ccc;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

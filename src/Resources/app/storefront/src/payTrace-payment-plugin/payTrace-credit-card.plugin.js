@@ -139,7 +139,13 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             e.preventDefault();
             e.stopPropagation();
 
+            const cardFormContainer = document.getElementById('payTrace_payment');
+            if (cardFormContainer) {
+                cardFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
             this._disableSubmit();
+            this._showLoading();
 
             const savedCardSelected = document.getElementById('saved-cards')?.value;
 
@@ -151,6 +157,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             PTPayment.validate((validationErrors) => {
                 if (validationErrors.length > 0) {
                     this._handleValidationErrors(validationErrors);
+                    this._hideLoading();
                     return;
                 }
 
@@ -172,6 +179,12 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
             selectCardBtn.addEventListener("click", (e) => {
                 e.preventDefault();
+
+                if (!this.confirmOrderForm.checkValidity()) {
+                    this.confirmOrderForm.reportValidity();
+                    return;
+                }
+
                 this._vaultedPayment();
             });
         }
@@ -241,6 +254,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             return;
         }
 
+        this._showLoading();
         this._submitVaultedPayment(selectedCardVaultedId, this.amount);
     }
 
@@ -252,6 +266,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         })
             .then(response => response.json())
             .then(data => {
+                this._hideLoading();
                 if (data.success) {
                     this._hideError();
                     document.getElementById('payTrace-transaction-id').value = data.transactionId;
@@ -262,6 +277,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 }
             })
             .catch(error => {
+                this._hideLoading();
                 console.error('Payment submission failed:', error);
                 this._showError(this._t('paytrace_shopware6.credit_card.submitError.unknown'));
             });
@@ -330,4 +346,19 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     _t(key) {
         return window.translation?.[key] || key;
     }
+
+    _showLoading() {
+        const loader = document.getElementById('paytrace-loading-indicator');
+        if (loader) {
+            loader.classList.remove('d-none');
+        }
+    }
+
+    _hideLoading() {
+        const loader = document.getElementById('paytrace-loading-indicator');
+        if (loader) {
+            loader.classList.add('d-none');
+        }
+    }
+
 }

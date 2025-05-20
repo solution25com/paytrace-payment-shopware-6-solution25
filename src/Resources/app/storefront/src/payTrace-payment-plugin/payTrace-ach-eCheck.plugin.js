@@ -28,7 +28,14 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         this.confirmOrderForm.addEventListener('submit', (e) => {
             e.preventDefault();
             e.stopPropagation();
+
+            const cardFormContainer = document.getElementById(this.options.parentCreditCardWrapperId);
+            if (cardFormContainer) {
+                cardFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
             this._disableSubmit();
+            this._showLoading();
             this._getEncryptedTokens();
         });
     }
@@ -39,8 +46,10 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         const routingField = document.getElementById('achRoutingNumber').value;
         const accountField = document.getElementById('achAccountNumber');
         const billingName = document.getElementById('ach-full-name').value;
+        const accountType = document.querySelector('input[name="accountType"]:checked')?.value;
 
-        if (!routingField || !accountField) {
+        if (!routingField || !accountField || !accountType) {
+            this._hideLoading();
             this._showError(this._t('paytrace_shopware6.ach_echeck.submitError.missingFields'));
             return;
         }
@@ -48,14 +57,15 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         const encryptedRouting = routingField;
         const encryptedAccount = paytrace.encryptValue(accountField.value);
 
-        this._submitPayment(encryptedRouting, encryptedAccount, billingName);
+        this._submitPayment(encryptedRouting, encryptedAccount, billingName, accountType);
     }
 
-    _submitPayment(encryptedRouting, encryptedAccount, billingName) {
+    _submitPayment(encryptedRouting, encryptedAccount, billingName, accountType) {
         const payload = {
             billingName: billingName,
             routingNumber: encryptedRouting,
             accountNumber: encryptedAccount,
+            accountType: accountType,
             amount: this.amount
         };
 
@@ -68,8 +78,11 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
           .then(data => {
               if (data.success) {
                   this._hideError();
+                  this._hideLoading();
                   this.confirmOrderForm.submit();
+                  this._hideLoading();
               } else {
+                  this._hideLoading();
                   this._showError(data.message || this._t('paytrace_shopware6.ach_echeck.submitError.paymentFailed'));
               }
           })
@@ -114,4 +127,17 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         return window.translation?.[key] || key;
     }
 
+    _showLoading() {
+        const loader = document.getElementById('paytrace-loading-indicator');
+        if (loader) {
+            loader.classList.remove('d-none');
+        }
+    }
+
+    _hideLoading() {
+        const loader = document.getElementById('paytrace-loading-indicator');
+        if (loader) {
+            loader.classList.add('d-none');
+        }
+    }
 }
