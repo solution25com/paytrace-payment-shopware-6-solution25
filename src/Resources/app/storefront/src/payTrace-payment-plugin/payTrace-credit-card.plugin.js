@@ -10,7 +10,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         this.clientKey = this.parentCreditCardWrapper.getAttribute('data-client-key');
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
         this.cardsDropdown = this.parentCreditCardWrapper.getAttribute('data-cardsDropdown');
-        this.errorEl = document.getElementById('error-message');
+        this.errorEl = document.getElementById('credit-card-error-message');
         this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
     }
 
@@ -30,7 +30,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
         const defaultOption = document.createElement('option');
         defaultOption.value = '';
-        defaultOption.textContent = 'Select a saved card';
+        defaultOption.textContent = this._t('paytrace_shopware6.credit_card.selectSavedCard');
         dropdown.appendChild(defaultOption);
 
         cards.forEach(card => {
@@ -130,7 +130,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             })
             .catch((error) => {
                 console.error('Error during PayTrace setup:', error);
-                this._showError('Failed to initialize payment system.');
+                this._showError(this._t('paytrace_shopware6.credit_card.submitError.initFail'));
             });
     }
 
@@ -224,12 +224,12 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 if (result.message) {
                     this._submitPayment(result.message);
                 } else {
-                    this._showError('Failed to receive card token.');
+                    this._showError(this._t('paytrace_shopware6.credit_card.submitError.cardTokenFail'));
                 }
             })
             .catch((error) => {
                 console.error('Error during payment processing:', error);
-                this._showError('An error occurred during card processing.');
+                this._showError(this._t('paytrace_shopware6.credit_card.submitError.processError'));
             });
     }
 
@@ -237,7 +237,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         const selectedCardVaultedId = document.getElementById('saved-cards').value;
 
         if (!selectedCardVaultedId) {
-            this._showError('Please select a saved card before proceeding.');
+            this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedMissing'));
             return;
         }
 
@@ -258,12 +258,12 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     this.confirmOrderForm.submit();
                 } else {
                     console.error('Payment failed:', data.message || 'Unknown error');
-                    this._showError(data.message || 'Payment failed.');
+                    this._showError(this._t('paytrace_shopware6.credit_card.submitError.paymentFailed'));
                 }
             })
             .catch(error => {
                 console.error('Payment submission failed:', error);
-                this._showError('An unexpected error occurred while submitting the payment.');
+                this._showError(this._t('paytrace_shopware6.credit_card.submitError.unknown'));
             });
     }
 
@@ -281,12 +281,12 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     this.confirmOrderForm.submit();
                 } else {
                     console.error('Vaulted payment failed:', data.message || 'Unknown error');
-                    this._showError(data.message || 'Vaulted card payment failed.');
+                    this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedError'));
                 }
             })
             .catch(error => {
                 console.error('Vaulted payment submission failed:', error);
-                this._showError('An unexpected error occurred while using a saved card.');
+                this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedUnknown'));
             });
     }
 
@@ -326,5 +326,8 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         if (confirmButton) {
             confirmButton.disabled = false;
         }
+    }
+    _t(key) {
+        return window.translation?.[key] || key;
     }
 }

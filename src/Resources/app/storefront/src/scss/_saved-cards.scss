@@ -1,4 +1,154 @@
 .is-ctl-paytracesavedcards {
+
+  .sc-form-toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+
+  .sc-form-toggle-btn.active .sc-form-toggle-icon {
+    transform: rotate(45deg);
+  }
+
+  .sc-form-toggle-text {
+    position: relative;
+  }
+
+  .sc-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .sc-form-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .sc-form-card-body {
+    padding: 2rem;
+  }
+
+  .sc-form-title {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sc-form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+  }
+
+  .sc-form-input,
+  .sc-form-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .sc-form-input:focus,
+  .sc-form-select:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+    outline: none;
+  }
+
+  .sc-form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+  }
+
+  .sc-form-row {
+    margin-bottom: 1rem;
+  }
+
+  .sc-form-col {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .sc-form-payment-fields {
+    margin: 1.5rem 0;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #edf2f7;
+  }
+
+  .sc-form-submit {
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  }
+
+  .sc-form-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+  }
+
+  .sc-form-submit:active {
+    transform: translateY(0);
+  }
+
+  .sc-form-submit-icon {
+    margin-right: 8px;
+  }
+
+  .sc-form-error {
+    background-color: #fff5f5;
+    color: #c53030;
+    padding: 1rem;
+    border-radius: 6px;
+    margin: 1rem 0;
+    border: 1px solid #fed7d7;
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .sc-form-card-body {
+      padding: 1.5rem;
+    }
+
+    .sc-form-col {
+      margin-bottom: 1rem;
+    }
+  }
+
+
+
+
+
   .sc-form-toggle-wrapper {
     position: relative;
     margin: 2rem 0;
@@ -69,6 +219,7 @@
     font-size: 14px;
   }
 
+
   .saved-card {
     .card-info {
       display: flex;
@@ -78,14 +229,14 @@
         height: 30px;
       }
 
-    .vaulted-customer-id,
-    .card-number{
-      border: 1px solid lightgray;
-      border-radius: 4px;
-      padding: 6px;
-      font-size: 14px;
-      font-weight: 300;
-    }
+      .vaulted-customer-id,
+      .card-number{
+        border: 1px solid lightgray;
+        border-radius: 4px;
+        padding: 6px;
+        font-size: 14px;
+        font-weight: 300;
+      }
       .delete-card-btn {
         width: 100%;
       }

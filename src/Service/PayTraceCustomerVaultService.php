@@ -10,14 +10,17 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-
+use PayTrace\Core\Content\CustomerVault\CustomerVaultCollection;
 
 class PayTraceCustomerVaultService
 {
-
+    /** @var EntityRepository<CustomerVaultCollection> */
   private EntityRepository $vaultedCustomerRepository;
   private LoggerInterface $logger;
 
+    /**
+     * @param EntityRepository<CustomerVaultCollection> $vaultedShopperRepository
+     */
   public function __construct(EntityRepository $vaultedShopperRepository, LoggerInterface $logger)
   {
     $this->vaultedCustomerRepository = $vaultedShopperRepository;
@@ -107,7 +110,7 @@ class PayTraceCustomerVaultService
     return $count;
   }
 
-  public function dropdownCards(SalesChannelContext $context, string $customerId)
+  public function dropdownCards(SalesChannelContext $context, string $customerId): array
   {
     $criteria = new Criteria();
     $criteria->addFilter(new EqualsFilter('customerId', $customerId));

@@ -12,21 +12,21 @@
 
     {% if not page.extensions.payTrace_payment.isGuest %}
       <div id="saved-cards-wrapper" class="mb-2">
-        <label for="saved-cards" class="form-label">Choose a saved card:</label>
+        <label for="saved-cards" class="form-label">{{ "paytrace_shopware6.credit_card.label_choose_saved_card"|trans }}</label>
         <select id="saved-cards" name="saved-cards" class="form-select form-select-sm">
-          <option value="">-- Select a saved card --</option>
+          <option value="">{{ "paytrace_shopware6.credit_card.option_select_saved_card"|trans }}</option>
         </select>
       </div>
     {% endif %}
 
-    <input type="button" id="SelectCardButton" value="Pay with Saved Card"
+    <input type="button" id="SelectCardButton" value="{{ "paytrace_shopware6.credit_card.button_pay_with_saved_card"|trans }}"
            class="btn btn-secondary w-100 btn-sm" style="display:none;">
   </form>
   <div class="card" style="max-width: 500px; margin: 10px auto; background-color: white">
     <div class="card-body">
         <div class="" id='pt_hpf_form'></div>
       <div>
-        <span class="error-message alert-danger d-none" id="error-message" role="alert"></span>
+        <span class="credit-card-error-message alert-danger d-none" id="credit-card-error-message" role="alert"></span>
       </div>
     </div>
   </div>
@@ -35,103 +35,25 @@
 </div>
 
 {% else %}
-  <div id="error-message">
+  <div id="credit-card-error-message">
     <div class="error-alert">
-      <strong>PayTrace Configuration Missing or Incorrect:</strong>
-      <p>Required API credentials are missing. Please check your plugin settings for <code>Sandbox</code> or <code>Production</code>.</p>
+      <strong>{{ "paytrace_shopware6.credit_card.error_missing_configuration_title"|trans }}</strong>
+      <p>{{ "paytrace_shopware6.credit_card.error_missing_configuration_message"|trans|raw }}</p>
     </div>
   </div>
 {% endif %}
 
-<style>
-    #payTrace_payment .error-message {
-        margin-bottom: 10px;
-        border-radius: 4px;
-        font-size: 13px;
-    }
 
-    #pt_hpf_form iframe {
-        /*width: 90% !important;*/
-        height: 300px !important;
-        margin-top:25px;
-        border: none;
-        overflow: hidden;
-    }
-
-    #payTrace_payment .alert-danger {
-        background-color: #f8d7da;
-        color: #842029;
-        border: 1px solid #f5c2c7;
-    }
-
-    #payTrace_payment .form-control-sm,
-    #payTrace_payment .form-select-sm {
-        font-size: 0.875rem;
-        padding: 0.45rem 0.75rem;
-        height: auto;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        background-color: #fff;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    #payTrace_payment .form-control-sm:focus,
-    #payTrace_payment .form-select-sm:focus {
-        border-color: #66afe9;
-        box-shadow: 0 0 0 0.15rem rgba(102, 175, 233, 0.25);
-        outline: none;
-    }
-
-    #payTrace_payment label.form-label {
-        font-size: 0.875rem;
-        margin-bottom: 0.25rem;
-        font-weight: 500;
-    }
-
-    #payTrace_payment .card-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #333;
-    }
-
-    #payTrace_payment .btn-sm {
-        font-size: 0.9rem;
-        padding: 0.5rem;
-        border-radius: 5px;
-    }
-
-    #payTrace_payment .card {
-        border: 1px solid #e3e6f0;
-        border-radius: 8px;
-        padding: 15px;
-    }
-
-    #payTrace_payment .btn-primary {
-        background-color: #0069d9;
-        border-color: #0062cc;
-    }
-
-    #payTrace_payment .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004a99;
-    }
-
-    #error-message {
-        margin: 10px 0;
-        background-color: transparent;
-    }
-
-    #error-message .error-alert {
-        padding: 6px 12px;
-        align-items: flex-start;
-        border-radius: 4px;
-        background: #F9DDDD;
-        color: #D72828;
-        font-size: 14px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 20px;
-    }
-
-</style>
-
+<script>
+  window.translation = {
+    "paytrace_shopware6.credit_card.selectSavedCard": "{{ 'paytrace_shopware6.credit_card.selectSavedCard'|trans }}",
+    "paytrace_shopware6.credit_card.submitError.vaultedMissing": "{{ 'paytrace_shopware6.credit_card.submitError.vaultedMissing'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.cardTokenFail": "{{ 'paytrace_shopware6.credit_card.submitError.cardTokenFail'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.processError": "{{ 'paytrace_shopware6.credit_card.submitError.processError'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.paymentFailed": "{{ 'paytrace_shopware6.credit_card.submitError.paymentFailed'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.unknown": "{{ 'paytrace_shopware6.credit_card.submitError.unknown'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.vaultedError": "{{ 'paytrace_shopware6.credit_card.submitError.vaultedError'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.vaultedUnknown": "{{ 'paytrace_shopware6.credit_card.submitError.vaultedUnknown'|trans|e('js') }}",
+    "paytrace_shopware6.credit_card.submitError.initFail": "{{ 'paytrace_shopware6.credit_card.submitError.initFail'|trans|e('js') }}"
+  };
+</script>

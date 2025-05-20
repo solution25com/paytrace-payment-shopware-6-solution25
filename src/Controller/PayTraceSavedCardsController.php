@@ -110,10 +110,13 @@ class PayTraceSavedCardsController extends StorefrontController
       ]);
     }
 
-    return $this->json([
-      'error' => true,
-      'message' => $responseFromMethod['message'] ?? 'Unknown error',
-    ]);
+      $data = (array) $responseFromMethod;
+
+      return $this->json([
+          'error' => true,
+          'message' => $data['message'] ?? 'Unknown error',
+      ]);
+
   }
 
   #[Route(path: '/account/payTrace-saved-cards/delete-card/{vaultedCustomerId}', name: 'frontend.account.payTrace-saved-cards-delete-card.page', methods: ['POST'])]

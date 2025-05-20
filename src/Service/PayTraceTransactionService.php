@@ -4,19 +4,24 @@ namespace PayTrace\Service;
 
 use PayTrace\Core\Content\Transaction\PayTraceTransactionEntity;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
+use PayTrace\Core\Content\Transaction\PayTraceTransactionCollection;
+
 
 class PayTraceTransactionService
 {
-
+    /** @var EntityRepository<PayTraceTransactionCollection> */
   private EntityRepository $payTraceTransactionRepository;
 
     /** @var EntityRepository<OrderCollection> */
@@ -27,6 +32,7 @@ class PayTraceTransactionService
 
 
     /**
+     * @param EntityRepository<PayTraceTransactionCollection> $payTraceTransactionRepository
      * @param EntityRepository<OrderCollection> $orderRepository
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
      */

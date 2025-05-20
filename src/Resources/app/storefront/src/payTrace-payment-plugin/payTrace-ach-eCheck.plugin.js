@@ -15,7 +15,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         this.confirmOrderForm = document.forms[this.options.confirmFormId];
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
-        this.errorEl = document.getElementById('error-message');
+        this.errorEl = document.getElementById('ach-error-message');
     }
 
     _loadPayTraceKey() {
@@ -41,7 +41,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         const billingName = document.getElementById('ach-full-name').value;
 
         if (!routingField || !accountField) {
-            this._showError('Form fields are missing.');
+            this._showError(this._t('paytrace_shopware6.ach_echeck.submitError.missingFields'));
             return;
         }
 
@@ -70,11 +70,11 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
                   this._hideError();
                   this.confirmOrderForm.submit();
               } else {
-                  this._showError(data.message || 'Payment failed.');
+                  this._showError(data.message || this._t('paytrace_shopware6.ach_echeck.submitError.paymentFailed'));
               }
           })
           .catch(error => {
-              this._showError('An unexpected error occurred while submitting the payment. | ' + {error});
+              this._showError(this._t('paytrace_shopware6.ach_echeck.submitError.unknown') + ' | ' + error);
           });
     }
 
@@ -108,6 +108,10 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         if (confirmButton) {
             confirmButton.disabled = false;
         }
+    }
+
+    _t(key) {
+        return window.translation?.[key] || key;
     }
 
 }

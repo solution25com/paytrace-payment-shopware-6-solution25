@@ -1,0 +1,88 @@
+#payTrace_payment .credit-card-error-message {
+  margin-bottom: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+#pt_hpf_form iframe {
+  /*width: 90% !important;*/
+  height: 300px !important;
+  margin-top:25px;
+  border: none;
+  overflow: hidden;
+}
+
+#payTrace_payment .alert-danger {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+#payTrace_payment .form-control-sm,
+#payTrace_payment .form-select-sm {
+  font-size: 0.875rem;
+  padding: 0.45rem 0.75rem;
+  height: auto;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#payTrace_payment .form-control-sm:focus,
+#payTrace_payment .form-select-sm:focus {
+  border-color: #66afe9;
+  box-shadow: 0 0 0 0.15rem rgba(102, 175, 233, 0.25);
+  outline: none;
+}
+
+#payTrace_payment label.form-label {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+#payTrace_payment .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+#payTrace_payment .btn-sm {
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+#payTrace_payment .card {
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+#payTrace_payment .btn-primary {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+#payTrace_payment .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004a99;
+}
+
+#credit-card-error-message{
+  margin: 10px 0;
+  background-color: transparent;
+}
+
+#credit-card-error-message .error-alert {
+  padding: 6px 12px;
+  align-items: flex-start;
+  border-radius: 4px;
+  background: #F9DDDD;
+  color: #D72828;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}

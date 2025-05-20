@@ -31,6 +31,7 @@ class PayTrace extends Plugin
       foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
         $this->setPaymentMethodIsActive(false, $uninstallContext->getContext(), new $paymentMethod());
         if (!$uninstallContext->keepUserData()) {
+            /** @var Connection $connection */
           $connection = $this->container->get(Connection::class);
           $connection->executeStatement('DROP TABLE IF EXISTS payTrace_customer_vault');
           $connection->executeStatement('DROP TABLE IF EXISTS payTrace_transaction');
@@ -94,6 +95,7 @@ class PayTrace extends Plugin
     }
 
     $pluginIdProvider = $this->container->get(PluginIdProvider::class);
+      /** @var PluginIdProvider $pluginIdProvider */
     $pluginId = $pluginIdProvider->getPluginIdByBaseClass(get_class($this), $context);
 
     $paymentData = [
