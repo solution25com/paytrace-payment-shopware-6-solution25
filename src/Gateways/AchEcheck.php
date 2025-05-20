@@ -55,7 +55,7 @@ class AchEcheck extends AbstractPaymentHandler
     $orderId = $orderTransaction->getOrderId();
 
     $this->transactionStateHandler->processUnconfirmed($transaction->getOrderTransactionId(), $context);
-    $status = TransactionStatuses::UNCONFIRMED->value;
+    $status = TransactionStatuses::PAID->value;
     $this->payTraceTransactionService->addTransaction($orderId, "", (string) $payTraceTransactionId, $status, $context);
 
     return null;
