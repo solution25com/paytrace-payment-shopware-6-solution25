@@ -1,3 +1,4 @@
+paytrace EV 
 name: Shopware Plugin Verification
 
 on:
@@ -23,6 +24,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x' 
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -46,11 +52,11 @@ jobs:
         if: success() && steps.verifier.outcome == 'success'
         run: |
           echo "✅ Shopware Extension Verifier ran successfully. No issues found!"
-          echo "### ✅ Shopware Extension Verifier Passed" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Shopware Extension Verifier Passed (${matrix.version-selection})" >> $GITHUB_STEP_SUMMARY
 
       - name: ❌ Extension Verifier Failed – Errors were found
         if: failure() && steps.verifier.outcome == 'failure'
         run: |
           echo "❌ Shopware Extension Verifier detected issues. Please review and fix them."
-          echo "### ❌ Shopware Extension Verifier Failed – Errors were found" >> $GITHUB_STEP_SUMMARY
+          echo "### ❌ Shopware Extension Verifier Failed (${matrix.version-selection})" >> $GITHUB_STEP_SUMMARY
           exit 1
