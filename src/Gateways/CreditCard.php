@@ -59,8 +59,8 @@ class CreditCard extends AbstractPaymentHandler
     $payTraceTransactionId = $request->getPayload()->get('payTrace_transaction_id');
 
     $authorizeOption = $this->payTraceConfigService->getConfig('authorizeAndCapture');
-    $transactionState = $authorizeOption ? TransactionStatuses::AUTHORIZED->value : TransactionStatuses::PAID->value;
-    $transactionMethod = $authorizeOption ? 'authorize' : 'paid';
+    $transactionState = $authorizeOption == 'auth' ? TransactionStatuses::AUTHORIZED->value : TransactionStatuses::PAID->value;
+    $transactionMethod = $authorizeOption == 'auth' ? 'authorize' : 'paid';
 
     $transactionId = $transaction->getOrderTransactionId();
     $criteria = new Criteria([$transactionId]);

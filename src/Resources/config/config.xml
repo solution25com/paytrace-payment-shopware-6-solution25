@@ -70,12 +70,25 @@
 
     <card>
         <title>Authorize and capture</title>
-        <input-field type="checkbox">
+        <input-field type="single-select">
             <name>authorizeAndCapture</name>
-            <label>Credit card - Authorize and capture</label>
+            <label>Transaction type</label>
             <helpText>Allow admin to manually authorize and capture payments
                 When enabled, the admin can review and approve payments.All payment will be on hold until the admin approves it</helpText>
-            <defaultValue>true</defaultValue>
+
+            <options>
+                <option>
+                    <id>auth</id>
+                    <name>Auth Only</name>
+                </option>
+                <option>
+                    <id>direct_capture</id>
+                    <name>Auth and Capture</name>
+                </option>
+            </options>
+
+            <defaultValue>auth</defaultValue>
+
         </input-field>
     </card>
 

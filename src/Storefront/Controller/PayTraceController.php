@@ -37,8 +37,8 @@ class PayTraceController extends StorefrontController
     $this->logger = $logger;
   }
 
-  private function processPayment(array $token, string $amount, array $billingData, bool $authAndCapture, SalesChannelContext $context): array  {
-    if ($authAndCapture) {
+  private function processPayment(array $token, string $amount, array $billingData, string $authAndCapture, SalesChannelContext $context): array  {
+    if ($authAndCapture == 'auth') {
       return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData);
     }
     return $this->payTraceApiService->processPayment($token, $amount, $billingData);

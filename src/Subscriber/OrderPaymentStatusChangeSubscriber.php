@@ -90,14 +90,14 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     $currentStatus = strtolower($payTraceTransaction->getStatus() ?? '');
 
-    if ($nextState === 'paid') {
+    if ($nextState === 'paid' && $currentStatus !== 'paid') {
       if ($currentStatus !== 'paid') {
         $this->handleCapture($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId());
       }
     } elseif ($nextState === 'cancelled') {
       $this->handleVoid($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId());
     } elseif ($nextState === 'refunded') {
-      $this->handleRefund($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId());
+      $this->handleRefund($orderId, $context, $payTraceTransactionId, $payTraceTransaction->getId(), $event->getEntityId());
     }
   }
 
@@ -112,7 +112,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     $response = $this->payTraceApiService->processCapture($postData);
 
-    if (!isset($response['status']) || $response['status'] !== 'success') {
+    if (!isset($response['data'][0]['status']) || $response['data'][0]['status'] !== 'success') {
       $this->logger->error('PayTrace capture failed', ['response' => $response]);
       throw new StateMachineException(400,'PAYTRACE_CAPTURE_FAILED',(string) json_encode($response));
     }
@@ -120,7 +120,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
     $this->payTraceTransactionService->updateTransactionStatus($transactionId, 'paid', $context);
   }
 
-  private function handleRefund(string $orderId,Context $context, string $payTraceTransactionId, string $transactionId): void
+  private function handleRefund(string $orderId,Context $context, string $payTraceTransactionId, string $transactionId, string $orderTransactionId): void
   {
     try {
       $orderAmount = $this->getOrderTotalAmount($orderId, $context);
@@ -135,7 +135,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
       if ($response['data'][0]['status'] !== 'success') {
         $this->logger->error('PayTrace refund failed', ['response' => $response]);
 
-        // TODO: revert state to paid if refund fail
+        $this->revertState($orderTransactionId, 'reopen_payment', $context);
         throw new StateMachineException(400, 'PAYMENT_PROCESSING_FAILED', (string) json_encode($response));
       }
 
@@ -186,5 +186,32 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
     return $order->getAmountTotal();
   }
+
+    private function revertState(string $orderTransactionId, string $newState, Context $context) : void
+    {
+        try {
+            $transition = new Transition(
+                'order_transaction',
+                $orderTransactionId,
+                $newState,
+                'stateId'
+            );
+
+            $this->stateMachineRegistry->transition($transition, $context);
+            $this->logger->info('Payment status updated', [
+                'orderTransactionId' => $orderTransactionId,
+                'newState' => $newState
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to update payment status', [
+                'orderTransactionId' => $orderTransactionId,
+                'newState' => $newState,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new StateMachineException(400, 'PAYMENT_STATUS_UPDATE_FAILED', 'Failed to update payment status: ' . $e->getMessage());
+        }
+
+    }
 }
 

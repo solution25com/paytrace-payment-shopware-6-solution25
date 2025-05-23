@@ -32,16 +32,17 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
 
   public function addPaymentMethodSpecificFormFields(CheckoutConfirmPageLoadedEvent $event): void
   {
-
-    $clientKeyResult = $this->payTraceApiService->generatePaymentToken();
-    $clientKey = is_string($clientKeyResult) ? $clientKeyResult : null;
     $pageObject = $event->getPage();
     $amount = $pageObject->getCart()->getPrice()->getTotalPrice();
     $salesChannelContext = $event->getSalesChannelContext();
     $selectedPaymentGateway = $salesChannelContext->getPaymentMethod();
-    $isGuest = $salesChannelContext->getCustomer()?->getGuest() ?? null;
     $templateVariables = new CheckoutTemplateCustomData();
+
     if ($selectedPaymentGateway->getHandlerIdentifier() == CreditCard::class) {
+
+      $clientKeyResult = $this->payTraceApiService->generatePaymentToken();
+      $clientKey = is_string($clientKeyResult) ? $clientKeyResult : null;
+      $isGuest = $salesChannelContext->getCustomer()?->getGuest() ?? null;
 
       $customerId = $salesChannelContext->getCustomer()->getId();
       $cardsDropdown = $this->payTraceCustomerVaultService->dropdownCards($salesChannelContext,$customerId);
@@ -74,5 +75,4 @@ class CheckoutConfirmEventSubscriber implements EventSubscriberInterface
       );
     }
   }
-
 }
