@@ -12,6 +12,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         this.cardsDropdown = this.parentCreditCardWrapper.getAttribute('data-cardsDropdown');
         this.errorEl = document.getElementById('credit-card-error-message');
         this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
+        this.saveCardCheckbox = document.getElementById('save-paytrace-card');
     }
 
     init() {
@@ -226,6 +227,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 .map((msg, i) => `${i + 1}) ${msg}`)
                 .join('<br>');
             this._showError(combinedMessage);
+            this._hideLoading();
         } else {
             this._getCardToken();
         }
@@ -238,11 +240,13 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     this._submitPayment(result.message);
                 } else {
                     this._showError(this._t('paytrace_shopware6.credit_card.submitError.cardTokenFail'));
+                    this._hideLoading();
                 }
             })
             .catch((error) => {
                 console.error('Error during payment processing:', error);
                 this._showError(this._t('paytrace_shopware6.credit_card.submitError.processError'));
+                this._hideLoading();
             });
     }
 
@@ -251,6 +255,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
         if (!selectedCardVaultedId) {
             this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedMissing'));
+            this._hideLoading();
             return;
         }
 
@@ -261,7 +266,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     _submitPayment(token) {
         fetch('/capture-paytrace', {
             method: 'POST',
-            body: JSON.stringify({ token: token, amount: this.amount }),
+            body: JSON.stringify({ token: token, amount: this.amount, saveCard: this.saveCardCheckbox?.checked || false}),
             headers: { 'Content-Type': 'application/json' }
         })
             .then(response => response.json())
@@ -274,6 +279,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 } else {
                     console.error('Payment failed:', data.message || 'Unknown error');
                     this._showError(this._t('paytrace_shopware6.credit_card.submitError.paymentFailed'));
+                    this._hideLoading();
                 }
             })
             .catch(error => {
@@ -298,11 +304,13 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 } else {
                     console.error('Vaulted payment failed:', data.message || 'Unknown error');
                     this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedError'));
+                    this._hideLoading();
                 }
             })
             .catch(error => {
                 console.error('Vaulted payment submission failed:', error);
                 this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedUnknown'));
+                this._hideLoading();
             });
     }
 
@@ -312,6 +320,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             this.errorEl.classList.remove('d-none');
         }
         this._enableSubmit();
+        this._hideLoading();
     }
 
     _hideError(inputElement = null) {
@@ -335,14 +344,21 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         if (confirmButton) {
             confirmButton.disabled = true;
         }
+        confirmButton.classList.add('is-loading');
     }
 
     _enableSubmit() {
         const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
         if (confirmButton) {
             confirmButton.disabled = false;
+
+            const loader = confirmButton.querySelector('.loader');
+            if (loader) {
+                loader.remove();
+            }
         }
     }
+
     _t(key) {
         return window.translation?.[key] || key;
     }
@@ -352,6 +368,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         if (loader) {
             loader.classList.remove('d-none');
         }
+        this._disableSaveCardCheckbox();
     }
 
     _hideLoading() {
@@ -359,6 +376,18 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         if (loader) {
             loader.classList.add('d-none');
         }
+        this._enableSaveCardCheckbox();
     }
 
+    _disableSaveCardCheckbox() {
+        if (this.saveCardCheckbox) {
+            this.saveCardCheckbox.disabled = true;
+        }
+    }
+
+    _enableSaveCardCheckbox() {
+        if (this.saveCardCheckbox) {
+            this.saveCardCheckbox.disabled = false;
+        }
+    }
 }

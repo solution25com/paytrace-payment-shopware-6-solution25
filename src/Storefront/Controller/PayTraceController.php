@@ -37,11 +37,11 @@ class PayTraceController extends StorefrontController
     $this->logger = $logger;
   }
 
-  private function processPayment(array $token, string $amount, array $billingData, string $authAndCapture, SalesChannelContext $context): array  {
+  private function processPayment(array $token, string $amount, array $billingData, bool $saveCard, string $authAndCapture, SalesChannelContext $context): array  {
     if ($authAndCapture == 'auth') {
-      return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData);
+      return $this->payTraceApiService->processPaymentAuthorize($token, $amount, $billingData, $saveCard, $context);
     }
-    return $this->payTraceApiService->processPayment($token, $amount, $billingData);
+    return $this->payTraceApiService->processPayment($token, $amount, $billingData, $saveCard, $context);
   }
 
 
@@ -98,7 +98,6 @@ class PayTraceController extends StorefrontController
     }
   }
 
-
   #[Route(path: '/capture-paytrace', name: 'frontend.payTrace.capture', methods: ['POST'])]
   public function capture(Request $request, SalesChannelContext $context): JsonResponse
   {
@@ -110,6 +109,7 @@ class PayTraceController extends StorefrontController
     }
 
     $data = $request->request->all();
+    $saveCard = $data['saveCard'] ?? false;
 
     $constraints = new Assert\Collection([
         'token' => new Assert\Collection([
@@ -117,6 +117,7 @@ class PayTraceController extends StorefrontController
             'enc_key' => [new Assert\NotBlank(), new Assert\Type('string')],
         ]),
         'amount' => [new Assert\NotBlank(), new Assert\Type('string')],
+        'saveCard' => [new Assert\Optional(), new Assert\Type(['type' => 'bool'])],
     ]);
 
     $errors = $this->validator->validateFields($data, $constraints);
@@ -143,7 +144,7 @@ class PayTraceController extends StorefrontController
 
     try {
 
-      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $customerData, $authAndCapture, $context);
+      $paymentResponse = $this->processPayment($data['token'], $data['amount'], $customerData, $saveCard, $authAndCapture, $context);
       return $this->handlePaymentResponse($paymentResponse);
 
     } catch (\Exception $e) {

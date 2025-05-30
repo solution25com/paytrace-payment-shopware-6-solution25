@@ -9,18 +9,21 @@ use PayTrace\Library\Constants\Endpoints;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\RequestException;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PayTraceApiService extends Endpoints
 {
   private PayTraceConfigService $payTraceConfigService;
+  private PayTraceCustomerVaultService $payTraceCustomerVaultService;
   private LoggerInterface $logger;
   private Client $client;
   private ?string $authToken = null;
   private ?int $authTokenExpiryTime = null;
 
-  public function __construct(PayTraceConfigService $payTraceConfigService, LoggerInterface $logger)
+  public function __construct(PayTraceConfigService $payTraceConfigService, PayTraceCustomerVaultService $payTraceCustomerVaultService, LoggerInterface $logger)
   {
     $this->payTraceConfigService = $payTraceConfigService;
+    $this->payTraceCustomerVaultService = $payTraceCustomerVaultService;
     $this->logger = $logger;
     $this->client = new Client();
   }
@@ -82,9 +85,38 @@ class PayTraceApiService extends Endpoints
   }
 
 
-  public function processPayment(array $token, string $amount, array $billingData): ResponseInterface|array
+  public function processPayment(array $token, string $amount, array $billingData, bool $saveCard, SalesChannelContext $context): ResponseInterface|array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::TRANSACTION);
+    $fullEndpointUrl = $saveCard ? Endpoints::getUrl(Endpoints::CUSTOMER_TRANSACTION) : Endpoints::getUrl(Endpoints::TRANSACTION);
+
+    $customerId = $context->getCustomer()?->getId();
+    $label = '';
+
+    if ($saveCard && $customerId) {
+      $cardCount = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
+      $label = $customerId . '_Card_' . ($cardCount + 1);
+    }
+
+    $body = [
+      'hpf_token' => $token['hpf_token'],
+      'enc_key' => $token['enc_key'],
+      'amount' => $amount,
+      'billing_address' => [
+        'street' => $billingData['street'],
+        'street2' => $billingData['street2'] ?? null,
+        'city' => $billingData['city'],
+        'state' => $billingData['state'],
+        'country' => $billingData['country'],
+        'postal_code' => $billingData['zip'],
+      ],
+      'billing_name' => $billingData['fullName'],
+      'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
+    ];
+
+    if ($saveCard) {
+      $body['create_customer'] = true;
+      $body['customer_label'] = $label;
+    }
 
     $options = [
       'headers' => [
@@ -93,26 +125,24 @@ class PayTraceApiService extends Endpoints
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
-      'body' => json_encode([
-        'hpf_token' => $token['hpf_token'],
-        'enc_key' => $token['enc_key'],
-        'amount' => $amount,
-        'billing_address' => [
-          'street' => $billingData['street'],
-          'street2' => $billingData['street2'] ?? null,
-          'city' => $billingData['city'],
-          'state' => $billingData['state'],
-          'country' => $billingData['country'],
-          'postal_code' => $billingData['zip'],
-        ],
-        'billing_name' => $billingData['fullName'],
-        'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
-      ]),
+      'body' => json_encode($body),
     ];
 
     $response = $this->request($fullEndpointUrl, $options);
-    return $this->ApiResponse($response);
+    $apiResponse = $this->ApiResponse($response);
 
+    $success = !($apiResponse['error'] ?? true);
+
+    if ($saveCard && $success) {
+      $vaultId = $apiResponse['data']['customer_id'] ?? null;
+
+      if ($vaultId) {
+        $customerDetails = $this->getCustomerProfile($vaultId);
+
+        $this->payTraceCustomerVaultService->storeCardFromCustomerDetails($vaultId, $billingData['fullName'], $customerDetails, $context);
+      }
+    }
+    return $apiResponse;
   }
 
   public function processEcheckDeposit(array $data, array $billingData): array
@@ -161,7 +191,7 @@ class PayTraceApiService extends Endpoints
     return $this->ApiResponse($response);
   }
 
-  public function processPaymentAuthorize(array $token, string $amount, array $billingData): ResponseInterface|array
+  public function processPaymentAuthorize(array $token, string $amount, array $billingData, $saveCard, SalesChannelContext $context): ResponseInterface|array
   {
     $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
 
@@ -190,7 +220,26 @@ class PayTraceApiService extends Endpoints
     ];
 
     $response = $this->request($fullEndpointUrl, $options);
-    return $this->ApiResponse($response);
+    $apiResponse = $this->ApiResponse($response);
+
+    $success = !($apiResponse['error'] ?? true);
+
+    if ($saveCard && $success) {
+      $transactionId = $apiResponse['data']['transaction_id'] ?? null;
+      if ($transactionId) {
+        $customerCreateResponse = $this->createCustomerByTransaction($transactionId, $billingData, $context);
+
+        if (!($customerCreateResponse['error'] ?? true)) {
+          $vaultId = $customerCreateResponse['data']['customer_id'];
+
+          $customerDetails = $this->getCustomerProfile($vaultId);
+
+          $this->payTraceCustomerVaultService->storeCardFromCustomerDetails($context, $vaultId, $billingData['fullName'], $customerDetails);
+        }
+      }
+    }
+
+    return $apiResponse;
   }
 
   public function processCapture(array $data): ResponseInterface|array
@@ -472,4 +521,48 @@ class PayTraceApiService extends Endpoints
       return $this->handleError($e);
     }
   }
+
+  public function createCustomerByTransaction(string $transactionId, array $billingData, SalesChannelContext $context): array
+  {
+
+    $customerId = $context->getCustomer()?->getId();
+    if (!$customerId) {
+      return [
+        'error' => true,
+        'message' => 'Customer not found',
+      ];
+    }
+
+    $url = Endpoints::getUrl(Endpoints::CREATE_CUSTOMER_BY_TRANSACTION);
+
+    $countCustomer = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
+    $customerLabel = $customerId . '_Card_' . ($countCustomer + 1);
+
+    $body = [
+      'transaction_id' => $transactionId,
+      'billing_address' => [
+        'name' => $billingData['fullName'],
+        'street_address' => $billingData['street'],
+        'street_address2' => $billingData['street2'] ?? '',
+        'city' => $billingData['city'],
+        'state' => $billingData['state'],
+        'postal_code' => $billingData['zip'],
+        'country' => $billingData['country'],
+      ],
+      'customer_label' => $customerLabel,
+    ];
+
+    $options = [
+      'headers' => [
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
+        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'X-Permalinks' => true,
+        'Content-Type' => 'application/json',
+      ],
+      'body' => json_encode($body),
+    ];
+
+    return $this->ApiResponse($this->request($url, $options));
+  }
+
 }

@@ -85,6 +85,7 @@
 
         <service id="PayTrace\Service\PayTraceApiService">
             <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService"/>
             <argument type="service" id="PayTracePayment.logger"/>
 
         </service>

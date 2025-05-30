@@ -8,6 +8,8 @@ abstract class Endpoints
 {
   protected const PAYMENT_FIELD_TOKENS = 'PAYMENT_FIELD_TOKENS';
   protected const TRANSACTION = 'TRANSACTION';
+  protected const CUSTOMER_TRANSACTION = 'CUSTOMER_TRANSACTION';
+  protected const CREATE_CUSTOMER_BY_TRANSACTION = 'CREATE_CUSTOMER_BY_TRANSACTION';
   protected const AUTHORIZE = 'AUTHORIZE';
   protected const CAPTURE = 'CAPTURE';
   protected const VOID = 'VOID';
@@ -67,7 +69,16 @@ abstract class Endpoints
       self::CUSTOMER_PROFILE => [
           'method' => 'GET',
           'url' => '/v3/customer/'
-        ]
+        ],
+      self::CUSTOMER_TRANSACTION => [
+        'method' => 'POST',
+        'url' => '/v3/card/sale/pt-protect/customer/'
+      ],
+      self::CREATE_CUSTOMER_BY_TRANSACTION => [
+        'method' => 'POST',
+        'url' => '/v3/customer/create/by-transaction'
+      ],
+
   ];
 
   protected static function getEndpoint(string $endpoint): array

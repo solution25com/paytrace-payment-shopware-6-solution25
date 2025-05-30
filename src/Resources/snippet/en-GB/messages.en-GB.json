@@ -16,7 +16,8 @@
         "vaultedError": "Vaulted card payment failed.",
         "vaultedUnknown": "An unexpected error occurred while using a saved card.",
         "initFail": "Failed to initialize payment system."
-      }
+      },
+      "saveCardLabel": "Save Card"
     },
     "savedCards": {
       "title": "PayTrace Saved Cards",

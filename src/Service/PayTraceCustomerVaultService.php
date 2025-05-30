@@ -110,6 +110,29 @@ class PayTraceCustomerVaultService
     return $count;
   }
 
+  public function storeCardFromCustomerDetails(string $vaultId, string $cardholderName, array $customerDetails, SalesChannelContext $context,): void
+  {
+    $cardMasked = $customerDetails['data']['card_masked'] ?? null;
+
+    if (!$cardMasked) {
+      return;
+    }
+
+    $cardType = $this->getCardType($cardMasked);
+    $customerId = $context->getCustomer()->getId();
+    $label = $customerId . '_Card_' . ($this->countCustomerVaultRecords($context, $customerId) + 1);
+
+    $this->store(
+      $context,
+      $vaultId,
+      $cardholderName,
+      $cardType,
+      substr($cardMasked, -4),
+      $label
+    );
+  }
+
+
   public function dropdownCards(SalesChannelContext $context, string $customerId): array
   {
     $criteria = new Criteria();

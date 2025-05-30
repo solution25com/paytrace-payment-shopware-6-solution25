@@ -16,7 +16,8 @@
         "vaultedError": "Zahlung mit gespeicherter Karte fehlgeschlagen.",
         "vaultedUnknown": "Beim Verwenden der gespeicherten Karte ist ein unerwarteter Fehler aufgetreten.",
         "initFail": "Zahlungssystem konnte nicht initialisiert werden."
-      }
+      },
+      "saveCardLabel": "Karte speichern"
     },
     "savedCards": {
       "title": "Gespeicherte PayTrace-Karten",
