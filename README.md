@@ -150,7 +150,8 @@ Click **"PayTrace Saved Cards"** to open the card form. You will be prompted to 
 
 This document describes the external PayTrace API endpoints that the PayTrace Plugin for Shopware 6 interacts with. These endpoints are used internally by the plugin to tokenize payments, process transactions, manage vaulted credit cards, and handle ACH (eCheck) payments.
 
-[API Documentation](./api-documentation)
+[API Documentation](https://github.com/solution25com/paytrace-payment-shopware-6-solution25/wiki/api-documentation)
+
 
 
 
