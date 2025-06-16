@@ -234,7 +234,7 @@ class PayTraceApiService extends Endpoints
 
           $customerDetails = $this->getCustomerProfile($vaultId);
 
-          $this->payTraceCustomerVaultService->storeCardFromCustomerDetails($context, $vaultId, $billingData['fullName'], $customerDetails);
+          $this->payTraceCustomerVaultService->storeCardFromCustomerDetails($vaultId, $billingData['fullName'], $customerDetails, $context);
         }
       }
     }
