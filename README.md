@@ -1,3 +1,7 @@
+[![Packagist Version](https://img.shields.io/packagist/v/solution25/pay-trace.svg)](https://packagist.org/packages/solution25/pay-trace)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/solution25/pay-trace.svg)](https://packagist.org/packages/solution25/pay-trace)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/solution25/PayTrace/blob/main/LICENSE)
+
 ![paytrace](https://github.com/user-attachments/assets/58d1ee9f-560d-43cf-8b47-c7692034a335)
 # PayTrace Payment for Shopware 6
 
