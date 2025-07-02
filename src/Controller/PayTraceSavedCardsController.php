@@ -37,7 +37,7 @@ class PayTraceSavedCardsController extends StorefrontController
     $customerVaultRecords = $this->payTraceCustomerVaultService->getCustomerVaultRecords($customerId, $context->getContext());
 
     $paymentToken = $this->payTraceApiService->generatePaymentToken();
-
+    $paymentToken = is_string($paymentToken) ? $paymentToken : "";
     return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
       'savedCards' => $customerVaultRecords,
       'paymentToken' => $paymentToken,
