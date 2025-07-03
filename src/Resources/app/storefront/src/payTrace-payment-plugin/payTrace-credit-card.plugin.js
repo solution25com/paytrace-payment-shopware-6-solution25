@@ -278,7 +278,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     this.confirmOrderForm.submit();
                 } else {
                     console.error('Payment failed:', data.message || 'Unknown error');
-                    this._showError(this._t('paytrace_shopware6.credit_card.submitError.paymentFailed'));
+                    this._showError(data.message || this._t('paytrace_shopware6.credit_card.submitError.paymentFailed'));
                     this._hideLoading();
                 }
             })
@@ -303,7 +303,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                     this.confirmOrderForm.submit();
                 } else {
                     console.error('Vaulted payment failed:', data.message || 'Unknown error');
-                    this._showError(this._t('paytrace_shopware6.credit_card.submitError.vaultedError'));
+                    this._showError(data.message || this._t('paytrace_shopware6.credit_card.submitError.vaultedError'));
                     this._hideLoading();
                 }
             })
