@@ -7,7 +7,9 @@
 
     <div id="payTracePluginWrapper"
          payTrace-saved-cards-plugin
-         data-client-key="{{ paymentToken }}">
+         data-client-key="{{ paymentToken }}"
+         data-mode = "{{ mode }}"
+        >
 
         <div class="sc-form-toggle-wrapper text-center my-4">
             <button class="sc-form-toggle-btn" type="button" id="toggleAddCardForm">
@@ -174,7 +176,7 @@
                                     </div>
                                     <p class="card-holder-name mb-1"><strong>{{ card.cardHolderName }}</strong></p>
                                     <p class="card-type mb-1">{{ card.cardType }}</p>
-                                    <div class="card-number mb-2">
+                                    <div class="paytrace-card-number mb-2">
                                         <span>**** **** **** {{ card.lastDigits }}</span>
                                     </div>
                                     <button class="btn btn-danger delete-card-btn mt-2"
@@ -197,19 +199,28 @@
         {% else %}
             <p class="text-center mt-4">{{ "paytrace_shopware6.savedCards.no_cards"| trans }}</p>
         {% endif %}
+        {% if mode == 'sandbox' %}
+            <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
+        {% else %}
+            <script src='https://protect.paytrace.com/js/protect.min.js'></script>
+          <script>
+          </script>
+        {% endif %}
 
     </div>
 
-    <script src="https://protect.sandbox.paytrace.com/js/protect.min.js"></script>
 
-    <script>
-        window.translation = {
-        "paytrace_shopware6.savedCards.js.toggle_show_form": "{{ 'paytrace_shopware6.savedCards.js.toggle_show_form'|trans|e('js') }}",
-        "paytrace_shopware6.savedCards.js.toggle_hide_form": "{{ 'paytrace_shopware6.savedCards.js.toggle_hide_form'|trans|e('js') }}",
-        "paytrace_shopware6.savedCards.js.error_delete_failed": "{{ 'paytrace_shopware6.savedCards.js.error_delete_failed'|trans|e('js') }}",
-        "paytrace_shopware6.savedCards.js.error_confirm_delete": "{{ 'paytrace_shopware6.savedCards.js.error_confirm_delete'|trans|e('js') }}",
-        "paytrace_shopware6.savedCards.js.error_required_field": "{{ 'paytrace_shopware6.savedCards.js.error_required_field'|trans|e('js') }}"
-        };
-    </script>
+    <div id="paytrace-saved-cards-jsData"
+         data-jsData="{{ {
+             'translations': {
+                 'paytrace_shopware6.savedCards.js.toggle_show_form': 'paytrace_shopware6.savedCards.js.toggle_show_form'|trans,
+                 'paytrace_shopware6.savedCards.js.toggle_hide_form': 'paytrace_shopware6.savedCards.js.toggle_hide_form'|trans,
+                 'paytrace_shopware6.savedCards.js.error_delete_failed': 'paytrace_shopware6.savedCards.js.error_delete_failed'|trans,
+                 'paytrace_shopware6.savedCards.js.error_confirm_delete': 'paytrace_shopware6.savedCards.js.error_confirm_delete'|trans,
+                 'paytrace_shopware6.savedCards.js.error_required_field': 'paytrace_shopware6.savedCards.js.error_required_field'|trans
+             }
+         } | json_encode | escape('html_attr') }}">
+    </div>
+
 
 {% endblock %}

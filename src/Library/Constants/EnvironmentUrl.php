@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace PayTrace\Library\Constants;
 
-enum EnvironmentUrl: string
+class EnvironmentUrl
 {
-  CASE SANDBOX = 'https://api.paytrace.com';
-  CASE PRODUCTION = 'https://api.sandbox.paytrace.com';
+   const PRODUCTION = 'https://api.paytrace.com';
+   const SANDBOX = 'https://api.sandbox.paytrace.com';
 
 }

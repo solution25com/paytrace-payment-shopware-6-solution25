@@ -11,9 +11,9 @@ class PayTraceConfigService
   {
     $this->systemConfigService = $systemConfigService;
   }
-  public function getConfig(string $configName): mixed
+  public function getConfig(string $configName, ?string $salesChannelId = null): mixed
   {
-    return $this->systemConfigService->get('PayTrace.config.' . trim($configName));
+    return $this->systemConfigService->get('PayTrace.config.' . trim($configName), $salesChannelId);
   }
 
 }

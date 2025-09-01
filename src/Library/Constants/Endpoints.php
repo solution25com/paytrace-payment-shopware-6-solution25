@@ -86,17 +86,16 @@ abstract class Endpoints
     return self::$endpoints[$endpoint];
   }
 
-  public static function getUrl(string $endpoint): array
+  public static function getUrl(string $baseUrl, string $endpoint): array
   {
     $endpointDetails = self::getEndpoint($endpoint);
-    $baseUrl = $endpointDetails['url'];
     return [
       'method' => $endpointDetails['method'],
-      'url' =>  'https://api.sandbox.paytrace.com' . $endpointDetails['url'],
+      'url' =>  $baseUrl . $endpointDetails['url'],
     ];
   }
 
-  public static function getUrlDynamicParam(string $endpoint, ?array $params = [], ?array $queryParam = []): array
+  public static function getUrlDynamicParam(string $modeUrl, string $endpoint, ?array $params = [], ?array $queryParam = []): array
   {
     $endpointDetails = self::getEndpoint($endpoint);
     $baseUrl         = $endpointDetails['url'];
@@ -107,7 +106,7 @@ abstract class Endpoints
 
     return [
       'method' => $endpointDetails['method'],
-      'url'    => 'https://api.sandbox.paytrace.com' . $baseUrl . $paramBuilder . $queryString
+      'url'    => $modeUrl . $baseUrl . $paramBuilder . $queryString
     ];
   }
 

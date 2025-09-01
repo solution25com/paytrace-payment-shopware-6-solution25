@@ -1,0 +1,14 @@
+{
+  "Paytrace": {
+    "apiTest": {
+      "success": {
+        "title": "Paytrace API-Test",
+        "message": "Verbindung erfolgreich!"
+      },
+      "error": {
+        "title": "Paytrace API-Test",
+        "message": "Verbindungstest fehlgeschlagen! Bitte überprüfen Sie die API-Zugangsdaten."
+      }
+    }
+  }
+}

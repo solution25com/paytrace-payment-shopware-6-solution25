@@ -41,6 +41,7 @@
         <service id="PayTrace\Subscriber\CheckoutConfirmEventSubscriber">
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
+            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
@@ -69,6 +70,7 @@
         <service id="PayTrace\Controller\PayTraceSavedCardsController">
             <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
             <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
+            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
             <tag name="controller.service_arguments"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -78,6 +80,12 @@
             </call>
         </service>
 
+        <service id="PayTrace\Storefront\Controller\TestApiConnectionController" public="true">
+            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
 
         <service id="PayTrace\Service\PayTraceConfigService">
             <argument id="Shopware\Core\System\SystemConfig\SystemConfigService" type="service"/>

@@ -15,6 +15,8 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
     this.formContainer = this.el.querySelector('#addCardFormContainer');
     this.protectFormButton = this.el.querySelector('#ProtectForm');
     this.errorContainer = this.el.querySelector('#errorContainer');
+    this.jsDataEl = document.getElementById('paytrace-saved-cards-jsData');
+    this.translations = this.jsDataEl ? JSON.parse(this.jsDataEl.dataset.jsdata).translations : {};
   }
 
   _bindEvents() {
@@ -250,7 +252,7 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
         console.error('Error:', res.message);
         this._showError([res.message || this._t('paytrace_shopware6.savedCards.js.error_delete_failed')]);
       } else {
-        button.closest('.saved-card')?.remove();
+        location.reload();
       }
     } catch (err) {
       console.error('Error during delete request:', err);
@@ -261,7 +263,7 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
     }
   }
   _t(key) {
-    return window.translation?.[key] || key;
+    return this.translations[key] || key;
   }
 
 

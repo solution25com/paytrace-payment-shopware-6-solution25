@@ -100,16 +100,6 @@ class PayTraceCustomerVaultService
     }
   }
 
-  public function countCustomerVaultRecords(SalesChannelContext $context, string $customerId): int
-  {
-    $criteria = new Criteria();
-    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
-
-    $count = $this->vaultedCustomerRepository->search($criteria, $context->getContext())->getTotal();
-
-    return $count;
-  }
-
   public function storeCardFromCustomerDetails(string $vaultId, string $cardholderName, array $customerDetails, SalesChannelContext $context,): void
   {
     $cardMasked = $customerDetails['data']['card_masked'] ?? null;
@@ -119,8 +109,7 @@ class PayTraceCustomerVaultService
     }
 
     $cardType = $this->getCardType($cardMasked);
-    $customerId = $context->getCustomer()->getId();
-    $label = $customerId . '_Card_' . ($this->countCustomerVaultRecords($context, $customerId) + 1);
+    $label = $this->getNextCardLabel($context);
 
     $this->store(
       $context,
@@ -196,4 +185,42 @@ class PayTraceCustomerVaultService
       ->getEntities();
   }
 
+  public function getNextCardLabel(SalesChannelContext $salesChannelContext): string
+  {
+    $customerId = $salesChannelContext->getCustomer()?->getId();
+
+    if (!$customerId) {
+      throw new \RuntimeException('Customer not found');
+    }
+
+    $criteria = new Criteria();
+    $criteria->addFilter(new EqualsFilter('customerId', $customerId));
+
+    $vaultedCards = $this->vaultedCustomerRepository
+      ->search($criteria, $salesChannelContext->getContext())
+      ->getEntities();
+
+    $usedIndexes = [];
+
+    foreach ($vaultedCards as $card) {
+      $label = $card->getCustomerLabel();
+
+      if (preg_match('/^' . preg_quote($customerId, '/') . '_Card_(\d+)$/', $label, $matches)) {
+        $usedIndexes[] = (int) $matches[1];
+      }
+    }
+
+    sort($usedIndexes);
+
+    $nextIndex = 1;
+    foreach ($usedIndexes as $index) {
+      if ($index === $nextIndex) {
+        $nextIndex++;
+      } else {
+        break;
+      }
+    }
+
+    return $customerId . '_Card_' . $nextIndex;
+  }
 }

@@ -5,6 +5,7 @@
      data-amount="{{ page.extensions.payTrace_payment.amount }}"
      data-is-guest="{{ page.extensions.payTrace_payment.isGuest }}"
      data-card-type="{{ page.extensions.payTrace_payment.cardType }}"
+     data-mode="{{ page.extensions.payTrace_payment.mode }}"
      data-cardsDropdown="{{ page.extensions.payTrace_payment.cardsDropdown }}">
 
 
@@ -14,39 +15,44 @@
       <div id="saved-cards-wrapper" class="mb-2">
         <label for="saved-cards" class="form-label">{{ "paytrace_shopware6.credit_card.label_choose_saved_card"|trans }}</label>
         <select id="saved-cards" name="saved-cards" class="form-select form-select-sm">
-          <option value="">{{ "paytrace_shopware6.credit_card.option_select_saved_card"|trans }}</option>
+          <option value="__new__">{{ "paytrace_shopware6.credit_card.option_use_new_card"|trans }}</option>
         </select>
       </div>
     {% endif %}
 
-    <input type="button" id="SelectCardButton" value="{{ "paytrace_shopware6.credit_card.button_pay_with_saved_card"|trans }}"
-           class="btn btn-secondary w-100 btn-sm" style="display:none;">
   </form>
-  <div class="card" style="max-width: 500px; margin: 10px auto; background-color: white">
-    <div class="card-body">
-        <div class="" id='pt_hpf_form'></div>
+  <div id="new-card-section">
+    <div class="card" style="max-width: 500px; margin: 10px auto; background-color: white">
+      <div class="card-body">
+          <div class="" id='pt_hpf_form'></div>
 
-      {% if not page.extensions.payTrace_payment.isGuest %}
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="save-paytrace-card" name="save-paytrace-card">
-          <label class="form-check-label" for="save-paytrace-card">
-            {{ "paytrace_shopware6.credit_card.saveCardLabel"|trans }}
-          </label>
-        </div>
-      {% endif %}
+        {% if not page.extensions.payTrace_payment.isGuest %}
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="save-paytrace-card" name="save-paytrace-card">
+            <label class="form-check-label" for="save-paytrace-card">
+              {{ "paytrace_shopware6.credit_card.saveCardLabel"|trans }}
+            </label>
+          </div>
+        {% endif %}
 
-      <div id="paytrace-loading-indicator" class="d-none" style="text-align:center; margin: 15px 0;">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+        <div id="paytrace-loading-indicator" class="d-none" style="text-align:center; margin: 15px 0;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
         </div>
-      </div>
-      <div>
-        <span class="credit-card-error-message alert-danger d-none" id="credit-card-error-message" role="alert"></span>
+        <div>
+          <span class="credit-card-error-message alert-danger d-none" id="credit-card-error-message" role="alert"></span>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
+    {% if page.extensions.payTrace_payment.mode == 'sandbox' %}
+      <script src='https://protect.sandbox.paytrace.com/js/protect.min.js'></script>
+    {% else %}
+      <script src='https://protect.paytrace.com/js/protect.min.js'></script>
+    {% endif %}
+
 </div>
 
 {% else %}
@@ -59,16 +65,18 @@
 {% endif %}
 
 
-<script>
-  window.translation = {
-    "paytrace_shopware6.credit_card.selectSavedCard": "{{ 'paytrace_shopware6.credit_card.selectSavedCard'|trans }}",
-    "paytrace_shopware6.credit_card.submitError.vaultedMissing": "{{ 'paytrace_shopware6.credit_card.submitError.vaultedMissing'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.cardTokenFail": "{{ 'paytrace_shopware6.credit_card.submitError.cardTokenFail'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.processError": "{{ 'paytrace_shopware6.credit_card.submitError.processError'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.paymentFailed": "{{ 'paytrace_shopware6.credit_card.submitError.paymentFailed'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.unknown": "{{ 'paytrace_shopware6.credit_card.submitError.unknown'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.vaultedError": "{{ 'paytrace_shopware6.credit_card.submitError.vaultedError'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.vaultedUnknown": "{{ 'paytrace_shopware6.credit_card.submitError.vaultedUnknown'|trans|e('js') }}",
-    "paytrace_shopware6.credit_card.submitError.initFail": "{{ 'paytrace_shopware6.credit_card.submitError.initFail'|trans|e('js') }}"
-  };
-</script>
+<div id="paytrace-jsData" data-jsData="{{ {
+  'translations': {
+    'selectSavedCard': 'paytrace_shopware6.credit_card.selectSavedCard' | trans,
+    'optionUseNewCard': 'paytrace_shopware6.credit_card.option_use_new_card' | trans,
+    'submitErrorVaultedMissing': 'paytrace_shopware6.credit_card.submitError.vaultedMissing' | trans,
+    'submitErrorCardTokenFail': 'paytrace_shopware6.credit_card.submitError.cardTokenFail' | trans,
+    'submitErrorProcessError': 'paytrace_shopware6.credit_card.submitError.processError' | trans,
+    'submitErrorPaymentFailed': 'paytrace_shopware6.credit_card.submitError.paymentFailed' | trans,
+    'submitErrorUnknown': 'paytrace_shopware6.credit_card.submitError.unknown' | trans,
+    'submitErrorVaultedError': 'paytrace_shopware6.credit_card.submitError.vaultedError' | trans,
+    'submitErrorVaultedUnknown': 'paytrace_shopware6.credit_card.submitError.vaultedUnknown' | trans,
+    'submitErrorInitFail': 'paytrace_shopware6.credit_card.submitError.initFail' | trans
+  }
+} | json_encode | escape('html_attr') }}"></div>
+

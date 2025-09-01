@@ -16,6 +16,8 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
         this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
         this.errorEl = document.getElementById('ach-error-message');
+        this.jsDataEl = document.getElementById('paytrace-ach-jsData');
+        this.translations = this.jsDataEl ? JSON.parse(this.jsDataEl.dataset.jsdata).translations : {};
     }
 
     _loadPayTraceKey() {
@@ -35,6 +37,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             }
 
             this._disableSubmit();
+            this._disableFormInputs();
             this._showLoading();
             this._getEncryptedTokens();
         });
@@ -98,6 +101,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         }
 
         this._enableSubmit();
+        this._enableFormInputs();
     }
 
     _hideError() {
@@ -107,6 +111,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         }
 
         this._enableSubmit();
+        this._enableFormInputs();
     }
 
     _disableSubmit() {
@@ -124,7 +129,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     }
 
     _t(key) {
-        return window.translation?.[key] || key;
+        return this.translations[key] || key;
     }
 
     _showLoading() {
@@ -140,4 +145,19 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             loader.classList.add('d-none');
         }
     }
+
+    _disableFormInputs() {
+        const inputs = this.parentCreditCardWrapper.querySelectorAll('input, select, textarea');
+        inputs.forEach((input) => {
+            input.disabled = true;
+        });
+    }
+
+    _enableFormInputs() {
+        const inputs = this.parentCreditCardWrapper.querySelectorAll('input, select, textarea');
+        inputs.forEach((input) => {
+            input.disabled = false;
+        });
+    }
+
 }

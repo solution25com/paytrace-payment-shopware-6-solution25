@@ -3,6 +3,7 @@
 namespace PayTrace\Controller;
 
 use PayTrace\Service\PayTraceApiService;
+use PayTrace\Service\PayTraceConfigService;
 use PayTrace\Service\PayTraceCustomerVaultService;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -18,11 +19,13 @@ class PayTraceSavedCardsController extends StorefrontController
 {
   private PayTraceApiService $payTraceApiService;
   private PayTraceCustomerVaultService $payTraceCustomerVaultService;
+  private PaytraceConfigService $payTraceConfigService;
 
-  public function __construct(PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService)
+  public function __construct(PayTraceApiService $payTraceApiService, PayTraceCustomerVaultService $payTraceCustomerVaultService, PaytraceConfigService $payTraceConfigService)
   {
     $this->payTraceApiService = $payTraceApiService;
     $this->payTraceCustomerVaultService = $payTraceCustomerVaultService;
+    $this->payTraceConfigService = $payTraceConfigService;
   }
 
   #[Route(path: '/account/payTrace-saved-cards', name: 'frontend.account.payTrace-saved-cards.page', methods: ['GET'])]
@@ -36,14 +39,15 @@ class PayTraceSavedCardsController extends StorefrontController
 
     $customerVaultRecords = $this->payTraceCustomerVaultService->getCustomerVaultRecords($customerId, $context->getContext());
 
-    $paymentToken = $this->payTraceApiService->generatePaymentToken();
+    $paymentToken = $this->payTraceApiService->generatePaymentToken($context->getSalesChannelId());
     $paymentToken = is_string($paymentToken) ? $paymentToken : "";
+    $mode = $this->payTraceConfigService->getConfig('mode', $context->getSalesChannel()->getId());
     return $this->renderStorefront('@Storefront/storefront/page/account/payTrace-saved-cards.html.twig', [
       'savedCards' => $customerVaultRecords,
       'paymentToken' => $paymentToken,
+      'mode' => strtolower($mode)
     ]);
   }
-
 
   #[Route(path: '/account/payTrace-saved-cards/add-card', name: 'frontend.account.payTrace-saved-cards-add-card.page', methods: ['POST'])]
   public function addCard(Request $request, SalesChannelContext $context): Response
@@ -58,20 +62,19 @@ class PayTraceSavedCardsController extends StorefrontController
       ], Response::HTTP_UNAUTHORIZED);
     }
 
-    $countCustomer = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
-    $customerLabel = '_Card_' . ($countCustomer + 1);
+    $customerLabel = $this->payTraceCustomerVaultService->getNextCardLabel($context);
 
     $data['cardCount'] = $customerLabel;
     $data['customerId'] = $customerId;
 
-    $responseFromMethod = $this->payTraceApiService->createCustomerProfile($data);
+    $responseFromMethod = $this->payTraceApiService->createCustomerProfile($data, $context);
 
     if(is_array($responseFromMethod) && ($responseFromMethod['message'] ?? null) === 'Success') {
       $customerVaultId = $responseFromMethod['data']['customer_id'];
       $cardHolderName = $data['billing_address']['name'];
 
       try{
-        $responseFromCustomerProfile = $this->payTraceApiService->getCustomerProfile($customerVaultId);
+        $responseFromCustomerProfile = $this->payTraceApiService->getCustomerProfile($customerVaultId, $context);
 
         if($responseFromCustomerProfile['message'] === 'Success'){
           $masked = $responseFromCustomerProfile['data']['card_masked'];
@@ -92,7 +95,7 @@ class PayTraceSavedCardsController extends StorefrontController
             $cardHolderName,
             $cardType,
             $lastDigits,
-            $customerId . $customerLabel
+            $customerLabel
           );
 
         }
@@ -148,7 +151,7 @@ class PayTraceSavedCardsController extends StorefrontController
       ], Response::HTTP_FORBIDDEN);
     }
 
-    $responseFromMethod = $this->payTraceApiService->deleteVaultedCard($customerVaultId);
+    $responseFromMethod = $this->payTraceApiService->deleteVaultedCard($customerVaultId, $context);
 
     if (is_array($responseFromMethod) && ($responseFromMethod['error'] ?? false)) {
       return $this->json([
@@ -170,6 +173,14 @@ class PayTraceSavedCardsController extends StorefrontController
       'error' => true,
       'message' => 'Unexpected error occurred while deleting the card',
     ]);
+  }
+
+  public function getMode(string $mode): string
+  {
+    if($mode == 'live'){
+      return 'live';
+    }
+    return 'sandbox';
   }
 
 }

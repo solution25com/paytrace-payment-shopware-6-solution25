@@ -3,13 +3,17 @@
 <div id="payTrace_payment" class="payTrace_ach_payment"
      data-payTrace-ach-echeck="true"
      data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
+     data-mode="{{ page.extensions.payTrace_payment.mode }}"
      data-amount="{{ page.extensions.payTrace_payment.amount }}">
+{#    {{ set  mode = {{ page.extensions.payTrace_payment.mode }} }}#}
+
 
     <form id="ach-form">
         <div class="error-card-ech">
             <span class="ach-error-message  alert-danger d-none" id="ach-error-message" role="alert"></span>
         </div>
         <div id="ach-data">
+
             <input type="text" class="ach-forma" id="ach-full-name" name="achFullName" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_full_name'|trans }}" required><br>
             <input type="text" class="form-control ach-forma pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_routing_number'|trans }}" required><br>
             <input type="text" class="form-control ach-forma pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_account_number'|trans }}" required><br>
@@ -32,13 +36,19 @@
 
     </form>
 
-    <script src="https://api.sandbox.paytrace.com/v3/assets/js/e2ee/paytrace-e2ee.js"></script>
+    {% if page.extensions.payTrace_payment.mode == 'sandbox' %}
+        <script src="https://api.sandbox.paytrace.com/v3/assets/js/e2ee/paytrace-e2ee.js"></script>
+    {% else %}
+        <script src="https://api.paytrace.com/v3/assets/js/e2ee/paytrace-e2ee.js"></script>
+    {% endif %}
+
 </div>
 
-<script>
-  window.translation = {
-    "paytrace_shopware6.ach_echeck.submitError.missingFields": "{{ 'paytrace_shopware6.ach_echeck.submitError.missingFields'|trans|e('js') }}",
-    "paytrace_shopware6.ach_echeck.submitError.paymentFailed": "{{ 'paytrace_shopware6.ach_echeck.submitError.paymentFailed'|trans|e('js') }}",
-    "paytrace_shopware6.ach_echeck.submitError.unknown": "{{ 'paytrace_shopware6.ach_echeck.submitError.unknown'|trans|e('js') }}"
-  };
-</script>
+
+<div id="paytrace-ach-jsData" data-jsData="{{ {
+    'translations': {
+        'submitErrorMissingFields': 'paytrace_shopware6.ach_echeck.submitError.missingFields' | trans,
+        'submitErrorPaymentFailed': 'paytrace_shopware6.ach_echeck.submitError.paymentFailed' | trans,
+        'submitErrorUnknown': 'paytrace_shopware6.ach_echeck.submitError.unknown' | trans
+    }
+} | json_encode | escape('html_attr') }}"></div>

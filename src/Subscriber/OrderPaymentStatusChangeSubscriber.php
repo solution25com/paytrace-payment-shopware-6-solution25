@@ -103,6 +103,12 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
   private function handleCapture(string $orderId, Context $context, string $payTraceTransactionId, string $transactionId): void
   {
+    $criteria = new Criteria([$orderId]);
+    $criteria->addAssociation('currency');
+    $criteria->addAssociation('salesChannel');
+
+    $order = $this->orderRepository->search($criteria, $context)->first();
+
     $orderAmount = $this->getOrderTotalAmount($orderId, $context);
 
     $postData = [
@@ -110,7 +116,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
       "amount" => $orderAmount
     ];
 
-    $response = $this->payTraceApiService->processCapture($postData);
+    $response = $this->payTraceApiService->processCapture($postData, $order->getSalesChannelId());
 
     if (!isset($response['data'][0]['status']) || $response['data'][0]['status'] !== 'success') {
       $this->logger->error('PayTrace capture failed', ['response' => $response]);
@@ -122,6 +128,12 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
   private function handleRefund(string $orderId,Context $context, string $payTraceTransactionId, string $transactionId, string $orderTransactionId): void
   {
+    $criteria = new Criteria([$orderId]);
+    $criteria->addAssociation('currency');
+    $criteria->addAssociation('salesChannel');
+
+    $order = $this->orderRepository->search($criteria, $context)->first();
+
     try {
       $orderAmount = $this->getOrderTotalAmount($orderId, $context);
 
@@ -130,7 +142,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
         "amount" => $orderAmount
       ];
 
-      $response = $this->payTraceApiService->captureRefund($postData);
+      $response = $this->payTraceApiService->captureRefund($postData, $order->getSalesChannelId());
 
       if ($response['data'][0]['status'] !== 'success') {
         $this->logger->error('PayTrace refund failed', ['response' => $response]);
@@ -148,13 +160,19 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
 
   private function handleVoid(string $orderId, Context $context, string $payTraceTransactionId, string $transactionId): void
   {
+    $criteria = new Criteria([$orderId]);
+    $criteria->addAssociation('currency');
+    $criteria->addAssociation('salesChannel');
+
+    $order = $this->orderRepository->search($criteria, $context)->first();
+
     try {
 
       $postData = [
         "transactionId" => $payTraceTransactionId,
       ];
 
-      $response = $this->payTraceApiService->voidTransaction($postData);
+      $response = $this->payTraceApiService->voidTransaction($postData, $order->getSalesChannelId());
 
       if ($response[0]['status'] !== 'success') {
         $this->logger->error('PayTrace void failed', ['response' => $response]);
@@ -177,6 +195,7 @@ class OrderPaymentStatusChangeSubscriber implements EventSubscriberInterface
   {
     $criteria = new Criteria([$orderId]);
     $criteria->addAssociation('currency');
+    $criteria->addAssociation('salesChannel');
 
     $order = $this->orderRepository->search($criteria, $context)->first();
 

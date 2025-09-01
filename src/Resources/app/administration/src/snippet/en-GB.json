@@ -1,0 +1,14 @@
+{
+  "Paytrace": {
+    "apiTest": {
+      "success": {
+        "title": "Paytrace API Test",
+        "message": "Connection successful!"
+      },
+      "error": {
+        "title": "Paytrace API Test",
+        "message": "Connection test failed! Please check API credentials."
+      }
+    }
+  }
+}

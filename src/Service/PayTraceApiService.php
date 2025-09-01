@@ -6,9 +6,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
 use PayTrace\Library\Constants\Endpoints;
+use PayTrace\Library\Constants\EnvironmentUrl;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\RequestException;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class PayTraceApiService extends Endpoints
@@ -28,14 +30,16 @@ class PayTraceApiService extends Endpoints
     $this->client = new Client();
   }
 
-  private function getAuthorizationToken(): string
+  private function getAuthorizationToken(?string $salesChannelId = ''): string
   {
     if ($this->authToken && time() < $this->authTokenExpiryTime) {
       return $this->authToken;
     }
 
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTH_TOKEN);
-    $body = $this->buildRequestBody();
+    $baseUrl = $this->getModeUrl($salesChannelId);
+
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl,Endpoints::AUTH_TOKEN);
+    $body = $this->buildRequestBody($salesChannelId);
 
     $options = [
       'form_params' => $body,
@@ -61,14 +65,15 @@ class PayTraceApiService extends Endpoints
     return "Error: Invalid response received";
   }
 
-  public function generatePaymentToken(): string|array
+  public function generatePaymentToken(?string $salesChannelId = ''): string|array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::PAYMENT_FIELD_TOKENS);
+    $baseUrl = $this->getModeUrl($salesChannelId);
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl, Endpoints::PAYMENT_FIELD_TOKENS);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+        'X-Integrator-Id' => '9999Shopware',
         'Content-Type' => 'application/json',
       ],
     ];
@@ -87,14 +92,15 @@ class PayTraceApiService extends Endpoints
 
   public function processPayment(array $token, string $amount, array $billingData, bool $saveCard, SalesChannelContext $context): ResponseInterface|array
   {
-    $fullEndpointUrl = $saveCard ? Endpoints::getUrl(Endpoints::CUSTOMER_TRANSACTION) : Endpoints::getUrl(Endpoints::TRANSACTION);
+    $baseUrl = $this->getModeUrl($context->getSalesChannelId());
+
+    $fullEndpointUrl = $saveCard ? Endpoints::getUrl($baseUrl,Endpoints::CUSTOMER_TRANSACTION) : Endpoints::getUrl($baseUrl,Endpoints::TRANSACTION);
 
     $customerId = $context->getCustomer()?->getId();
     $label = '';
 
     if ($saveCard && $customerId) {
-      $cardCount = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
-      $label = $customerId . '_Card_' . ($cardCount + 1);
+      $label = $this->payTraceCustomerVaultService->getNextCardLabel($context);
     }
 
     $body = [
@@ -120,8 +126,8 @@ class PayTraceApiService extends Endpoints
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -137,7 +143,7 @@ class PayTraceApiService extends Endpoints
       $vaultId = $apiResponse['data']['customer_id'] ?? null;
 
       if ($vaultId) {
-        $customerDetails = $this->getCustomerProfile($vaultId);
+        $customerDetails = $this->getCustomerProfile($vaultId, $context);
 
         $this->payTraceCustomerVaultService->storeCardFromCustomerDetails($vaultId, $billingData['fullName'], $customerDetails, $context);
       }
@@ -145,14 +151,15 @@ class PayTraceApiService extends Endpoints
     return $apiResponse;
   }
 
-  public function processEcheckDeposit(array $data, array $billingData): array
+  public function processEcheckDeposit(array $data, array $billingData, $salesChannelId): array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::ACH_DEPOSIT);
+    $baseUrl = $this->getModeUrl($salesChannelId);
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl,Endpoints::ACH_DEPOSIT);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -193,12 +200,13 @@ class PayTraceApiService extends Endpoints
 
   public function processPaymentAuthorize(array $token, string $amount, array $billingData, $saveCard, SalesChannelContext $context): ResponseInterface|array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::AUTHORIZE);
+    $baseUrl = $this->getModeUrl($context->getSalesChannelId());
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl, Endpoints::AUTHORIZE);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -232,7 +240,7 @@ class PayTraceApiService extends Endpoints
         if (!($customerCreateResponse['error'] ?? true)) {
           $vaultId = $customerCreateResponse['data']['customer_id'];
 
-          $customerDetails = $this->getCustomerProfile($vaultId);
+          $customerDetails = $this->getCustomerProfile($vaultId, $context);
 
           $this->payTraceCustomerVaultService->storeCardFromCustomerDetails($vaultId, $billingData['fullName'], $customerDetails, $context);
         }
@@ -242,14 +250,15 @@ class PayTraceApiService extends Endpoints
     return $apiResponse;
   }
 
-  public function processCapture(array $data): ResponseInterface|array
+  public function processCapture(array $data, $salesChannelId): ResponseInterface|array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::CAPTURE);
+    $baseUrl = $this->getModeUrl($salesChannelId);
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl,Endpoints::CAPTURE);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -269,14 +278,15 @@ class PayTraceApiService extends Endpoints
     return $this->ApiResponse($response);
   }
 
-  public function captureRefund(array $data): string|array
+  public function captureRefund(array $data, $salesChannelId): string|array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::REFUND);
+    $baseUrl = $this->getModeUrl($salesChannelId);
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl,Endpoints::REFUND);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -296,14 +306,15 @@ class PayTraceApiService extends Endpoints
     return $this->ApiResponse($response);
   }
 
-  public function voidTransaction(array $data): string|array
+  public function voidTransaction(array $data, $salesChannelId): string|array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::VOID);
+    $baseUrl = $this->getModeUrl($salesChannelId);
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl,Endpoints::VOID);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -322,21 +333,22 @@ class PayTraceApiService extends Endpoints
     return $this->ApiResponse($response);
   }
 
-  public function processVaultedPayment(array $data): ResponseInterface|array
+  public function processVaultedPayment(array $data, SalesChannelContext $context): ResponseInterface|array
   {
     if (empty($data['selectedCardVaultedId'])) {
       return ['error' => true, 'message' => 'Missing customer ID'];
     }
 
     $endpointDetails = Endpoints::getUrlDynamicParam(
+      $this->getModeUrl($context->getSalesChannelId()),
       Endpoints::VAULTED_TRANSACTION,
       [$data['selectedCardVaultedId']],
     );
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -350,14 +362,15 @@ class PayTraceApiService extends Endpoints
     return $this->ApiResponse($response);
   }
 
-  public function createCustomerProfile(array $data): ResponseInterface | array
+  public function createCustomerProfile(array $data, SalesChannelContext $context): ResponseInterface | array
   {
-    $fullEndpointUrl = Endpoints::getUrl(Endpoints::ADD_CARD);
+    $baseUrl = $this->getModeUrl($context->getSalesChannelId());
+    $fullEndpointUrl = Endpoints::getUrl($baseUrl, Endpoints::ADD_CARD);
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -374,7 +387,7 @@ class PayTraceApiService extends Endpoints
           'postal_code' => $data['billing_address']['postal_code'],
           'country' => $data['billing_address']['country'],
         ],
-        'customer_label' => $data['customerId'] . $data['cardCount'],
+        'customer_label' => $data['cardCount'],
       ]),
     ];
 
@@ -382,13 +395,13 @@ class PayTraceApiService extends Endpoints
     return $this->ApiResponse($response);
   }
 
-  public function getCustomerProfile(string $vaultedCustomerId): array
+  public function getCustomerProfile(string $vaultedCustomerId, SalesChannelContext $context): array
   {
-    $endpoint = Endpoints::getUrlDynamicParam(Endpoints::CUSTOMER_PROFILE, [$vaultedCustomerId]);
+    $endpoint = Endpoints::getUrlDynamicParam($this->getModeUrl($context->getSalesChannelId()),Endpoints::CUSTOMER_PROFILE, [$vaultedCustomerId]);
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ]
@@ -399,17 +412,18 @@ class PayTraceApiService extends Endpoints
   }
 
 
-  public function deleteVaultedCard(string $vaultedCustomerId): ResponseInterface | array
+  public function deleteVaultedCard(string $vaultedCustomerId, SalesChannelContext $context): ResponseInterface | array
   {
     $endpointDetails = Endpoints::getUrlDynamicParam(
+      $this->getModeUrl($context->getSalesChannelId()),
       Endpoints::DELETE_CARD,
       [$vaultedCustomerId],
     );
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -441,12 +455,12 @@ class PayTraceApiService extends Endpoints
     ];
   }
 
-  private function buildRequestBody(): array
+  private function buildRequestBody(?string $salesChannelId = ''): array
   {
     return [
       'grant_type'    => 'client_credentials',
-      'client_id'     => $this->payTraceConfigService->getConfig('clientIdSandbox') ?? '',
-      'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox') ?? '',
+      'client_id'     => $this->payTraceConfigService->getConfig('clientIdSandbox', $salesChannelId ),
+      'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox',$salesChannelId ) ?? '',
     ];
   }
 
@@ -533,10 +547,11 @@ class PayTraceApiService extends Endpoints
       ];
     }
 
-    $url = Endpoints::getUrl(Endpoints::CREATE_CUSTOMER_BY_TRANSACTION);
+    $baseUrl = $this->getModeUrl($context->getSalesChannelId());
 
-    $countCustomer = $this->payTraceCustomerVaultService->countCustomerVaultRecords($context, $customerId);
-    $customerLabel = $customerId . '_Card_' . ($countCustomer + 1);
+    $url = Endpoints::getUrl($baseUrl,Endpoints::CREATE_CUSTOMER_BY_TRANSACTION);
+
+    $customerLabel = $this->payTraceCustomerVaultService->getNextCardLabel($context);
 
     $body = [
       'transaction_id' => $transactionId,
@@ -554,8 +569,8 @@ class PayTraceApiService extends Endpoints
 
     $options = [
       'headers' => [
-        'Authorization' => 'Bearer ' . $this->getAuthorizationToken(),
-        'X-Integrator-Id' => $this->payTraceConfigService->getConfig('integratorId') ?? '',
+        'Authorization' => 'Bearer ' . $this->getAuthorizationToken($context->getSalesChannelId()),
+        'X-Integrator-Id' => '9999Shopware',
         'X-Permalinks' => true,
         'Content-Type' => 'application/json',
       ],
@@ -564,5 +579,57 @@ class PayTraceApiService extends Endpoints
 
     return $this->ApiResponse($this->request($url, $options));
   }
+  public function testConnection(string $salesChannelId): bool
+  {
+    try {
+      $mode   = $this->payTraceConfigService->getConfig('mode', $salesChannelId);
+      $isLive = $mode === 'live';
 
+      $baseUrl = $this->getModeUrl($salesChannelId);
+
+      $clientId = $this->payTraceConfigService->getConfig(
+        $isLive ? 'clientIdProd' : 'clientIdSandbox',
+        $salesChannelId
+      );
+      $clientSecret = $this->payTraceConfigService->getConfig(
+        $isLive ? 'clientSecretProd' : 'clientSecretSandbox',
+        $salesChannelId
+      );
+
+      $body = [
+        'grant_type'    => 'client_credentials',
+        'client_id'     => $clientId,
+        'client_secret' => $clientSecret,
+      ];
+
+      $options = [
+        'form_params' => $body,
+        'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+      ];
+
+      $endpoint = [
+        'method' => 'POST',
+        'url'    => $baseUrl . '/v3/token',
+      ];
+
+      $response = $this->request($endpoint, $options);
+
+      if ($response->getStatusCode() === 201) {
+        return true;
+      }
+
+      return false;
+    } catch (\Throwable $e) {
+      $this->logger->error($e->getMessage());
+      return false;
+    }
+  }
+  public function getModeUrl(?string $salesChannelId = ''): string
+  {
+   $mode =  $this->payTraceConfigService->getConfig('mode', $salesChannelId);
+   if($mode === 'live'){
+     return EnvironmentUrl::PRODUCTION;
+   }
+   return EnvironmentUrl::SANDBOX;
+  }
 }

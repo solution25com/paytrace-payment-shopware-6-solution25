@@ -91,6 +91,16 @@
   margin: 1rem auto;
 }
 
+#confirmOrderForm .loader {
+  position: relative;
+  left: -4px;
+  top: -1px;
+  margin-left: 0;
+  vertical-align: middle;
+  margin-right: 0;
+}
+
+
 .spinner-border {
   width: 2rem;
   height: 2rem;

@@ -4,6 +4,7 @@
       "label_choose_saved_card": "Choose a saved card:",
       "option_select_saved_card": "-- Select a saved card --",
       "button_pay_with_saved_card": "Pay with Saved Card",
+      "option_use_new_card": "Use a new credit card",
       "error_missing_configuration_title": "PayTrace Configuration Missing or Incorrect:",
       "error_missing_configuration_message": "Required API credentials are missing. Please check your plugin settings for <code>Sandbox</code> or <code>Production</code>.",
       "selectSavedCard": "Select a saved card",

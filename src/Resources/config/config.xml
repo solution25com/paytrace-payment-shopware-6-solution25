@@ -28,37 +28,30 @@
 
 
     <card>
-        <title>Client Id and Client Secret - Production </title>
+        <title>Client Id and Client Secret</title>
         <input-field type="text">
             <name>clientIdProd</name>
-            <label>client Id</label>
+            <label>Client Id Live</label>
         </input-field>
 
         <input-field type="password">
             <name>clientSecretProd</name>
-            <label>Client Secret</label>
+            <label>Client Secret Live</label>
         </input-field>
 
-    </card>
-
-    <card>
-        <title>Client Id and Client Secret - Sandbox </title>
         <input-field type="text">
             <name>clientIdSandbox</name>
-            <label>client Id</label>
+            <label>Client Id Sandbox</label>
         </input-field>
 
         <input-field type="password">
             <name>clientSecretSandbox</name>
-            <label>Client Secret</label>
+            <label>Client Secret Sandbox</label>
         </input-field>
-    </card>
 
-    <card>
-        <input-field type="text">
-            <name>integratorId</name>
-            <label>Integrator Id</label>
-        </input-field>
+        <component name="paytrace-api-test">
+            <name>PaytraceApiTest</name>
+        </component>
     </card>
 
     <card>
@@ -66,7 +59,10 @@
             <name>merchantId</name>
             <label>Merchant Id</label>
         </input-field>
+
     </card>
+
+
 
     <card>
         <title>Authorize and capture</title>

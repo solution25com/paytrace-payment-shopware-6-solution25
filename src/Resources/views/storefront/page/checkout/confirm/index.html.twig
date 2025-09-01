@@ -1,19 +1,15 @@
 {% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
-{% block page_checkout_confirm_tos_control_checkbox %}
-    {{ parent() }}
-
-{% if page.extensions.payTrace_payment %}
-  <input
-          type="hidden"
-          required="required"
-          id="payTrace-transaction-id"
-          form="confirmOrderForm"
-          value=""
-          name="payTrace_transaction_id"
-  >
-{% endif %}
-{% endblock %}
 
 {% block page_checkout_confirm_form_submit %}
-        {{ parent() }}
+  {{ parent() }}
+  {% if page.extensions.payTrace_payment %}
+    <input
+        type="hidden"
+        required="required"
+        id="payTrace-transaction-id"
+        form="confirmOrderForm"
+        value=""
+        name="payTrace_transaction_id"
+    >
+  {% endif %}
 {% endblock %}

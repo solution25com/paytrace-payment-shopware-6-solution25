@@ -13,6 +13,8 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         this.errorEl = document.getElementById('credit-card-error-message');
         this.parentCreditCardWrapper.querySelectorAll('.paytrace-form-container input');
         this.saveCardCheckbox = document.getElementById('save-paytrace-card');
+        this.jsDataEl = document.getElementById('paytrace-jsData');
+        this.translations = this.jsDataEl ? JSON.parse(this.jsDataEl.dataset.jsdata).translations : {};
     }
 
     init() {
@@ -29,10 +31,10 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         const cards = JSON.parse(this.cardsDropdown);
         dropdown.innerHTML = '';
 
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = this._t('paytrace_shopware6.credit_card.selectSavedCard');
-        dropdown.appendChild(defaultOption);
+        const newCardOption = document.createElement('option');
+        newCardOption.value = '__new__';
+        newCardOption.textContent = this._t('optionUseNewCard');
+        dropdown.appendChild(newCardOption);
 
         cards.forEach(card => {
             const option = document.createElement('option');
@@ -140,54 +142,43 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             e.preventDefault();
             e.stopPropagation();
 
-            const cardFormContainer = document.getElementById('payTrace_payment');
-            if (cardFormContainer) {
-                cardFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
             this._disableSubmit();
             this._showLoading();
 
             const savedCardSelected = document.getElementById('saved-cards')?.value;
 
-            if (savedCardSelected) {
+            if (savedCardSelected && savedCardSelected !== '__new__') {
                 this._vaultedPayment();
-                return;
+            } else {
+                PTPayment.validate((validationErrors) => {
+                    if (validationErrors.length > 0) {
+                        this._handleValidationErrors(validationErrors);
+                        this._hideLoading();
+                        return;
+                    }
+
+                    this._getCardToken();
+                });
             }
-
-            PTPayment.validate((validationErrors) => {
-                if (validationErrors.length > 0) {
-                    this._handleValidationErrors(validationErrors);
-                    this._hideLoading();
-                    return;
-                }
-
-                this._getCardToken();
-            });
         });
 
-        const selectCardBtn = document.getElementById("SelectCardButton");
-        const savedCardsDropdown = document.getElementById("saved-cards");
+        const dropdown = document.getElementById('saved-cards');
+        const newCardSection = document.getElementById('new-card-section');
 
-        if (selectCardBtn && savedCardsDropdown) {
-            savedCardsDropdown.addEventListener("change", (e) => {
-                if (e.target.value) {
-                    selectCardBtn.style.display = "block";
+        if (dropdown && newCardSection) {
+            dropdown.addEventListener('change', (e) => {
+                if (e.target.value === '__new__') {
+                    newCardSection.style.display = 'block';
                 } else {
-                    selectCardBtn.style.display = "none";
-                }
-            });
-
-            selectCardBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-
-                if (!this.confirmOrderForm.checkValidity()) {
-                    this.confirmOrderForm.reportValidity();
-                    return;
+                    newCardSection.style.display = 'none';
                 }
 
-                this._vaultedPayment();
+                this._hideError();
             });
+
+            const event = new Event('change');
+            dropdown.dispatchEvent(event);
+
         }
 
         const inputs = this.parentCreditCardWrapper.querySelectorAll('input, select');
@@ -345,6 +336,11 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             confirmButton.disabled = true;
         }
         confirmButton.classList.add('is-loading');
+
+        const savedCardsDropdown = document.getElementById('saved-cards');
+        if (savedCardsDropdown) {
+            savedCardsDropdown.disabled = true;
+        }
     }
 
     _enableSubmit() {
@@ -357,10 +353,15 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 loader.remove();
             }
         }
+
+        const savedCardsDropdown = document.getElementById('saved-cards');
+        if (savedCardsDropdown) {
+            savedCardsDropdown.disabled = false;
+        }
     }
 
     _t(key) {
-        return window.translation?.[key] || key;
+        return this.translations[key] || key;
     }
 
     _showLoading() {

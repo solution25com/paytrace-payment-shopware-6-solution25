@@ -85,7 +85,7 @@ class PayTraceController extends StorefrontController
     ];
 
     try {
-      $paymentResponse = $this->payTraceApiService->processEcheckDeposit($data, $billingData);
+      $paymentResponse = $this->payTraceApiService->processEcheckDeposit($data, $billingData, $context->getSalesChannelId());
 
       return $this->handlePaymentResponse($paymentResponse);
     } catch (\Exception $e) {
@@ -175,7 +175,7 @@ class PayTraceController extends StorefrontController
 
     try {
 
-      $paymentResponse = $this->payTraceApiService->processVaultedPayment($data);
+      $paymentResponse = $this->payTraceApiService->processVaultedPayment($data, $context);
       return $this->handlePaymentResponse((array) $paymentResponse);
 
     } catch (\Exception $e) {
