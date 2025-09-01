@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [1.1.0] - 2025-09-01
+### Bug Fixes
+- **Saved Card Dashboard**  
+  Fixed an issue where saved cards were not displaying correctly in the user dashboard.  
+
+- **Checkout Loader**  
+  Resolved a problem where the loader on the checkout submit button was not behaving as expected.  
+
+- **ACH Payment Fields**  
+  Locked ACH payment fields after order submission to prevent changes during processing.  
+
+- **Duplicate Pay Buttons**  
+  Removed duplicate pay buttons when paying with saved cards.  
+
+### Features
+- **API Test Button**  
+  Added a new API test button in plugin configuration for easier connectivity checks.  
+
+### Improvements
+- **Twig Templates**  
+  Various adjustments and fixes in Twig templates for better stability and rendering.  
+
+---
+
 ## [1.0.14] - 2025-06-20
 ### Bug Fixes
 - **Payment Failure Resolution**  
