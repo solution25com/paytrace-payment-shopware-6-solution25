@@ -495,6 +495,16 @@ class PayTraceApiService extends Endpoints
       ];
     }
 
+    if (isset($decodedResponse['data']['response_code'])) {
+      $errorCodes = [1, 102, 103, 107, 110, 113, 125, 167];
+      if (in_array($decodedResponse['data']['response_code'], $errorCodes)) {
+        return [
+          'error' => true,
+          'message' => $decodedResponse['data']['response_message'] ?? 'Unknown error',
+        ];
+      }
+    }
+
     return [
       'error' => false,
       'message' => 'Success',

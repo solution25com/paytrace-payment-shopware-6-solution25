@@ -31,6 +31,8 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             e.preventDefault();
             e.stopPropagation();
 
+            this._hideError()
+
             const cardFormContainer = document.getElementById(this.options.parentCreditCardWrapperId);
             if (cardFormContainer) {
                 cardFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -86,6 +88,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
                   this._hideLoading();
               } else {
                   this._hideLoading();
+                  this._showNote()
                   this._showError(data.message || this._t('paytrace_shopware6.ach_echeck.submitError.paymentFailed'));
               }
           })
@@ -104,12 +107,17 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         this._enableFormInputs();
     }
 
+    _showNote() {
+        document.getElementById('paytrace-card-note-message').classList.remove('d-none');
+    }
+
     _hideError() {
         if (this.errorEl) {
             this.errorEl.innerHTML = '';
             this.errorEl.classList.add('d-none');
         }
 
+        document.getElementById('paytrace-card-note-message').classList.add('d-none');
         this._enableSubmit();
         this._enableFormInputs();
     }

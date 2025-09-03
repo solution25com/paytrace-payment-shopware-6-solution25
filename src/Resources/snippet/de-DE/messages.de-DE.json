@@ -16,7 +16,8 @@
         "vaultedMissing": "Bitte wählen Sie vor dem Fortfahren eine gespeicherte Karte aus.",
         "vaultedError": "Zahlung mit gespeicherter Karte fehlgeschlagen.",
         "vaultedUnknown": "Beim Verwenden der gespeicherten Karte ist ein unerwarteter Fehler aufgetreten.",
-        "initFail": "Zahlungssystem konnte nicht initialisiert werden."
+        "initFail": "Zahlungssystem konnte nicht initialisiert werden.",
+        "billingInformationNote": "Bitte stellen Sie sicher, dass Ihre Rechnungsinformationen korrekt sind!"
       },
       "saveCardLabel": "Karte speichern"
     },

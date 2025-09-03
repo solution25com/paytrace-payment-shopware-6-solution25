@@ -123,7 +123,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
                 body: {
                     background_color: '#ffffff'
                 }
-            },            authorization: {
+            }, authorization: {
                 clientKey: this.clientKey
             }
         })
@@ -142,6 +142,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
             e.preventDefault();
             e.stopPropagation();
 
+            this._hideError();
             this._disableSubmit();
             this._showLoading();
 
@@ -189,26 +190,26 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
 
     _handleValidationErrors(validationErrors) {
         PTPayment.style({
-            'cc': { 'border_color': '#ced4da' },
-            'exp': { 'border_color': '#ced4da' },
-            'code': { 'border_color': '#ced4da' }
+            'cc': {'border_color': '#ced4da'},
+            'exp': {'border_color': '#ced4da'},
+            'code': {'border_color': '#ced4da'}
         });
 
         const errorMessages = [];
 
         validationErrors.forEach((err) => {
             if (err.responseCode === '35') {
-                PTPayment.style({ 'cc': { 'border_color': 'red' } });
+                PTPayment.style({'cc': {'border_color': 'red'}});
                 errorMessages.push(err.description);
             }
 
             if (err.responseCode === '43') {
-                PTPayment.style({ 'exp': { 'border_color': 'red' } });
+                PTPayment.style({'exp': {'border_color': 'red'}});
                 errorMessages.push(err.description);
             }
 
             if (err.responseCode === '148') {
-                PTPayment.style({ 'code': { 'border_color': 'red' } });
+                PTPayment.style({'code': {'border_color': 'red'}});
                 errorMessages.push(err.description);
             }
         });
@@ -254,11 +255,15 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         this._submitVaultedPayment(selectedCardVaultedId, this.amount);
     }
 
+    _showNote() {
+        document.getElementById('paytrace-card-note-message').classList.remove('d-none');
+    }
+
     _submitPayment(token) {
         fetch('/capture-paytrace', {
             method: 'POST',
-            body: JSON.stringify({ token: token, amount: this.amount, saveCard: this.saveCardCheckbox?.checked || false}),
-            headers: { 'Content-Type': 'application/json' }
+            body: JSON.stringify({token: token, amount: this.amount, saveCard: this.saveCardCheckbox?.checked || false}),
+            headers: {'Content-Type': 'application/json'}
         })
             .then(response => response.json())
             .then(data => {
@@ -283,8 +288,8 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     _submitVaultedPayment(selectedCardVaultedId, amount) {
         fetch('/vaulted-capture-paytrace', {
             method: 'POST',
-            body: JSON.stringify({ selectedCardVaultedId, amount: amount }),
-            headers: { 'Content-Type': 'application/json' }
+            body: JSON.stringify({selectedCardVaultedId, amount: amount}),
+            headers: {'Content-Type': 'application/json'}
         })
             .then(response => response.json())
             .then(data => {
@@ -323,10 +328,16 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
         // Reset border color when the user interacts with the input fields
         if (inputElement) {
             PTPayment.style({
-                [inputElement.name]: { 'border_color': '#ced4da' }
+                [inputElement.name]: {'border_color': '#ced4da'}
+            });
+        } else {
+            PTPayment.style({
+                'cc': {'border_color': '#ced4da'},
+                'exp': {'border_color': '#ced4da'},
+                'code': {'border_color': '#ced4da'}
             });
         }
-
+        document.getElementById('paytrace-card-note-message').classList.add('d-none');
         this._enableSubmit();
     }
 

@@ -5,15 +5,13 @@
      data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
      data-mode="{{ page.extensions.payTrace_payment.mode }}"
      data-amount="{{ page.extensions.payTrace_payment.amount }}">
-{#    {{ set  mode = {{ page.extensions.payTrace_payment.mode }} }}#}
-
 
     <form id="ach-form">
-        <div class="error-card-ech">
-            <span class="ach-error-message  alert-danger d-none" id="ach-error-message" role="alert"></span>
+
+        <div id="paytrace-card-note-message" class="paytrace-card-note-message d-none">
+            <span role="alert"> {{ "paytrace_shopware6.credit_card.submitError.billingInformationNote"|trans }}</span>
         </div>
         <div id="ach-data">
-
             <input type="text" class="ach-forma" id="ach-full-name" name="achFullName" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_full_name'|trans }}" required><br>
             <input type="text" class="form-control ach-forma pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_routing_number'|trans }}" required><br>
             <input type="text" class="form-control ach-forma pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_account_number'|trans }}" required><br>
@@ -27,7 +25,10 @@
                 <input type="radio" name="accountType" value="Savings">
                 Savings
             </label>
-            <div id="paytrace-loading-indicator" class="d-none" style="text-align:center; margin: 15px 0;">
+            <div class="error-card-ech">
+                <span class="ach-error-message  alert-danger d-none" id="ach-error-message" role="alert"></span>
+            </div>
+            <div id="paytrace-loading-indicator" class="d-none">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
@@ -43,7 +44,6 @@
     {% endif %}
 
 </div>
-
 
 <div id="paytrace-ach-jsData" data-jsData="{{ {
     'translations': {

@@ -24,6 +24,10 @@
   <div id="new-card-section">
     <div class="card" style="max-width: 500px; margin: 10px auto; background-color: white">
       <div class="card-body">
+        <div id="paytrace-card-note-message" class="paytrace-card-note-message d-none">
+          <span role="alert"> {{ "paytrace_shopware6.credit_card.submitError.billingInformationNote"|trans }}</span>
+        </div>
+
           <div class="" id='pt_hpf_form'></div>
 
         {% if not page.extensions.payTrace_payment.isGuest %}
@@ -44,6 +48,7 @@
           <span class="credit-card-error-message alert-danger d-none" id="credit-card-error-message" role="alert"></span>
         </div>
       </div>
+
     </div>
   </div>
 

@@ -16,7 +16,8 @@
         "vaultedMissing": "Please select a saved card before proceeding.",
         "vaultedError": "Vaulted card payment failed.",
         "vaultedUnknown": "An unexpected error occurred while using a saved card.",
-        "initFail": "Failed to initialize payment system."
+        "initFail": "Failed to initialize payment system.",
+        "billingInformationNote": "Please make sure that your billing information is correct!"
       },
       "saveCardLabel": "Save Card"
     },
