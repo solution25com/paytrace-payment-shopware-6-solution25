@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2025-09-03
+### Bug Fixes
+- **Error Message Display**  
+  Fixed an error message making it clear to the customer that the zip code entered is wrong.
+  
+---
 
 ## [1.1.0] - 2025-09-01
 ### Bug Fixes
