@@ -47,6 +47,9 @@ This plugin supports one-time and saved-card transactions, integrates directly i
 
 ---
 
+## Compatibility
+- ✅ Shopware 6.6.x 
+
 ##  Get Started
 
 ### Installation & Activation :
