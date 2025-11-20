@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-11-20
+
+### Enhancements
+- **Shopware Compatibility:** Added official support and ensured full compatibility with **Shopware 6.6** and **Shopware 6.7**.
+
+### Technical Fixes
+- **Extension Verifier Compliance:** Refactored internal codebase to adhere to strict coding standards and pass all compliance checks defined by the Shopware Extension Verifier.
+
+---
+
 ## [1.1.1] - 2025-09-03
 ### Bug Fixes
 - **Error Message Display**  
