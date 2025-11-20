@@ -19,5 +19,7 @@ validation:
     - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1228815481/src/Gateways/CreditCard.php'
     - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-3089847248/src/Gateways/CreditCard.php'
     - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-3089847248/src/Gateways/CreditCard.php'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1416718111/src/Gateways/CreditCard.php'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1416718111/src/Gateways/CreditCard.php'
 
 
