@@ -11,3 +11,10 @@ validation:
     - message: 'file /home/runner/work/paytrace-payment-shopware-6-solution25/paytrace-payment-shopware-6-solution25/vendor/shopware/storefront/Resources/app/storefront/stylelint.config.js is not allowed in the zip file'
     - message: 'file /home/runner/work/paytrace-payment-shopware-6-solution25/paytrace-payment-shopware-6-solution25/vendor/shopware/storefront/Resources/app/storefront/vendor/tiny-slider/src/.DS_Store is not allowed in the zip file'
     - message: 'the english description with length of 45 should have a length from 150 up to 185 characters.'
+    - message: 'Parameter #4 $saveCard of method solu1Paytrace\Storefront\Controller\PayTraceController::processPayment() expects bool, array<mixed>|bool|float|int|string given.'
+    - message: 'Parameter #2 $amount of method solu1Paytrace\Storefront\Controller\PayTraceController::processPayment() expects string, array<mixed>|bool|float|int|string given.'
+    - message: 'Parameter #1 $token of method solu1Paytrace\Storefront\Controller\PayTraceController::processPayment() expects array{hpf_token: string, enc_key: string}, array<mixed>|bool|float|int|string given.'
+    - message: 'Parameter #3 $transactionId of method solu1Paytrace\Service\PayTraceTransactionService::addTransaction() expects string, bool|float|int|string given.'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1228815481/src/Gateways/CreditCard.php'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1228815481/src/Gateways/CreditCard.php'
+
