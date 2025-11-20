@@ -15,11 +15,11 @@ validation:
     - message: 'Parameter #2 $amount of method solu1Paytrace\Storefront\Controller\PayTraceController::processPayment() expects string, array<mixed>|bool|float|int|string given.'
     - message: 'Parameter #1 $token of method solu1Paytrace\Storefront\Controller\PayTraceController::processPayment() expects array{hpf_token: string, enc_key: string}, array<mixed>|bool|float|int|string given.'
     - message: 'Parameter #3 $transactionId of method solu1Paytrace\Service\PayTraceTransactionService::addTransaction() expects string, bool|float|int|string given.'
-    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1228815481/src/Gateways/CreditCard.php'
-    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1228815481/src/Gateways/CreditCard.php'
-    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-3089847248/src/Gateways/CreditCard.php'
-    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-3089847248/src/Gateways/CreditCard.php'
-    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1416718111/src/Gateways/CreditCard.php'
-    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly. while analysing file /tmp/analyse-extension-1416718111/src/Gateways/CreditCard.php'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly.'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly.'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly.'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly.'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct was not found while trying to analyse it - discovering symbols is probably not configured properly.'
+    - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly.'
 
 
