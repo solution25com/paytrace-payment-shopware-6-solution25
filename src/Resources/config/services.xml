@@ -8,19 +8,20 @@
 
         <!-- Gateway  -->
 
-        <service id="PayTrace\Gateways\CreditCard">
+        <service id="solu1Paytrace\Gateways\CreditCard">
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
-            <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
-            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
-            <argument type="service" id="order_transaction.repository"/>
-            <tag name="shopware.payment.method.sync"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceTransactionService" />
+            <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
+            <tag name="shopware.payment.method"/>
         </service>
 
-        <service id="PayTrace\Gateways\AchEcheck">
+        <service id="solu1Paytrace\Gateways\AchEcheck">
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
-            <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
-            <argument type="service" id="order_transaction.repository"/>
-            <tag name="shopware.payment.method.sync"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceTransactionService" />
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
+            <tag name="shopware.payment.method"/>
         </service>
 
         <!-- Gateway END  -->
@@ -28,27 +29,27 @@
 
         <!-- Entity Definitions -->
 
-        <service id="PayTrace\Core\Content\Transaction\PayTraceTransactionDefinition">
+        <service id="solu1Paytrace\Core\Content\Transaction\PayTraceTransactionDefinition">
             <tag name="shopware.entity.definition" entity="payTrace_transaction"/>
         </service>
 
-        <service id="PayTrace\Core\Content\CustomerVault\CustomerVaultDefinition">
+        <service id="solu1Paytrace\Core\Content\CustomerVault\CustomerVaultDefinition">
             <tag name="shopware.entity.definition" entity="payTrace_customer_vault"/>
         </service>
 
         <!-- Entity Definitions END -->
 
-        <service id="PayTrace\Subscriber\CheckoutConfirmEventSubscriber">
-            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
-            <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
-            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
+        <service id="solu1Paytrace\Subscriber\CheckoutConfirmEventSubscriber">
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceCustomerVaultService" />
+            <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
 
-        <service id="PayTrace\Subscriber\OrderPaymentStatusChangeSubscriber">
-            <argument type="service" id="PayTrace\Service\PayTraceTransactionService" />
-            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
+        <service id="solu1Paytrace\Subscriber\OrderPaymentStatusChangeSubscriber">
+            <argument type="service" id="solu1Paytrace\Service\PayTraceTransactionService" />
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
             <argument type="service" id="order.repository"/>
             <argument type="service" id="payment_method.repository"/>
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
@@ -56,10 +57,10 @@
             <tag name="kernel.event_subscriber"/>
         </service>
 
-        <service id="PayTrace\Storefront\Controller\PayTraceController" public="true">
-            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
-            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
-            <argument type="service" id="PayTrace\Library\Constants\ValidatorUtility"/>
+        <service id="solu1Paytrace\Storefront\Controller\PayTraceController" public="true">
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="solu1Paytrace\Library\Constants\ValidatorUtility"/>
             <argument type="service" id="PayTracePayment.logger"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -67,44 +68,41 @@
 
         </service>
 
-        <service id="PayTrace\Controller\PayTraceSavedCardsController">
-            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
-            <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService" />
-            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
+        <service id="solu1Paytrace\Controller\PayTraceSavedCardsController">
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceCustomerVaultService" />
+            <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
             <tag name="controller.service_arguments"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
-            <call method="setTwig">
-                <argument type="service" id="twig"/>
-            </call>
         </service>
 
-        <service id="PayTrace\Storefront\Controller\TestApiConnectionController" public="true">
-            <argument type="service" id="PayTrace\Service\PayTraceApiService"/>
+        <service id="solu1Paytrace\Storefront\Controller\TestApiConnectionController" public="true">
+            <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
         </service>
 
-        <service id="PayTrace\Service\PayTraceConfigService">
+        <service id="solu1Paytrace\Service\PayTraceConfigService">
             <argument id="Shopware\Core\System\SystemConfig\SystemConfigService" type="service"/>
         </service>
 
-        <service id="PayTrace\Service\PayTraceApiService">
-            <argument type="service" id="PayTrace\Service\PayTraceConfigService"/>
-            <argument type="service" id="PayTrace\Service\PayTraceCustomerVaultService"/>
+        <service id="solu1Paytrace\Service\PayTraceApiService">
+            <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceCustomerVaultService"/>
             <argument type="service" id="PayTracePayment.logger"/>
 
         </service>
 
-        <service id="PayTrace\Service\PayTraceTransactionService">
+        <service id="solu1Paytrace\Service\PayTraceTransactionService">
             <argument type="service" id="payTrace_transaction.repository"/>
             <argument type="service" id="order.repository"/>
             <argument type="service" id="order_transaction.repository" />
         </service>
 
-        <service id="PayTrace\Service\PayTraceCustomerVaultService">
+        <service id="solu1Paytrace\Service\PayTraceCustomerVaultService">
             <argument type="service" id="payTrace_customer_vault.repository"/>
             <argument type="service" id="PayTracePayment.logger"/>
         </service>
@@ -125,7 +123,7 @@
         <!-- Logger END -->
 
         <!-- Validator  -->
-        <service id="PayTrace\Library\Constants\ValidatorUtility">
+        <service id="solu1Paytrace\Library\Constants\ValidatorUtility">
             <argument type="service" id="validator"/>
             <argument type="service" id="PayTracePayment.logger"/>
         </service>

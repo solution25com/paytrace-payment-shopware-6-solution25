@@ -3,6 +3,7 @@
     "credit_card": {
       "label_choose_saved_card": "Gespeicherte Karte auswählen:",
       "option_select_saved_card": "-- Gespeicherte Karte auswählen --",
+      "option_use_new_card": "eine neue Kreditkarte verwenden",
       "button_pay_with_saved_card": "Mit gespeicherter Karte bezahlen",
       "option_use_new_card": "Neue Kreditkarte verwenden",
       "error_missing_configuration_title": "PayTrace-Konfiguration fehlt oder ist fehlerhaft:",

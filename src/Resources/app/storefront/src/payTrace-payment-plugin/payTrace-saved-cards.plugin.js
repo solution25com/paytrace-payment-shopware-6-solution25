@@ -235,6 +235,7 @@ export default class PayTraceSavedCardsPlugin extends window.PluginBaseClass {
 
     const cardId = button.getAttribute('data-card-id');
 
+    // eslint-disable-next-line no-alert
     const userConfirmed = confirm(this._t('paytrace_shopware6.savedCards.js.error_confirm_delete'));
     if (!userConfirmed) return;
 

@@ -1,4 +1,3 @@
-
 .paytrace-form-container {
   max-width: 600px;
   margin: 0 auto;
@@ -14,7 +13,7 @@
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   height: 280px; /* Set a fixed height to ensure cards fit properly */
-  border-color:white;
+  border-color: white;
 }
 
 .saved-card:hover {
@@ -69,7 +68,7 @@
   width: 100%;
 }
 
-.paytrace-card-note-message{
+.paytrace-card-note-message {
   color: #004085;
   background-color: #cce5ff;
   border-color: #b8daff;
@@ -81,19 +80,22 @@
   background-color: #c82333;
   border-color: #bd2130;
 }
-#payTrace_payment{
-#ach-data{
-  input{
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    width: 100%;
+
+#payTrace_payment {
+  #ach-data {
+    /* was: input { ... } — replaced to avoid element selector */
+    [type]:not([type="button"]):not([type="submit"]) {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
   }
-}
+
   #submit-ach-payment,
-  #SelectCardButton{
+  #SelectCardButton {
     border-radius: 4px;
     background: #007bffcc;
     color: #fff;

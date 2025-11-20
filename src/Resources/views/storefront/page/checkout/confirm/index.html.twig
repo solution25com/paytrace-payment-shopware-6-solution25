@@ -2,6 +2,7 @@
 
 {% block page_checkout_confirm_form_submit %}
   {{ parent() }}
+
   {% if page.extensions.payTrace_payment %}
     <input
         type="hidden"
@@ -11,5 +12,6 @@
         value=""
         name="payTrace_transaction_id"
     >
+
   {% endif %}
 {% endblock %}

@@ -1,4 +1,19 @@
 {% if page.extensions.payTrace_payment.clientKey %}
+    <input
+            type="hidden"
+            id="{{ page.extensions.payTrace_payment.flow == 'payment_order'
+            ? 'payTrace-transaction-id'
+            : 'paytracePaymentData' }}"
+            name="{{ page.extensions.payTrace_payment.flow == 'payment_order'
+            ? 'payTrace_transaction_id'
+            : 'paytracePaymentData' }}"
+            form="confirmOrderForm"
+            value=""
+           {% if page.extensions.payTrace_payment.flow == 'payment_order' %}
+                required="required"
+            {% endif %}
+    />
+
 <template payTrace-payment-credit-card-plugin></template>
 <div id="payTrace_payment" data-payTrace-credit-card="true"
      data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
@@ -6,7 +21,8 @@
      data-is-guest="{{ page.extensions.payTrace_payment.isGuest }}"
      data-card-type="{{ page.extensions.payTrace_payment.cardType }}"
      data-mode="{{ page.extensions.payTrace_payment.mode }}"
-     data-cardsDropdown="{{ page.extensions.payTrace_payment.cardsDropdown }}">
+     data-cardsDropdown="{{ page.extensions.payTrace_payment.cardsDropdown }}"
+     data-flow="{{ page.extensions.payTrace_payment.flow }}">
 
 
   <form class="mt-3" id="saved-card-form">
@@ -22,7 +38,7 @@
 
   </form>
   <div id="new-card-section">
-    <div class="card" style="max-width: 500px; margin: 10px auto; background-color: white">
+    <div class="card">
       <div class="card-body">
         <div id="paytrace-card-note-message" class="paytrace-card-note-message d-none">
           <span role="alert"> {{ "paytrace_shopware6.credit_card.submitError.billingInformationNote"|trans }}</span>
@@ -39,7 +55,7 @@
           </div>
         {% endif %}
 
-        <div id="paytrace-loading-indicator" class="d-none" style="text-align:center; margin: 15px 0;">
+        <div id="paytrace-loading-indicator" class="d-none" >
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
@@ -47,6 +63,7 @@
         <div>
           <span class="credit-card-error-message alert-danger d-none" id="credit-card-error-message" role="alert"></span>
         </div>
+
       </div>
 
     </div>

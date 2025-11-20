@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PayTrace\Library\Constants;
+namespace solu1Paytrace\Library\Constants;
 
 class EnvironmentUrl
 {
-   const PRODUCTION = 'https://api.paytrace.com';
-   const SANDBOX = 'https://api.sandbox.paytrace.com';
-
+    const PRODUCTION = 'https://api.paytrace.com';
+    const SANDBOX = 'https://api.sandbox.paytrace.com';
 }

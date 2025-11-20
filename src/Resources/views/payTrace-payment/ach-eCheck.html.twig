@@ -1,10 +1,24 @@
 <template payTrace-payment-ach-echeck-plugin></template>
-
+ <input
+            type="hidden"
+            id="{{ page.extensions.payTrace_payment.flow == 'payment_order'
+            ? 'payTrace-transaction-id'
+            : 'paytracePaymentData' }}"
+            name="{{ page.extensions.payTrace_payment.flow == 'payment_order'
+            ? 'payTrace_transaction_id'
+            : 'paytracePaymentData' }}"
+            form="confirmOrderForm"
+            value=""
+           {% if page.extensions.payTrace_payment.flow == 'payment_order' %}
+                required="required"
+            {% endif %}
+    />
 <div id="payTrace_payment" class="payTrace_ach_payment"
      data-payTrace-ach-echeck="true"
      data-client-key="{{ page.extensions.payTrace_payment.clientKey }}"
      data-mode="{{ page.extensions.payTrace_payment.mode }}"
-     data-amount="{{ page.extensions.payTrace_payment.amount }}">
+     data-amount="{{ page.extensions.payTrace_payment.amount }}"
+     data-flow="{{ page.extensions.payTrace_payment.flow }}">
 
     <form id="ach-form">
 
@@ -47,8 +61,8 @@
 
 <div id="paytrace-ach-jsData" data-jsData="{{ {
     'translations': {
-        'submitErrorMissingFields': 'paytrace_shopware6.ach_echeck.submitError.missingFields' | trans,
-        'submitErrorPaymentFailed': 'paytrace_shopware6.ach_echeck.submitError.paymentFailed' | trans,
-        'submitErrorUnknown': 'paytrace_shopware6.ach_echeck.submitError.unknown' | trans
+        'paytrace_shopware6.ach_echeck.submitError.missingFields': ('paytrace_shopware6.ach_echeck.submitError.missingFields'|trans),
+        'paytrace_shopware6.ach_echeck.submitError.paymentFailed': ('paytrace_shopware6.ach_echeck.submitError.paymentFailed'|trans),
+        'paytrace_shopware6.ach_echeck.submitError.generic': ('paytrace_shopware6.ach_echeck.submitError.generic'|trans)
     }
 } | json_encode | escape('html_attr') }}"></div>

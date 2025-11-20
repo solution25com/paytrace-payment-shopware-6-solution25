@@ -3,50 +3,56 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
 
-
     <card>
         <title>PayTrace Payment Settings</title>
-        <title lang="de-DE">PayTrace Payment Settings</title>
+        <title lang="de-DE">PayTrace Zahlungseinstellungen</title>
 
         <input-field type="single-select">
             <name>mode</name>
             <label>Mode</label>
+            <label lang="de-DE">Modus</label>
             <options>
                 <option>
                     <id>sandbox</id>
                     <name>Sandbox</name>
+                    <name lang="de-DE">Sandbox</name>
                 </option>
                 <option>
                     <id>live</id>
                     <name>Live</name>
+                    <name lang="de-DE">Live</name>
                 </option>
             </options>
             <defaultValue>sandbox</defaultValue>
         </input-field>
-
     </card>
-
 
     <card>
         <title>Client Id and Client Secret</title>
+        <title lang="de-DE">Client-ID und Client-Secret</title>
+
         <input-field type="text">
             <name>clientIdProd</name>
             <label>Client Id Live</label>
+            <label lang="de-DE">Client-ID Live</label>
         </input-field>
 
         <input-field type="password">
             <name>clientSecretProd</name>
             <label>Client Secret Live</label>
+            <label lang="de-DE">Client-Secret Live</label>
         </input-field>
 
         <input-field type="text">
             <name>clientIdSandbox</name>
             <label>Client Id Sandbox</label>
+            <label lang="de-DE">Client-ID Sandbox</label>
         </input-field>
 
         <input-field type="password">
             <name>clientSecretSandbox</name>
             <label>Client Secret Sandbox</label>
+            <label lang="de-DE">Client-Secret Sandbox</label>
         </input-field>
 
         <component name="paytrace-api-test">
@@ -58,34 +64,75 @@
         <input-field type="text">
             <name>merchantId</name>
             <label>Merchant Id</label>
+            <label lang="de-DE">Händler-ID</label>
         </input-field>
-
     </card>
-
-
 
     <card>
         <title>Authorize and capture</title>
+        <title lang="de-DE">Autorisieren und Einziehen</title>
+
         <input-field type="single-select">
             <name>authorizeAndCapture</name>
             <label>Transaction type</label>
-            <helpText>Allow admin to manually authorize and capture payments
-                When enabled, the admin can review and approve payments.All payment will be on hold until the admin approves it</helpText>
+            <label lang="de-DE">Transaktionstyp</label>
+
+            <helpText>Allow admin to manually authorize and capture payments.
+                When enabled, the admin can review and approve payments. All payments will be on hold until the admin approves them.
+            </helpText>
+            <helpText lang="de-DE">
+                Ermöglicht es dem Administrator, Zahlungen manuell zu autorisieren und einzuziehen.
+                Wenn aktiviert, kann der Administrator Zahlungen überprüfen und freigeben. Alle Zahlungen bleiben solange zurückgehalten, bis sie freigegeben werden.
+            </helpText>
 
             <options>
                 <option>
                     <id>auth</id>
                     <name>Auth Only</name>
+                    <name lang="de-DE">Nur Autorisierung</name>
                 </option>
                 <option>
                     <id>direct_capture</id>
                     <name>Auth and Capture</name>
+                    <name lang="de-DE">Autorisieren und Einziehen</name>
                 </option>
             </options>
 
             <defaultValue>auth</defaultValue>
-
         </input-field>
+    </card>
+
+    <card>
+
+        <input-field type="single-select">
+            <name>flow</name>
+            <options>
+                <option>
+                    <id>order_payment</id>
+                    <name>Order then payment</name>
+                    <name lang="de-DE">Order then payment</name>
+                </option>
+                <option>
+                    <id>payment_order</id>
+                    <name>Payment then Order</name>
+                    <name lang="de-DE">Payment then Order</name>
+                </option>
+            </options>
+            <defaultValue>order_payment</defaultValue>
+            <label>Flow</label>
+            <label lang="de-DE">Flow</label>
+            <helpText>
+                Defines the sequence of the payment flow.
+                "Order then Payment" – The order will be created first. If the payment fails, the order status will be set to "failed".
+                "Payment then Order" – The payment will be attempted first. If it fails, no order will be created.
+            </helpText>
+            <helpText lang="de-DE">
+                Definiert die Reihenfolge des Zahlungsablaufs.
+                „Bestellung dann Zahlung“ – Die Bestellung wird zuerst erstellt. Wenn die Zahlung fehlschlägt, wird der Bestellstatus auf „Fehlgeschlagen“ gesetzt.
+                „Zahlung dann Bestellung“ – Zuerst wird versucht, die Zahlung durchzuführen. Bei einem Fehler wird keine Bestellung erstellt.
+            </helpText>
+        </input-field>
+
     </card>
 
 </config>

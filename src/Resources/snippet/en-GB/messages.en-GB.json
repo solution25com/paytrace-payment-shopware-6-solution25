@@ -113,7 +113,7 @@
       "submitError": {
         "missingFields": "Please complete all required ACH fields.",
         "paymentFailed": "ACH payment failed.",
-        "unknown": "An unexpected error occurred while submitting the ACH payment."
+        "generic": "An unexpected error occurred while submitting the ACH payment."
       }
     }
   }

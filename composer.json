@@ -1,50 +1,56 @@
 {
-    "name": "solution25/pay-trace",
-    "description": "Paytrace Payment - Shopware 6 Plugin",
-    "type": "shopware-platform-plugin",
-    "version": "1.1.1",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "solution25",
-            "email": "info@solution25.com",
-            "homepage": "https://solution25.com/"
-        }
-    ],
-    "require": {
-        "shopware/core": "~6.6.0",
-        "shopware/storefront": "^6.6"
-    },
-    "require-dev": {
-        "spaze/phpstan-disallowed-calls": "^4.5"
-    },
-    "extra": {
-        "shopware-plugin-class": "PayTrace\\PayTrace",
-        "label": {
-            "de-DE": "PayTrace Zahlung",
-            "en-GB": "PayTrace Payment"
-        },
-        "description": {
-            "de-DE": "PayTrace Zahlungsanbieter Plugin für Shopware",
-            "en-GB": "PayTrace payment provider plugin for Shopware"
-        },
-        "manufacturerLink": {
-            "de-DE": "https://solution25.com/",
-            "en-GB": "https://solution25.com/en/home_en/"
-        },
-        "supportLink": {
-            "de-DE": "https://solution25.com/",
-            "en-GB": "https://solution25.com/en/home_en/"
-        }
-    },
-    "autoload": {
-        "psr-4": {
-            "PayTrace\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "PayTrace\\Tests\\": "tests/"
-        }
+  "name": "solution25/pay-trace",
+  "description": "PayTrace Payment - Shopware 6 Plugin",
+  "type": "shopware-platform-plugin",
+  "version": "1.2.0",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "solution25",
+      "email": "info@solution25.com",
+      "homepage": "https://solution25.com/"
     }
+  ],
+  "require": {
+    "shopware/core": "^6.6 || ^6.7",
+    "shopware/storefront": "^6.6 || ^6.7"
+  },
+  "extra": {
+    "shopware-plugin-class": "solu1Paytrace\\solu1Paytrace",
+    "label": {
+      "de-DE": "PayTrace Zahlung",
+      "en-GB": "PayTrace Payment"
+    },
+    "description": {
+      "de-DE": "Das PayTrace Zahlungsanbieter-Plugin für Shopware 6 ermöglicht es Händlern, sichere Kreditkarten- und Transaktionszahlungen direkt im Shop durchzuführen und effizient zu verwalten.",
+      "en-GB": "The PayTrace payment provider plugin for Shopware 6 enables merchants to process secure credit card and transaction payments directly within the shop and manage them efficiently."
+    },
+    "manufacturerLink": {
+      "de-DE": "https://solution25.com/",
+      "en-GB": "https://solution25.com/en/home_en/"
+    },
+    "supportLink": {
+      "de-DE": "https://solution25.com/",
+      "en-GB": "https://solution25.com/en/home_en/"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "solu1Paytrace\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "solu1Paytrace\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "symfony/runtime": true
+    }
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "squizlabs/php_codesniffer": "^4.0"
+  }
 }

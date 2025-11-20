@@ -8,7 +8,8 @@
       "error": {
         "title": "Paytrace API-Test",
         "message": "Verbindungstest fehlgeschlagen! Bitte überprüfen Sie die API-Zugangsdaten."
-      }
+      },
+      "connection": "API-Verbindung testen"
     }
   }
 }

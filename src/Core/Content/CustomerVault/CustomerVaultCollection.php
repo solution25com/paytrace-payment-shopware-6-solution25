@@ -1,6 +1,9 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace PayTrace\Core\Content\CustomerVault;
+declare(strict_types=1);
+
+namespace solu1Paytrace\Core\Content\CustomerVault;
+
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 /**
@@ -16,8 +19,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
  */
 class CustomerVaultCollection extends EntityCollection
 {
-  protected function getExpectedClass(): string
-  {
-    return CustomerVaultEntity::class;
-  }
+    protected function getExpectedClass(): string
+    {
+        return CustomerVaultEntity::class;
+    }
 }

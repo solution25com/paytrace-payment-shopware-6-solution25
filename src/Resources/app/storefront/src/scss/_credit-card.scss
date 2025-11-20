@@ -4,12 +4,26 @@
   font-size: 13px;
 }
 
+#new-card-section{
+  .card{
+    max-width: 500px;
+    margin: 10px auto;
+    background-color: white;
+    #paytrace-loading-indicator{
+      text-align:center; margin: 15px 0;
+    }
+  }
+}
+
+/* stylelint-disable-next-line selector-max-type */
 #pt_hpf_form iframe {
-  /*width: 90% !important;*/
-  height: 300px !important;
-  margin-top:25px;
+  display: block;
+  width: 100%;
+  min-height: 300px;
+  height: auto;
+  margin-top: 25px;
   border: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 #payTrace_payment .alert-danger {
@@ -36,6 +50,7 @@
   outline: none;
 }
 
+/* stylelint-disable-next-line selector-max-type */
 #payTrace_payment label.form-label {
   font-size: 0.875rem;
   margin-bottom: 0.25rem;
@@ -99,7 +114,6 @@
   vertical-align: middle;
   margin-right: 0;
 }
-
 
 .spinner-border {
   width: 2rem;

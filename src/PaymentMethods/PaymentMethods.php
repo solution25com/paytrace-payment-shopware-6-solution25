@@ -1,13 +1,13 @@
 <?php
 
-namespace PayTrace\PaymentMethods;
+namespace solu1Paytrace\PaymentMethods;
 
-use PayTrace\Gateways\AchEcheck;
+use solu1Paytrace\Gateways\AchEcheck;
 
 class PaymentMethods
 {
-  public const PAYMENT_METHODS = [
+    public const PAYMENT_METHODS = [
     CreditCardPaymentMethod::class,
       ACHPaymentMethod::class,
-  ];
+    ];
 }

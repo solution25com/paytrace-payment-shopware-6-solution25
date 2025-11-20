@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace PayTrace\Migration;
+declare(strict_types=1);
+
+namespace solu1Paytrace\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -15,9 +17,9 @@ class Migration1742286395CustomerVault extends MigrationStep
         return 1742286395;
     }
 
-  public function update(Connection $connection): void
-  {
-    $connection->executeStatement('
+    public function update(Connection $connection): void
+    {
+        $connection->executeStatement('
             CREATE TABLE IF NOT EXISTS `payTrace_customer_vault` (
                 `id` BINARY(16) NOT NULL,
                 `customer_id` BINARY(16) NOT NULL,
@@ -31,5 +33,5 @@ class Migration1742286395CustomerVault extends MigrationStep
                 CONSTRAINT `fk.payTrace_customer_vault.customer_id` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ');
-  }
+    }
 }

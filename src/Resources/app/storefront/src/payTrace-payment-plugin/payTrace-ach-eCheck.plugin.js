@@ -12,12 +12,32 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     }
 
     _registerElements() {
-        this.confirmOrderForm = document.forms[this.options.confirmFormId];
+        this.confirmOrderForm =
+            document.getElementById(this.options.confirmFormId) ||
+            document.forms[this.options.confirmFormId];
         this.parentCreditCardWrapper = document.getElementById(this.options.parentCreditCardWrapperId);
-        this.amount = this.parentCreditCardWrapper.getAttribute('data-amount');
+        this.amount = this.parentCreditCardWrapper?.getAttribute('data-amount') || '';
         this.errorEl = document.getElementById('ach-error-message');
         this.jsDataEl = document.getElementById('paytrace-ach-jsData');
         this.translations = this.jsDataEl ? JSON.parse(this.jsDataEl.dataset.jsdata).translations : {};
+
+        this.submitBtn =
+            document.getElementById('confirmFormSubmit') ||
+            document.querySelector('button[type="submit"][form="confirmOrderForm"]') ||
+            this.confirmOrderForm?.querySelector('button[type="submit"]');
+
+        if (this.submitBtn && !this.submitBtn.dataset.originalHtml) {
+            this.submitBtn.dataset.originalHtml = this.submitBtn.innerHTML;
+            this.submitBtn.dataset.originalClass = this.submitBtn.className;
+        }
+
+        this._loadingClasses = [
+            'is-loading','btn-loading','loading','is--loading','is-busy','busy',
+            'btn--loading','is-ajax-submit','ajax','loading-indicator'
+        ];
+        this._spinnerSelectors = [
+            '.spinner-border','.spinner-grow','.icon--loading','.icon-loading','.loading-icon'
+        ];
     }
 
     _loadPayTraceKey() {
@@ -34,7 +54,7 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             this._hideError()
 
             const cardFormContainer = document.getElementById(this.options.parentCreditCardWrapperId);
-            if (cardFormContainer) {
+            if (cardFormContainer){
                 cardFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
@@ -48,24 +68,26 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     _getEncryptedTokens() {
         paytrace.setKeyAjax(this.options.publicKeyUrl);
 
-        const routingField = document.getElementById('achRoutingNumber').value;
-        const accountField = document.getElementById('achAccountNumber');
-        const billingName = document.getElementById('ach-full-name').value;
+        const routingValue = document.getElementById('achRoutingNumber')?.value?.trim();
+        const accountEl = document.getElementById('achAccountNumber');
+        const billingName = document.getElementById('ach-full-name')?.value?.trim() || '';
         const accountType = document.querySelector('input[name="accountType"]:checked')?.value;
 
         if (!routingField || !accountField || !accountType) {
             this._hideLoading();
-            this._showError(this._t('paytrace_shopware6.ach_echeck.submitError.missingFields'));
+            this._showError(this._t('submitErrorMissingFields'));
             return;
         }
 
-        const encryptedRouting = routingField;
-        const encryptedAccount = paytrace.encryptValue(accountField.value);
+        const encryptedRouting = routingValue;
+        const encryptedAccount = paytrace.encryptValue(accountEl.value);
 
         this._submitPayment(encryptedRouting, encryptedAccount, billingName, accountType);
     }
 
     _submitPayment(encryptedRouting, encryptedAccount, billingName, accountType) {
+        const flow = document.getElementById('payTrace_payment').getAttribute('data-flow');
+
         const payload = {
             billingName: billingName,
             routingNumber: encryptedRouting,
@@ -74,27 +96,32 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             amount: this.amount
         };
 
-        fetch('/process-echeck-deposit', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'application/json' }
-        })
-          .then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  this._hideError();
-                  this._hideLoading();
-                  this.confirmOrderForm.submit();
-                  this._hideLoading();
-              } else {
-                  this._hideLoading();
-                  this._showNote()
-                  this._showError(data.message || this._t('paytrace_shopware6.ach_echeck.submitError.paymentFailed'));
-              }
-          })
-          .catch(error => {
-              this._showError(this._t('paytrace_shopware6.ach_echeck.submitError.unknown') + ' | ' + error);
-          });
+        if (flow === 'order_payment') {
+            document.getElementById('paytracePaymentData').value = JSON.stringify(payload);
+            document.getElementById('confirmOrderForm').submit();
+        } else {
+            fetch('/process-echeck-deposit', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: {'Content-Type': 'application/json'}
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this._hideError();
+                        this._hideLoading();
+                        this.confirmOrderForm.submit();
+                        this._hideLoading();
+                    } else {
+                        this._hideLoading();
+                        this._showNote()
+                        this._showError(data.message || this._t('submitErrorPaymentFailed'));
+                    }
+                })
+                .catch(error => {
+                    this._showError(this._t('submitErrorUnknown') + ' | ' + error);
+                });
+        }
     }
 
     _showError(message) {
@@ -102,13 +129,8 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             this.errorEl.innerHTML = message;
             this.errorEl.classList.remove('d-none');
         }
-
         this._enableSubmit();
         this._enableFormInputs();
-    }
-
-    _showNote() {
-        document.getElementById('paytrace-card-note-message').classList.remove('d-none');
     }
 
     _hideError() {
@@ -116,11 +138,49 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
             this.errorEl.innerHTML = '';
             this.errorEl.classList.add('d-none');
         }
+    }
+    _forceStopLoading() {
+        const loader = document.getElementById('paytrace-loading-indicator');
+        if (loader) loader.classList.add('d-none');
 
-        document.getElementById('paytrace-card-note-message').classList.add('d-none');
+        if (this.submitBtn) {
+            this._spinnerSelectors.forEach(sel => {
+                this.submitBtn.querySelectorAll(sel).forEach(el => el.remove());
+            });
+
+            if (this.submitBtn.dataset.originalHtml) {
+                this.submitBtn.innerHTML = this.submitBtn.dataset.originalHtml;
+            } else {
+                this.submitBtn.textContent = (this.submitBtn.textContent || '').trim() || 'Submit order';
+            }
+            if (this.submitBtn.dataset.originalClass) {
+                this.submitBtn.className = this.submitBtn.dataset.originalClass;
+            }
+
+            this.submitBtn.removeAttribute('aria-busy');
+            this.submitBtn.removeAttribute('data-is-loading');
+            this.submitBtn.disabled = false;
+            this._loadingClasses.forEach(c => this.submitBtn.classList.remove(c));
+        }
+
+        const roots = [this.confirmOrderForm, this.parentCreditCardWrapper, document.body].filter(Boolean);
+        for (const root of roots) {
+            this._loadingClasses.forEach(c => {
+                root.classList?.remove?.(c);
+                root.querySelectorAll?.(`.${c}`)?.forEach(el => el.classList.remove(c));
+            });
+            root.querySelectorAll?.('[data-is-loading]')?.forEach(el => el.removeAttribute('data-is-loading'));
+            root.querySelectorAll?.('[aria-busy="true"]')?.forEach(el => el.removeAttribute('aria-busy'));
+            this._spinnerSelectors.forEach(sel => root.querySelectorAll?.(sel)?.forEach(el => el.remove()));
+        }
+
+        const note = document.getElementById('paytrace-card-note-message');
+        if (note) note.classList.add('d-none');
+
         this._enableSubmit();
         this._enableFormInputs();
     }
+
 
     _disableSubmit() {
         const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
@@ -137,7 +197,8 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
     }
 
     _t(key) {
-        return this.translations[key] || key;
+        const dict= this.translations || {};
+        return Object.prototype.hasOwnProperty.call(dict, key) ? dict[key] : key;
     }
 
     _showLoading() {

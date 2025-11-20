@@ -1,12 +1,11 @@
 <?php
 
-namespace PayTrace\PaymentMethods;
+namespace solu1Paytrace\PaymentMethods;
 
-use PayTrace\Gateways\CreditCard;
+use solu1Paytrace\Gateways\CreditCard;
 
 class CreditCardPaymentMethod implements PaymentMethodInterface
 {
-
     /**
      * @inheritDoc
      */

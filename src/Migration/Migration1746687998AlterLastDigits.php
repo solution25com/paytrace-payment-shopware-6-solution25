@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace PayTrace\Migration;
+declare(strict_types=1);
+
+namespace solu1Paytrace\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -14,11 +16,11 @@ class Migration1746687998AlterLastDigits extends MigrationStep
     {
         return 1746687998;
     }
-  public function update(Connection $connection): void
-  {
-    $connection->executeStatement('
+    public function update(Connection $connection): void
+    {
+        $connection->executeStatement('
         ALTER TABLE `payTrace_customer_vault`
         ADD COLUMN `last_four` VARCHAR(255) NULL AFTER `card_type`
     ');
-  }
+    }
 }

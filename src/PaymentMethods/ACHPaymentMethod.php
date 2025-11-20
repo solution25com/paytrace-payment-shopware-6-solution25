@@ -1,12 +1,11 @@
 <?php
 
-namespace PayTrace\PaymentMethods;
+namespace solu1Paytrace\PaymentMethods;
 
-use PayTrace\Gateways\AchEcheck;
+use solu1Paytrace\Gateways\AchEcheck;
 
 class ACHPaymentMethod implements PaymentMethodInterface
 {
-
     /**
      * @inheritDoc
      */

@@ -7,6 +7,10 @@
     transition: transform 0.3s ease;
   }
 
+  #addCardFormContainer{
+    display: none;
+  }
+
   .sc-form-toggle-btn.active .sc-form-toggle-icon {
     transform: rotate(45deg);
   }
@@ -15,10 +19,55 @@
     position: relative;
   }
 
+  /* merged & deduped: keep effective values to preserve current view */
   .sc-form-container {
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
     animation: fadeIn 0.3s ease-out;
+
+    .paytrace-form-container{
+      padding: 10px;
+      max-width: 100%;
+
+      .sc-form-payment-fields {
+        margin: 1.5rem 0;
+        background: transparent;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #dfe8ec;
+        margin-bottom: 0;
+
+        /* silence linter for allowed deep/type selectors; visual behavior unchanged */
+        /* stylelint-disable selector-max-type, max-nesting-depth */
+        iframe {
+          /* stylelint-disable-next-line declaration-no-important */
+          height: 300px !important;
+          margin-top: 25px;
+          border: none;
+          overflow: hidden;
+
+          .fields{
+            #credit_card{
+              padding: 0.5rem 0.75rem;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              font-size: 0.9rem;
+              transition: all 0.2s ease;
+              width: 100%;
+            }
+          }
+        }
+        /* stylelint-enable selector-max-type, max-nesting-depth */
+      }
+
+      .error-container {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+      }
+    }
   }
 
   .sc-form-card {
@@ -145,13 +194,26 @@
     }
   }
 
+  #paytrace-loading-indicator{
+    text-align:center;
+    margin: 15px 0;
+  }
 
+  #errorContainer{
+    display: none;
+  }
 
-
+  .delete-loading-indicator{
+    #spinner-border{
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
 
   .sc-form-toggle-wrapper {
     position: relative;
     margin: 2rem 0;
+
     #toggleAddCardForm{
       padding:10px;
       position: relative;
@@ -159,6 +221,7 @@
       align-items: center;
       justify-content: center;
       z-index: 1;
+
       &::before {
         content: '';
         position: absolute;
@@ -169,46 +232,7 @@
       }
     }
   }
-  .sc-form-container {
-    max-width: 100%;
-    margin: 0;
-    animation: fadeIn 0.3s ease-out;
-    .paytrace-form-container{
-      padding: 10px;
-      max-width: 100%;
-      .sc-form-payment-fields {
-        margin: 1.5rem 0;
-        background: transparent;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #dfe8ec;
-        margin-bottom: 0;
-        iframe {
-          height: 300px !important;
-          margin-top: 25px;
-          border: none;
-          overflow: hidden;
-          .fields{
-            #credit_card{
-              padding: 0.5rem 0.75rem;
-              border: 1px solid #e2e8f0;
-              border-radius: 6px;
-              font-size: 0.9rem;
-              transition: all 0.2s ease;
-              width: 100%;
-            }
-          }
-        }
-      }
-      .error-container {
-        background-color: #f8d7da;
-        color: #721c24;
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 5px;
-      }
-    }
-  }
+
   #toggleAddCardForm,
   .delete-card-btn,
   .sc-form-submit{
@@ -219,12 +243,12 @@
     font-size: 14px;
   }
 
-
   .saved-card {
     .card-info {
       display: flex;
       flex-direction: column;
       text-align: start;
+
       .card-logo-img {
         height: 30px;
       }
@@ -237,6 +261,7 @@
         font-size: 14px;
         font-weight: 300;
       }
+
       .delete-card-btn {
         width: 100%;
       }

@@ -1,0 +1,23 @@
+{
+  "base": "/bundles/solu1paytrace/administration/",
+  "entryPoints": {
+    "solu1-paytrace": {
+      "css": [],
+      "dynamic": [],
+      "js": [
+        "/bundles/solu1paytrace/administration/assets/solu1-paytrace-CBGT5uNS.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}

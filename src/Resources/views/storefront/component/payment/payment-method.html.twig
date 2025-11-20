@@ -3,7 +3,7 @@
 {% block component_payment_method_label %}
     {{ parent() }}
 
-    {% if payment.formattedHandlerIdentifier in ['handler_paytrace_creditcard', 'handler_paytrace_achecheck']
+    {% if payment.formattedHandlerIdentifier in ['handler_solu1paytrace_creditcard', 'handler_solu1paytrace_achecheck']
         and context.paymentMethod.formattedHandlerIdentifier == payment.formattedHandlerIdentifier
         and page.extensions.payTrace_payment is defined
         and page.extensions.payTrace_payment.template %}
