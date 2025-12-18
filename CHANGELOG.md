@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2025-12-18
+
+### Technical Fixes
+- **Configuration Fix:** Fixed sandbox and production mode configuration to ensure the correct API credentials are used based on the selected environment.
+
+---
+
 ## [1.2.0] - 2025-11-20
 
 ### Enhancements

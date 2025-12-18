@@ -15,4 +15,8 @@ class PayTraceConfigService
     {
         return $this->systemConfigService->get('solu1Paytrace.config.' . trim($configName), $salesChannelId);
     }
+    public function getMode(?string $mode): string
+    {
+        return $mode === 'live' ? 'live' : 'sandbox';
+    }
 }

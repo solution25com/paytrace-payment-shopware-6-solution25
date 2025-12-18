@@ -592,12 +592,24 @@ class PayTraceApiService extends Endpoints
     /**
      * @return array<string,string>
      */
-    private function buildRequestBody(?string $salesChannelId = ''): array
+    private function buildRequestBody(?string $salesChannelId = null): array
     {
+        $mode = $this->payTraceConfigService->getMode(
+            (string) $this->payTraceConfigService->getConfig('mode', $salesChannelId)
+        );
+
+        $isLive = $mode === 'live';
+
         return [
-            'grant_type' => 'client_credentials',
-            'client_id' => (string)$this->payTraceConfigService->getConfig('clientIdSandbox', $salesChannelId),
-            'client_secret' => $this->payTraceConfigService->getConfig('clientSecretSandbox', $salesChannelId) ?? '',
+            'grant_type'    => 'client_credentials',
+            'client_id'     => (string) $this->payTraceConfigService->getConfig(
+                $isLive ? 'clientIdProd' : 'clientIdSandbox',
+                $salesChannelId
+            ),
+            'client_secret' => (string) $this->payTraceConfigService->getConfig(
+                $isLive ? 'clientSecretProd' : 'clientSecretSandbox',
+                $salesChannelId
+            ),
         ];
     }
 
