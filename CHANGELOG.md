@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2025-12-19
+
+### Technical Fixes
+- **ach-eCheck Fixes:** Fixed ACH eCheck issues, improved translations, and resolved duplicate account/order/edit forms.
+
+---
+
 ## [1.2.1] - 2025-12-18
 
 ### Technical Fixes
