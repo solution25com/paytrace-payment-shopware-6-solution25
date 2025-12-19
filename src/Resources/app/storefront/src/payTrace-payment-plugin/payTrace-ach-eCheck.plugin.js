@@ -73,9 +73,9 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         const billingName = document.getElementById('ach-full-name')?.value?.trim() || '';
         const accountType = document.querySelector('input[name="accountType"]:checked')?.value;
 
-        if (!routingField || !accountField || !accountType) {
+        if (!routingValue || !accountEl || !accountType) {
             this._hideLoading();
-            this._showError(this._t('submitErrorMissingFields'));
+            this._showError(this._t('paytrace_shopware6.ach_echeck.submitError.missingFields'));
             return;
         }
 
@@ -115,11 +115,11 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
                     } else {
                         this._hideLoading();
                         this._showNote()
-                        this._showError(data.message || this._t('submitErrorPaymentFailed'));
+                        this._showError(data.message || this._t('paytrace_shopware6.ach_echeck.submitError.paymentFailed'));
                     }
                 })
                 .catch(error => {
-                    this._showError(this._t('submitErrorUnknown') + ' | ' + error);
+                    this._showError(this._t('paytrace_shopware6.credit_card.submitError.unknown') + ' | ' + error);
                 });
         }
     }
@@ -213,6 +213,10 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
         if (loader) {
             loader.classList.add('d-none');
         }
+    }
+
+    _showNote() {
+        document.getElementById('paytrace-card-note-message').classList.remove('d-none');
     }
 
     _disableFormInputs() {

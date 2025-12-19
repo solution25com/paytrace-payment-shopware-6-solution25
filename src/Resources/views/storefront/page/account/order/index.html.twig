@@ -2,17 +2,6 @@
 
 {% block base_footer %}
     {% if page.extensions.payTrace_payment and (page.extensions.payTrace_payment.gateway == 'creditCard' or page.extensions.payTrace_payment.gateway == 'achEcheck') %}
-        <input
-                type="hidden"
-                id="{{ page.extensions.payTrace_payment.flow == 'payment_order' ? 'payTrace-transaction-id' : 'paytracePaymentData' }}"
-                name="{{ page.extensions.payTrace_payment.flow == 'payment_order' ? 'payTrace_transaction_id' : 'paytracePaymentData' }}"
-                form="confirmOrderForm"
-                value=""
-                {% if page.extensions.payTrace_payment.flow == 'payment_order' %}required="required"{% endif %}
-        />
-
-
-        {% sw_include page.extensions.payTrace_payment.template %}
     {% else %}
         {{ parent() }}
 
