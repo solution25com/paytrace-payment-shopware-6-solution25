@@ -2,7 +2,7 @@
   "name": "solution25/pay-trace",
   "description": "PayTrace Payment - Shopware 6 Plugin",
   "type": "shopware-platform-plugin",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "license": "proprietary",
   "authors": [
     {

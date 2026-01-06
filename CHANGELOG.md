@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] - 2026-01-06
+
+### Technical Fixes
+- **Translation Fixes:** Fixed translation issues for the saved card dropdown and error messages.
+- **Error Message Fixes :** Fixed "Warning: Undefined array key "message"" with the right error message.
+
+---
+
 ## [1.2.2] - 2025-12-19
 
 ### Technical Fixes
