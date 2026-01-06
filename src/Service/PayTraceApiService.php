@@ -651,7 +651,7 @@ class PayTraceApiService extends Endpoints
             /** @var array<int> $errorCodes */
             $errorCodes = [1, 102, 103, 107, 110, 113, 125, 167];
             if (in_array($decodedResponse['data']['response_code'], $errorCodes, true)) {
-                throw new PaymentException(400, PaymentException::PAYMENT_PROCESS_ERROR, $decodedResponse['data']['message']);
+                throw new PaymentException(400, PaymentException::PAYMENT_PROCESS_ERROR, $decodedResponse['data']['approval_message']);
             }
         }
 
