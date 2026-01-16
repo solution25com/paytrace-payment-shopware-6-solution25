@@ -4,14 +4,7 @@
   {{ parent() }}
 
   {% if page.extensions.payTrace_payment %}
-    <input
-        type="hidden"
-        required="required"
-        id="payTrace-transaction-id"
-        form="confirmOrderForm"
-        value=""
-        name="payTrace_transaction_id"
-    >
+
 
   {% endif %}
 {% endblock %}

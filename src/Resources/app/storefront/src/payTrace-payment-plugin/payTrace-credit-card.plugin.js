@@ -293,6 +293,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
               this._showError(data.message || this._t('submitErrorPaymentFailed'));
               this._showNote()
               this._hideLoading();
+              this._resetPaymentForm();
             }
           })
           .catch(error => {
@@ -330,6 +331,7 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
               console.error('Vaulted payment failed:', data.message || 'Unknown error');
               this._showError(data.message || this._t('paytrace_shopware6.credit_card.submitError.vaultedError'));
               this._hideLoading();
+              this._resetPaymentForm();
             }
           })
           .catch(error => {
@@ -388,6 +390,11 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     const confirmButton = this.confirmOrderForm.querySelector('button[type="submit"]');
     if (confirmButton) {
       confirmButton.disabled = false;
+      confirmButton.classList.remove('is-loading');
+      const loader = confirmButton.querySelector('.loader, .loading-indicator, .icon-loader');
+      if (loader) {
+        loader.remove();
+      }
     }
 
     const savedCardsDropdown = document.getElementById('saved-cards');
@@ -426,5 +433,21 @@ export default class PayTraceCreditCardPlugin extends window.PluginBaseClass {
     if (this.saveCardCheckbox) {
       this.saveCardCheckbox.disabled = false;
     }
+  }
+
+  _resetPaymentForm() {
+    if (typeof PTPayment !== 'undefined') {
+      PTPayment.reset();
+    }
+    const dropdown = document.getElementById('saved-cards');
+    const newCardSection = document.getElementById('new-card-section');
+
+    if (dropdown && newCardSection) {
+      dropdown.value = '__new__';
+      newCardSection.style.display = 'block';
+    }
+
+    this._enableSubmit();
+    this._enableSaveCardCheckbox();
   }
 }

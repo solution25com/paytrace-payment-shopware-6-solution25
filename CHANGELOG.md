@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.4] - 2026-01-16
+
+### Technical Fixes
+- Fixed "transaction not found" error for **Payment then Order** flow.   
+- Fixed "blockage user cannot re-enter Credit card details without refreshing the page" error for **Payment then Ordert** flow.
+---
+
 ## [1.2.3] - 2026-01-06
 
 ### Technical Fixes
