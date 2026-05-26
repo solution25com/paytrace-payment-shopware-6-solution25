@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.5] - 2026-05-26
+
+### Bug Fixes
+
+  - **ACH** – Recover real transaction ID after PayTrace 422 quirk using idempotency key lookup
+  - **ACH** – Fix payment-first verification to use correct ACH endpoint instead of credit card endpoint
+  - **ACH (order-first)** – Persist correct transaction ID from PayTrace response
+  - **Payment-first** – Verify transaction with PayTrace server-side before marking order as paid
+
+---
+
 ## [1.2.4] - 2026-01-16
 
 ### Technical Fixes
