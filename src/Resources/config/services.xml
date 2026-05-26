@@ -60,8 +60,10 @@
         <service id="solu1Paytrace\Storefront\Controller\PayTraceController" public="true">
             <argument type="service" id="solu1Paytrace\Service\PayTraceApiService"/>
             <argument type="service" id="solu1Paytrace\Service\PayTraceConfigService"/>
+            <argument type="service" id="solu1Paytrace\Service\PayTraceCustomerVaultService"/>
             <argument type="service" id="solu1Paytrace\Library\Constants\ValidatorUtility"/>
             <argument type="service" id="PayTracePayment.logger"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

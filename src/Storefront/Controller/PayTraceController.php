@@ -7,8 +7,10 @@ namespace solu1Paytrace\Storefront\Controller;
 use solu1Paytrace\Library\Constants\ValidatorUtility;
 use solu1Paytrace\Service\PayTraceApiService;
 use solu1Paytrace\Service\PayTraceConfigService;
+use solu1Paytrace\Service\PayTraceCustomerVaultService;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,19 +24,25 @@ class PayTraceController extends StorefrontController
 {
     private PayTraceApiService $payTraceApiService;
     private PayTraceConfigService $payTraceConfigService;
+    private PayTraceCustomerVaultService $payTraceCustomerVaultService;
     private ValidatorUtility $validator;
     private LoggerInterface $logger;
+    private CartService $cartService;
 
     public function __construct(
         PayTraceApiService $payTraceApiService,
         PayTraceConfigService $payTraceConfigService,
+        PayTraceCustomerVaultService $payTraceCustomerVaultService,
         ValidatorUtility $validator,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        CartService $cartService
     ) {
         $this->payTraceApiService   = $payTraceApiService;
         $this->payTraceConfigService = $payTraceConfigService;
+        $this->payTraceCustomerVaultService = $payTraceCustomerVaultService;
         $this->validator            = $validator;
         $this->logger               = $logger;
+        $this->cartService          = $cartService;
     }
 
     /**
@@ -76,7 +84,9 @@ class PayTraceController extends StorefrontController
             'routingNumber' => [new Assert\NotBlank(), new Assert\Type('string')],
             'accountNumber' => [new Assert\NotBlank(), new Assert\Type('string')],
             'accountType' => [new Assert\NotBlank(), new Assert\Type('string')],
-            'amount' => [new Assert\NotBlank(), new Assert\Type('string')],
+            'amount' => new Assert\Optional([
+                new Assert\Type('string'),
+            ]),
         ]);
 
         $errors = $this->validator->validateFields($data, $constraints);
@@ -101,7 +111,15 @@ class PayTraceController extends StorefrontController
         ];
 
         try {
-            $paymentResponse = $this->payTraceApiService->processEcheckDeposit($data, $billingData, $context->getSalesChannelId());
+            $authoritativeAmount = $this->resolveAuthoritativeAmount($context, $cart);
+            if ($authoritativeAmount === null) {
+                return $this->createJsonResponse(false, 'Could not resolve authoritative cart amount.', Response::HTTP_BAD_REQUEST);
+            }
+
+            $payload = $data;
+            $payload['amount'] = $authoritativeAmount;
+
+            $paymentResponse = $this->payTraceApiService->processEcheckDeposit($payload, $billingData, $context->getSalesChannelId());
             return $this->handlePaymentResponse($paymentResponse);
         } catch (\Exception $e) {
             $this->logger->error('Vaulted payment processing failed: ' . $e->getMessage());
@@ -132,7 +150,9 @@ class PayTraceController extends StorefrontController
                 'hpf_token' => [new Assert\NotBlank(), new Assert\Type('string')],
                 'enc_key' => [new Assert\NotBlank(), new Assert\Type('string')],
             ]),
-            'amount' => [new Assert\NotBlank(), new Assert\Type('string')],
+            'amount' => new Assert\Optional([
+                new Assert\Type('string'),
+            ]),
             'saveCard' => [new Assert\Optional(), new Assert\Type(['type' => 'bool'])],
         ]);
 
@@ -162,10 +182,15 @@ class PayTraceController extends StorefrontController
         ];
 
         try {
+            $authoritativeAmount = $this->resolveAuthoritativeAmount($context);
+            if ($authoritativeAmount === null) {
+                return $this->createJsonResponse(false, 'Could not resolve authoritative cart amount.', Response::HTTP_BAD_REQUEST);
+            }
+
             /** @var array<string,mixed> $paymentResponse */
             $paymentResponse = $this->processPayment(
                 $data['token'],
-                $data['amount'],
+                $authoritativeAmount,
                 $customerData,
                 $saveCard,
                 $authAndCapture,
@@ -186,11 +211,18 @@ class PayTraceController extends StorefrontController
     #[Route(path: '/vaulted-capture-paytrace', name: 'frontend.payTrace.vaultedCapture', methods: ['POST'])]
     public function vaultedCapture(Request $request, SalesChannelContext $context): JsonResponse
     {
+        $customer = $context->getCustomer();
+        if ($customer === null || $customer->getGuest()) {
+            return $this->createJsonResponse(false, 'Authentication required.', Response::HTTP_UNAUTHORIZED);
+        }
+
         $data = $request->request->all();
 
         $constraints = new Assert\Collection([
             'selectedCardVaultedId' => [new Assert\NotBlank(), new Assert\Type('string')],
-            'amount' => [new Assert\NotBlank(), new Assert\Type('string')],
+            'amount' => new Assert\Optional([
+                new Assert\Type('string'),
+            ]),
         ]);
 
         $errors = $this->validator->validateFields($data, $constraints);
@@ -198,8 +230,26 @@ class PayTraceController extends StorefrontController
             return $this->createJsonResponse(false, 'Missing data.', Response::HTTP_BAD_REQUEST);
         }
 
+        if (
+            !$this->payTraceCustomerVaultService->isVaultedIdOwnedByCustomer(
+                (string) $data['selectedCardVaultedId'],
+                (string) $customer->getId(),
+                $context->getContext()
+            )
+        ) {
+            return $this->createJsonResponse(false, 'Vaulted card access denied.', Response::HTTP_FORBIDDEN);
+        }
+
         try {
-            $paymentResponse = $this->payTraceApiService->processVaultedPayment($data, $context);
+            $authoritativeAmount = $this->resolveAuthoritativeAmount($context);
+            if ($authoritativeAmount === null) {
+                return $this->createJsonResponse(false, 'Could not resolve authoritative cart amount.', Response::HTTP_BAD_REQUEST);
+            }
+
+            $payload = $data;
+            $payload['amount'] = $authoritativeAmount;
+
+            $paymentResponse = $this->payTraceApiService->processVaultedPayment($payload, $context);
             return $this->handlePaymentResponse((array)$paymentResponse);
         } catch (\Exception $e) {
             $this->logger->error('Vaulted payment processing failed: ' . $e->getMessage());
@@ -250,5 +300,21 @@ class PayTraceController extends StorefrontController
     private function createJsonResponse(bool $success, string $message, int $statusCode, array $data = []): JsonResponse
     {
         return new JsonResponse(array_merge(['success' => $success, 'message' => $message], $data), $statusCode);
+    }
+
+    private function resolveAuthoritativeAmount(SalesChannelContext $context, ?Cart $cart = null): ?string
+    {
+        try {
+            $resolvedCart = $cart ?? $this->cartService->getCart($context->getToken(), $context, true, true);
+            $amount = $resolvedCart->getPrice()->getTotalPrice();
+            if (!\is_numeric($amount)) {
+                return null;
+            }
+
+            return number_format((float) $amount, 2, '.', '');
+        } catch (\Throwable $e) {
+            $this->logger->error('Could not resolve authoritative cart amount: ' . $e->getMessage());
+            return null;
+        }
     }
 }

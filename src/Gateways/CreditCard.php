@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace solu1Paytrace\Gateways;
 
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 use solu1Paytrace\Library\Constants\TransactionStatuses;
 use solu1Paytrace\Service\PayTraceApiService;
 use solu1Paytrace\Service\PayTraceConfigService;
@@ -60,7 +61,7 @@ class CreditCard extends AbstractPaymentHandler
         $orderTransaction = $this->payTraceTransactionService->getOrderTransactionsById($transaction->getOrderTransactionId(), $context);
         if (!$orderTransaction instanceof OrderTransactionEntity) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Order transaction not found');
+            throw new RuntimeException('Order transaction not found');
         }
 
         if ($flow === 'payment_order') {
@@ -80,13 +81,25 @@ class CreditCard extends AbstractPaymentHandler
         string $transactionStatus,
         Context $context
     ): void {
-        /** @var string|null $paytraceTransactionId */
-        $paytraceTransactionId = $request->request->get('payTrace_transaction_id');
+        $payTraceTransactionId = $request->request->get('payTrace_transaction_id') ?? '0';
+
+        $expectedAmount = (float) number_format($orderTransaction->getAmount()->getTotalPrice(), 2, '.', '');
+        $salesChannelId = (string) $orderTransaction->getOrder()->getSalesChannelId();
+        $verification = $this->payTraceApiService->verifyPaymentFirstTransaction(
+          $payTraceTransactionId,
+          $expectedAmount,
+          $salesChannelId
+        );
+
+        if (!$verification['success']) {
+          $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
+          throw new RuntimeException('Provider verification failed: ' . $verification['message']);
+        }
 
         $order = $orderTransaction->getOrder();
         if (!$order instanceof OrderEntity) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Order entity missing on transaction');
+            throw new RuntimeException('Order entity missing on transaction');
         }
 
         $paymentMethod = $orderTransaction->getPaymentMethod();
@@ -101,7 +114,7 @@ class CreditCard extends AbstractPaymentHandler
         $this->payTraceTransactionService->addTransaction(
             $orderId,
             $paymentMethodName,
-            (string) $paytraceTransactionId,
+            (string) $payTraceTransactionId,
             $transactionStatus,
             $context
         );
@@ -120,7 +133,7 @@ class CreditCard extends AbstractPaymentHandler
         $order = $orderTransaction->getOrder();
         if (!$order instanceof OrderEntity) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Order entity missing on transaction');
+            throw new RuntimeException('Order entity missing on transaction');
         }
 
         /** @var mixed $salesChannelContext */
@@ -129,7 +142,7 @@ class CreditCard extends AbstractPaymentHandler
         $paymentDataRaw = $request->request->get('paytracePaymentData');
         if (!is_string($paymentDataRaw) || $paymentDataRaw === '') {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Missing paymentData for order-first flow');
+            throw new RuntimeException('Missing paymentData for order-first flow');
         }
 
         /** @var array<string,mixed> $paymentData */
@@ -149,13 +162,13 @@ class CreditCard extends AbstractPaymentHandler
         $billingAddress = $order->getBillingAddress();
         if (!$billingAddress instanceof OrderAddressEntity) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Billing address missing on order');
+            throw new RuntimeException('Billing address missing on order');
         }
 
         $orderCustomer = $order->getOrderCustomer();
         if ($orderCustomer === null) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Order customer missing on order');
+            throw new RuntimeException('Order customer missing on order');
         }
 
         $billingData = [
@@ -212,7 +225,7 @@ class CreditCard extends AbstractPaymentHandler
             }
         } else {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Missing payment information for order-first flow');
+            throw new RuntimeException('Missing payment information for order-first flow');
         }
 
 
@@ -227,7 +240,7 @@ class CreditCard extends AbstractPaymentHandler
 
         if (!$success) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException((string) ($apiResponse['message'] ?? 'Payment failed in order-first flow'));
+            throw new RuntimeException((string) ($apiResponse['message'] ?? 'Payment failed in order-first flow'));
         }
 
         /** @var string|null $transactionId */
@@ -235,14 +248,14 @@ class CreditCard extends AbstractPaymentHandler
 
         if ($transactionId === null || $transactionId === '') {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('No transaction ID returned from PayTrace');
+            throw new RuntimeException('No transaction ID returned from PayTrace');
         }
 
         $paymentMethod = $orderTransaction->getPaymentMethod();
         $paymentMethodName = $paymentMethod ? (string) $paymentMethod->getName() : '';
         if ($paymentMethodName === '') {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
-            throw new \RuntimeException('Payment method missing on transaction');
+            throw new RuntimeException('Payment method missing on transaction');
         }
 
         $this->payTraceTransactionService->addTransaction(

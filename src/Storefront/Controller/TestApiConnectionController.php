@@ -6,7 +6,6 @@ namespace solu1Paytrace\Storefront\Controller;
 
 use solu1Paytrace\Service\PayTraceApiService;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +24,12 @@ class TestApiConnectionController extends StorefrontController
     }
 
 
-    #[Route(path: '/api/_action/paytrace-test-connection/test-connection', name: 'api.action.paytrace.test-connection', methods: ['POST'])]
+    #[Route(
+        path: '/api/_action/paytrace-test-connection/test-connection',
+        name: 'api.action.paytrace.test-connection',
+        methods: ['POST'],
+        defaults: ['_acl' => ['system_config:read']]
+    )]
     public function testConnection(Request $request, Context $context): Response
     {
         $salesChannelId = $request->get('salesChannelId') ?? '';

@@ -21,6 +21,10 @@ abstract class Endpoints
     protected const ACH_DEPOSIT = 'ACH_DEPOSIT';
     protected const CUSTOMER_PROFILE = 'CUSTOMER_PROFILE';
     protected const AUTHORIZE_VAULTED = 'AUTHORIZE_VAULTED';
+    protected const TRANSACTION_DETAILS = 'TRANSACTION_DETAILS';
+    protected const ACH_TRANSACTION_BY_IDEM_KEY = 'ACH_TRANSACTION_BY_IDEM_KEY';
+    protected const ACH_TRANSACTIONS = 'ACH_TRANSACTIONS';
+    protected const ACH_TRANSACTION_DETAILS = 'ACH_TRANSACTION_DETAILS';
 
     /**
      * @var array<string, array{method: 'GET'|'POST'|'DELETE', url: string}>
@@ -85,6 +89,22 @@ abstract class Endpoints
         self::AUTHORIZE_VAULTED => [
             'method' => 'POST',
             'url' => '/v3/card/authorize/customer/'
+        ],
+        self::TRANSACTION_DETAILS => [
+            'method' => 'GET',
+            'url' => '/v3/card/transaction/'
+        ],
+        self::ACH_TRANSACTION_BY_IDEM_KEY => [
+            'method' => 'GET',
+            'url' => '/v3/checks/transactions/idempotency-keys/'
+        ],
+        self::ACH_TRANSACTIONS => [
+            'method' => 'GET',
+            'url' => '/v3/checks/transactions'
+        ],
+        self::ACH_TRANSACTION_DETAILS => [
+            'method' => 'GET',
+            'url' => '/v3/checks/transactions/'
         ],
     ];
 

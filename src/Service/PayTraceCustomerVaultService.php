@@ -232,4 +232,13 @@ class PayTraceCustomerVaultService
 
         return $customerId . '_Card_' . $nextIndex;
     }
+
+    public function isVaultedIdOwnedByCustomer(string $vaultedCustomerId, string $customerId, Context $context): bool
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('vaultedCustomerId', $vaultedCustomerId));
+        $criteria->addFilter(new EqualsFilter('customerId', $customerId));
+
+        return $this->vaultedCustomerRepository->search($criteria, $context)->first() !== null;
+    }
 }

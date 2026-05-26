@@ -9,9 +9,6 @@
             : 'paytracePaymentData' }}"
             form="confirmOrderForm"
             value=""
-           {% if page.extensions.payTrace_payment.flow == 'payment_order' %}
-                required="required"
-            {% endif %}
     />
 <div id="payTrace_payment" class="payTrace_ach_payment"
      data-payTrace-ach-echeck="true"
@@ -26,9 +23,9 @@
             <span role="alert"> {{ "paytrace_shopware6.credit_card.submitError.billingInformationNote"|trans }}</span>
         </div>
         <div id="ach-data">
-            <input type="text" class="ach-forma" id="ach-full-name" name="achFullName" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_full_name'|trans }}" required><br>
-            <input type="text" class="form-control ach-forma pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_routing_number'|trans }}" required><br>
-            <input type="text" class="form-control ach-forma pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_account_number'|trans }}" required><br>
+            <input type="text" class="ach-forma" id="ach-full-name" name="achFullName" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_full_name'|trans }}" ><br>
+            <input type="text" class="form-control ach-forma pt-encrypt" id="achRoutingNumber" name="routingNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_routing_number'|trans }}" ><br>
+            <input type="text" class="form-control ach-forma pt-encrypt" id="achAccountNumber" name="accountNumber" placeholder="{{ 'paytrace_shopware6.ach_echeck.placeholder_account_number'|trans }}" ><br>
         </div>
         <div id="account-type-selection">
             <label>

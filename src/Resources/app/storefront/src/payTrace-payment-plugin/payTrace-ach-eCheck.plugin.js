@@ -108,10 +108,13 @@ export default class PayTraceAchECheckPlugin extends window.PluginBaseClass {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        const payTraceTransactionIdInput = document.getElementById('payTrace-transaction-id');
+                        if (payTraceTransactionIdInput && data.transactionId) {
+                            payTraceTransactionIdInput.value = data.transactionId;
+                        }
                         this._hideError();
                         this._hideLoading();
                         this.confirmOrderForm.submit();
-                        this._hideLoading();
                     } else {
                         this._hideLoading();
                         this._showNote()

@@ -71,6 +71,18 @@ class AchEcheck extends AbstractPaymentHandler
         }
         /** @var OrderEntity $order */
 
+        $expectedAmount = (float) number_format($orderTransaction->getAmount()->getTotalPrice(), 2, '.', '');
+        $verification = $this->payTraceApiService->verifyAchPaymentFirstTransaction(
+            $payTraceTransactionId,
+            $expectedAmount,
+            $order->getSalesChannelId()
+        );
+
+        if (!$verification['success']) {
+            $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
+            throw new RuntimeException('Provider verification failed: ' . $verification['message']);
+        }
+
         $paymentMethod = $orderTransaction->getPaymentMethod();
         if ($paymentMethod === null) {
             $this->transactionStateHandler->fail($transaction->getOrderTransactionId(), $context);
@@ -153,7 +165,7 @@ class AchEcheck extends AbstractPaymentHandler
         }
 
         /** @var bool|float|int|string $transactionId */
-        $transactionId = $request->getPayload()->get('payTrace_transaction_id') ?? $request->request->get('payTrace_transaction_id') ?? '0';
+        $transactionId = (string) ($response['transactionId'] ?? '0');
 
         $paymentMethod = $orderTransaction->getPaymentMethod();
         if ($paymentMethod === null) {

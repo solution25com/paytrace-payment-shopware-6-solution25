@@ -190,6 +190,8 @@ class PayTraceApiService extends Endpoints
     public function processEcheckDeposit(array $data, array $billingData, string $salesChannelId): array
     {
         $baseUrl = $this->getModeUrl($salesChannelId);
+        $idempotencyKey = bin2hex(random_bytes(16));
+
         /** @var array{method:string,url:string} $fullEndpointUrl */
         $fullEndpointUrl = Endpoints::getUrl($baseUrl, Endpoints::ACH_DEPOSIT);
 
@@ -212,7 +214,8 @@ class PayTraceApiService extends Endpoints
                     'account_type' => $data['accountType'] ?? 'Checking'
                 ],
                 'amount' => $data['amount'],
-                'merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '',
+                'merchant_id' => (int) ($this->payTraceConfigService->getConfig('merchantId', $salesChannelId) ?? 0),
+                'idempotency_key' => $idempotencyKey,
                 'billing_address' => [
                     'street' => $billingData['street'] ?? '',
                     'street2' => $billingData['street2'] ?? '',
@@ -232,8 +235,113 @@ class PayTraceApiService extends Endpoints
             ]),
         ];
 
+        $this->logger->info('PayTrace ACH request', ['url' => $fullEndpointUrl['url'], 'idempotency_key' => $idempotencyKey]);
+
         $response = $this->request($fullEndpointUrl, $options);
+
+        // PayTrace ACH returns transaction_id at the top level with data:[].
+        // Decode the body before apiResponse() consumes the stream.
+        if ($response instanceof \Psr\Http\Message\ResponseInterface) {
+            $rawDecoded = json_decode((string) $response->getBody(), true) ?? [];
+
+            $this->logger->info('PayTrace ACH raw response', ['keys' => array_keys($rawDecoded), 'raw' => $rawDecoded]);
+
+            if (!empty($rawDecoded['transaction_id']) && empty($rawDecoded['data']['transaction_id'])) {
+                $rawDecoded['data'] = array_merge(
+                    is_array($rawDecoded['data'] ?? null) ? $rawDecoded['data'] : [],
+                    ['transaction_id' => $rawDecoded['transaction_id']]
+                );
+            }
+
+            $response = $rawDecoded;
+        } else {
+            // PayTrace sandbox quirk: path/record_id 422 fires even when the transaction
+            // was accepted. Look it up by idempotency_key to get the real transaction_id.
+            $msg = is_array($response) ? ($response['message'] ?? null) : null;
+            $field = is_array($msg) ? ($msg['data'][0]['field'] ?? null) : null;
+
+            if ($field === 'path/record_id') {
+                $realTransactionId = $this->lookupAchTransactionByIdempotencyKey($idempotencyKey, $salesChannelId);
+
+                $this->logger->warning('PayTrace ACH path/record_id quirk; idempotency lookup result', [
+                    'idempotency_key' => $idempotencyKey,
+                    'resolved_transaction_id' => $realTransactionId,
+                ]);
+
+                return [
+                    'error' => false,
+                    'message' => 'Success',
+                    'data' => ['transaction_id' => $realTransactionId],
+                ];
+            }
+
+            $this->logger->error('PayTrace ACH request returned error array', ['response' => $response]);
+        }
+
         return $this->apiResponse($response);
+    }
+
+    private function lookupAchTransactionByIdempotencyKey(string $idempotencyKey, string $salesChannelId): ?string
+    {
+        $headers = [
+            'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+            'X-Integrator-Id' => '9999Shopware',
+            'Content-Type' => 'application/json',
+        ];
+
+        // Primary: dedicated idempotency-key endpoint
+        try {
+            $endpoint = Endpoints::getUrlDynamicParam(
+                $this->getModeUrl($salesChannelId),
+                Endpoints::ACH_TRANSACTION_BY_IDEM_KEY,
+                [$idempotencyKey]
+            );
+
+            $response = $this->request($endpoint, ['headers' => $headers]);
+
+            if ($response instanceof \Psr\Http\Message\ResponseInterface) {
+                $decoded = json_decode((string) $response->getBody(), true) ?? [];
+                $this->logger->info('PayTrace ACH idempotency lookup response', ['url' => $endpoint['url'], 'status' => $response->getStatusCode(), 'body' => $decoded]);
+                $transactionId = $decoded['data']['transaction_id'] ?? $decoded['transaction_id'] ?? null;
+                if (is_string($transactionId) && $transactionId !== '') {
+                    return $transactionId;
+                }
+            } else {
+                $this->logger->warning('PayTrace ACH idempotency dedicated endpoint failed, falling back to search', ['response' => $response]);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('PayTrace ACH idempotency dedicated endpoint exception, falling back to search: ' . $e->getMessage());
+        }
+
+        // Fallback: search endpoint with idempotency_key query param (requires date range)
+        try {
+            $merchantId = (int) ($this->payTraceConfigService->getConfig('merchantId', $salesChannelId) ?? 0);
+            $today = (new \DateTime('now', new \DateTimeZone('UTC')))->format('Y-m-d');
+            $tomorrow = (new \DateTime('tomorrow', new \DateTimeZone('UTC')))->format('Y-m-d');
+            $searchEndpoint = Endpoints::getUrlDynamicParam(
+                $this->getModeUrl($salesChannelId),
+                Endpoints::ACH_TRANSACTIONS,
+                [],
+                ['merchant_id' => $merchantId, 'idempotency_key' => $idempotencyKey, 'start_date' => $today, 'end_date' => $tomorrow, 'limit' => 1]
+            );
+
+            $response = $this->request($searchEndpoint, ['headers' => $headers]);
+
+            if ($response instanceof \Psr\Http\Message\ResponseInterface) {
+                $decoded = json_decode((string) $response->getBody(), true) ?? [];
+                $this->logger->info('PayTrace ACH search lookup response', ['url' => $searchEndpoint['url'], 'status' => $response->getStatusCode(), 'body' => $decoded]);
+                $transactionId = $decoded['items'][0]['transaction_id'] ?? null;
+                if (is_string($transactionId) && $transactionId !== '') {
+                    return $transactionId;
+                }
+            } else {
+                $this->logger->error('PayTrace ACH search lookup returned error', ['response' => $response]);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('PayTrace ACH search lookup failed: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
     /**
@@ -479,6 +587,125 @@ class PayTraceApiService extends Endpoints
     }
 
     /**
+     * Verify that a provider transaction exists and matches order totals.
+     *
+     * @return array{success:bool,message:string,data:array<string,mixed>|null}
+     */
+    public function verifyPaymentFirstTransaction(string $transactionId, float $expectedAmount, string $salesChannelId): array
+    {
+        if ($transactionId === '') {
+            return ['success' => false, 'message' => 'Missing PayTrace transaction id', 'data' => null];
+        }
+
+        try {
+            $endpoint = Endpoints::getUrlDynamicParam(
+                $this->getModeUrl($salesChannelId),
+                Endpoints::TRANSACTION_DETAILS,
+                [$transactionId],
+                ['merchant_id' => $this->payTraceConfigService->getConfig('merchantId') ?? '']
+            );
+
+            $options = [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+                    'X-Integrator-Id' => '9999Shopware',
+                    'X-Permalinks' => true,
+                    'Content-Type' => 'application/json',
+                ],
+            ];
+
+            $response = $this->request($endpoint, $options);
+            $apiResponse = $this->apiResponse($response);
+        } catch (\Throwable $e) {
+            $this->logger->error('PayTrace payment-first verification failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Provider verification request failed', 'data' => null];
+        }
+
+        /** @var array<string,mixed> $providerData */
+        $providerData = isset($apiResponse['data']) && \is_array($apiResponse['data']) ? $apiResponse['data'] : [];
+
+        $providerTxId = (string) ($providerData['transaction_id'] ?? $providerData['id'] ?? '');
+        if ($providerTxId === '' || $providerTxId !== $transactionId) {
+            return ['success' => false, 'message' => 'Provider transaction id mismatch', 'data' => $providerData];
+        }
+
+        $providerAmountRaw = $providerData['requested_amount'] ?? $providerData['settle_amount'] ?? $providerData['amount'] ?? $providerData['amount_due'] ?? null;
+        if (!\is_numeric($providerAmountRaw)) {
+            return ['success' => false, 'message' => 'Provider amount is missing', 'data' => $providerData];
+        }
+
+        $providerAmount = (float) $providerAmountRaw;
+        if ($providerAmount > 0.0 && \abs($providerAmount - $expectedAmount) > 0.01) {
+            return ['success' => false, 'message' => 'Provider amount mismatch', 'data' => $providerData];
+        }
+
+        $status = strtoupper((string) ($providerData['status'] ?? $providerData['response_message'] ?? ''));
+        $approvedStates = ['APPROVED', 'SUCCESS', 'CAPTURED', 'AUTHORIZED', 'AUTHORIZATION APPROVED', 'ACCEPTED', 'A', 'C', 'S'];
+        if ($status !== '' && !\in_array($status, $approvedStates, true)) {
+            return ['success' => false, 'message' => 'Provider status is not approved', 'data' => $providerData];
+        }
+
+        return ['success' => true, 'message' => 'Verified', 'data' => $providerData];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function verifyAchPaymentFirstTransaction(string $transactionId, float $expectedAmount, string $salesChannelId): array
+    {
+        if ($transactionId === '' || $transactionId === '0') {
+            return ['success' => false, 'message' => 'Missing PayTrace ACH transaction id', 'data' => null];
+        }
+
+        try {
+            $endpoint = Endpoints::getUrlDynamicParam(
+                $this->getModeUrl($salesChannelId),
+                Endpoints::ACH_TRANSACTION_DETAILS,
+                [$transactionId]
+            );
+
+            $options = [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->getAuthorizationToken($salesChannelId),
+                    'X-Integrator-Id' => '9999Shopware',
+                    'Content-Type' => 'application/json',
+                ],
+            ];
+
+            $response = $this->request($endpoint, $options);
+            $apiResponse = $this->apiResponse($response);
+        } catch (\Throwable $e) {
+            $this->logger->error('PayTrace ACH payment-first verification failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'ACH provider verification request failed', 'data' => null];
+        }
+
+        /** @var array<string,mixed> $providerData */
+        $providerData = isset($apiResponse['data']) && is_array($apiResponse['data']) ? $apiResponse['data'] : [];
+
+        $providerTxId = (string) ($providerData['transaction_id'] ?? '');
+        if ($providerTxId === '' || $providerTxId !== $transactionId) {
+            return ['success' => false, 'message' => 'ACH provider transaction id mismatch', 'data' => $providerData];
+        }
+
+        $providerAmountRaw = $providerData['amount'] ?? $providerData['reversible_amount'] ?? null;
+        if (!is_numeric($providerAmountRaw)) {
+            return ['success' => false, 'message' => 'ACH provider amount is missing', 'data' => $providerData];
+        }
+
+        if (abs((float) $providerAmountRaw - $expectedAmount) > 0.01) {
+            return ['success' => false, 'message' => 'ACH provider amount mismatch', 'data' => $providerData];
+        }
+
+        $status = strtoupper((string) ($providerData['transaction_status'] ?? ''));
+        $approvedStates = ['ACCEPTED', 'APPROVED', 'SUCCESS'];
+        if ($status !== '' && !in_array($status, $approvedStates, true)) {
+            return ['success' => false, 'message' => 'ACH provider status is not approved: ' . $status, 'data' => $providerData];
+        }
+
+        return ['success' => true, 'message' => 'Verified', 'data' => $providerData];
+    }
+
+    /**
      * @param array<string,mixed> $data
      * @return ResponseInterface|array<string,mixed>
      * @throws \Exception
@@ -631,7 +858,8 @@ class PayTraceApiService extends Endpoints
         }
 
         if (isset($decodedResponse['error']) && $decodedResponse['error']) {
-            $errorField = $decodedResponse['message']['data'][0]['field'] ?? null;
+            $msg = $decodedResponse['message'] ?? null;
+            $errorField = is_array($msg) ? ($msg['data'][0]['field'] ?? null) : null;
 
             if ($errorField === 'path/record_id') {
                 return [
@@ -640,11 +868,12 @@ class PayTraceApiService extends Endpoints
                     'data' => $decodedResponse['data'] ?? null,
                 ];
             }
-            throw new PaymentException(
-                400,
-                PaymentException::PAYMENT_PROCESS_ERROR,
-                $decodedResponse['message']['data'][0]['detail'] ?? 'Unknown error'
-            );
+
+            $errorDetail = is_array($msg)
+                ? ($msg['data'][0]['detail'] ?? 'Unknown error')
+                : (is_string($msg) ? $msg : 'Unknown error');
+
+            throw new PaymentException(400, PaymentException::PAYMENT_PROCESS_ERROR, $errorDetail);
         }
 
         if (isset($decodedResponse['data']['response_code'])) {
