@@ -23,3 +23,8 @@ validation:
     - message: 'Internal error: Class Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler was not found while trying to analyse it - discovering symbols is probably not configured properly.'
 
 
+build:
+  zip:
+    assets:
+      enabled: true
+      enable_asset_caching: true
